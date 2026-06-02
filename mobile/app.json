@@ -10,10 +10,11 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Izinkan Undangan Pernikahan Bali memilih foto mempelai dan galeri undangan Anda."
+          "photosPermission": "Izinkan Undangan Pernikahan Bali memilih foto mempelai dan galeri undangan Anda.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ],
-      "expo-audio",
       "expo-asset",
       "@react-native-community/datetimepicker"
     ],
@@ -29,6 +30,16 @@
     "android": {
       "package": "com.balisantih.undanganbali",
       "versionCode": 1,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE",
+        "android.permission.CAMERA",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#15110d",
         "foregroundImage": "./assets/android-icon-foreground.png",

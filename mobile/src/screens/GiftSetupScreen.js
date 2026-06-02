@@ -101,8 +101,8 @@ export default function GiftSetupScreen({ navigation }) {
           />
           <View style={styles.fee}>
             <Text style={styles.feeTitle}>Biaya layanan aplikasi</Text>
-            <Text style={styles.feeAmount}>Rp2.000 per transaksi</Text>
-            <Text style={styles.help}>Contoh: gift Rp100.000 + biaya layanan Rp2.000 = total bayar tamu Rp102.000.</Text>
+            <Text style={styles.feeAmount}>Rp2.000 atau 2%</Text>
+            <Text style={styles.help}>Di bawah Rp100.000 dikenakan Rp2.000. Mulai Rp100.000 ke atas dikenakan 2%. Fee ditampilkan transparan di halaman web.</Text>
           </View>
           <ToggleRow
             title="Izinkan tamu menulis ucapan"
