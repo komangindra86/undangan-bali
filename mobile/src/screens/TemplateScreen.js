@@ -77,6 +77,7 @@ function conceptFor(slug) {
     'bali-classic': 'Elegan gelap, nuansa upacara dan emas.',
     'pura-sunset': 'Sinematik senja, lilin, kutipan Weda, countdown.',
     'ubud-garden': 'Editorial terang, taman Ubud dan warna natural.',
+    'royal-kamasan': 'Adat mewah, patra emas, songket gelap, countdown.',
   }[slug] || 'Undangan pernikahan bernuansa Bali.';
 }
 

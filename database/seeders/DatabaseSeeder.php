@@ -45,6 +45,13 @@ class DatabaseSeeder extends Seeder
                 'preview_image' => 'templates/bali-preview/gallery-pavilion.jpg',
                 'blade_view' => 'invitations.templates.ubud-garden',
             ],
+            [
+                'name' => 'Royal Kamasan',
+                'slug' => 'royal-kamasan',
+                'thumbnail' => 'templates/bali-preview/gallery-details.jpg',
+                'preview_image' => 'templates/bali-preview/gallery-details.jpg',
+                'blade_view' => 'invitations.templates.royal-kamasan',
+            ],
         ];
 
         foreach ($templates as $template) {
