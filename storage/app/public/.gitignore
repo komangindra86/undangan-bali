@@ -1,0 +1,7 @@
+*
+!.gitignore
+!musics/
+!musics/*.wav
+!templates/
+!templates/bali-preview/
+!templates/bali-preview/*.jpg
