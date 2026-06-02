@@ -4,11 +4,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 git pull origin main
-composer install --no-dev --optimize-autoloader
-php artisan migrate --force
-php artisan storage:link
-php artisan optimize:clear
-php artisan optimize
+COMPOSER_ALLOW_SUPERUSER=1 php8.2 /usr/bin/composer install --no-dev --optimize-autoloader
+php8.2 artisan migrate --force
+php8.2 artisan storage:link
+php8.2 artisan optimize:clear
+php8.2 artisan optimize
 
 sudo chown -R www-data:www-data storage bootstrap/cache
 sudo systemctl reload php8.2-fpm

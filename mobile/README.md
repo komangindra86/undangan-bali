@@ -90,6 +90,7 @@ Copy-Item .env.example .env
 Gunakan URL sesuai target:
 
 ```text
+Production/Play Store: EXPO_PUBLIC_API_URL=https://undangan.balisantih.com/api
 Android emulator: EXPO_PUBLIC_API_URL=http://10.0.2.2:8000/api
 iOS simulator:     EXPO_PUBLIC_API_URL=http://127.0.0.1:8000/api
 Perangkat fisik:   EXPO_PUBLIC_API_URL=http://ALAMAT-IP-LAN-PC:8000/api
@@ -108,6 +109,25 @@ Jalankan:
 npm install
 npx expo start
 ```
+
+## Build Android Play Store
+
+Backend production sudah diarahkan ke:
+
+```text
+https://undangan.balisantih.com/api
+```
+
+Build AAB untuk Play Store:
+
+```powershell
+cd C:\laragon\www\undangan-bali\mobile
+npm install
+npx eas login
+npx eas build --platform android --profile production
+```
+
+File `.aab` dari EAS bisa diunggah ke Google Play Console. Wedding Gift tetap aman untuk Play Store karena pembayaran QRIS dilakukan oleh tamu di halaman web undangan, bukan di dalam aplikasi mobile.
 
 ## Batas MVP
 

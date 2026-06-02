@@ -23,9 +23,12 @@
       "backgroundColor": "#15110d"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.balisantih.undanganbali"
     },
     "android": {
+      "package": "com.balisantih.undanganbali",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#15110d",
         "foregroundImage": "./assets/android-icon-foreground.png",
