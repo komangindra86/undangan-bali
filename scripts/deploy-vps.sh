@@ -7,7 +7,7 @@ git pull origin main
 export COMPOSER_ALLOW_SUPERUSER=1
 php8.2 /usr/bin/composer install --no-dev --optimize-autoloader
 php8.2 artisan migrate --force
-php8.2 artisan storage:link || true
+php8.2 artisan storage:link --force
 php8.2 artisan optimize:clear
 php8.2 artisan optimize
 
