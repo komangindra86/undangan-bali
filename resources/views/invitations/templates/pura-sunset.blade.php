@@ -15,6 +15,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $isPreview ? 'Preview Pura Sunset' : 'Undangan '.$invitation->groom_nickname.' & '.$invitation->bride_nickname }}</title>
+    @include('invitations.partials.mobile-viewport')
     <style>
         * { box-sizing: border-box; } html { scroll-behavior: smooth; }
         body { background:#100b12; color:#f9eadf; font-family: Arial, sans-serif; margin:0; }

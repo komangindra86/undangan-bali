@@ -14,6 +14,7 @@
 <head>
     <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $isPreview ? 'Preview Ubud Garden' : 'Undangan '.$invitation->groom_nickname.' & '.$invitation->bride_nickname }}</title>
+    @include('invitations.partials.mobile-viewport')
     <style>
         :root { --green:#294537; --sage:#647a61; --paper:#f8f3e8; --cream:#fffaf0; --gold:#ae8752; }
         * { box-sizing:border-box; } html { scroll-behavior:smooth; } body { background:#dcd8cc; color:var(--green); font-family:Arial,sans-serif; margin:0; }

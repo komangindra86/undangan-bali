@@ -57,6 +57,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $isPreview ? 'Preview '.$theme['label'] : 'Undangan '.$invitation->groom_nickname.' & '.$invitation->bride_nickname }}</title>
+    @include('invitations.partials.mobile-viewport')
     <style>
         :root {
             --bg: {{ $theme['background'] }};
