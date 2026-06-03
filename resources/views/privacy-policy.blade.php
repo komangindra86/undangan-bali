@@ -96,7 +96,7 @@
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Kontak</h2>
                 <p class="mt-3">
-                    Untuk pertanyaan privasi, hubungi: <a class="text-amber-200 underline underline-offset-4" href="mailto:admin@balisantih.com">admin@balisantih.com</a>.
+                    Untuk pertanyaan privasi, hubungi: <a class="text-amber-200 underline underline-offset-4" href="mailto:admin.balisantih@gmail.com">admin.balisantih@gmail.com</a>.
                 </p>
             </div>
         </section>
