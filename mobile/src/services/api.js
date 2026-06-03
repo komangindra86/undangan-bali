@@ -1,3 +1,5 @@
+import { ensureLocalFileExists } from './localMedia';
+
 const DEFAULT_API_URL = __DEV__ ? 'http://10.0.2.2:8000/api' : 'https://undangan.balisantih.com/api';
 const API_URL = (process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL).replace(/\/$/, '');
 
@@ -44,6 +46,8 @@ async function appendImage(form, key, photo) {
     return;
   }
 
+  await ensureLocalFileExists(photo, 'foto');
+
   if (typeof window !== 'undefined') {
     const blob = await fetch(photo.uri).then((response) => response.blob());
     form.append(key, blob, photo.fileName || 'photo.jpg');
@@ -61,6 +65,8 @@ async function appendFile(form, key, file) {
   if (!file?.uri) {
     return;
   }
+
+  await ensureLocalFileExists(file, 'file musik');
 
   if (typeof window !== 'undefined') {
     const blob = await fetch(file.uri).then((response) => response.blob());

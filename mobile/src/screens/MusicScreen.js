@@ -6,6 +6,7 @@ import { FooterActions, SecondaryButton } from '../components/Buttons';
 import WizardLayout from '../components/WizardLayout';
 import { useDraft } from '../context/DraftContext';
 import { api } from '../services/api';
+import { persistLocalFile } from '../services/localMedia';
 import { colors, spacing } from '../theme';
 
 export default function MusicScreen({ navigation }) {
@@ -61,12 +62,13 @@ export default function MusicScreen({ navigation }) {
 
     player.pause();
     setPreviewId(null);
+    const fileName = asset.name || `musik-undangan.${extension}`;
     setMusic({
       music_type: 'upload',
       music_id: null,
       music_file: {
-        uri: asset.uri,
-        fileName: asset.name || `musik-undangan.${extension}`,
+        uri: await persistLocalFile(asset.uri, fileName),
+        fileName,
         mimeType: asset.mimeType || mimeTypeFor(extension),
         size: asset.size || null,
       },

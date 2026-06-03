@@ -1,5 +1,6 @@
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
+import { persistLocalFile } from './localMedia';
 
 async function optimizeImage(asset, maxWidth) {
   const actions = asset.width > maxWidth ? [{ resize: { width: maxWidth } }] : [];
@@ -8,12 +9,14 @@ async function optimizeImage(asset, maxWidth) {
     format: SaveFormat.JPEG,
   });
 
+  const fileName = `photo-${Date.now()}-${Math.round(Math.random() * 1000)}.jpg`;
+
   return {
-    uri: result.uri,
+    uri: await persistLocalFile(result.uri, fileName),
     width: result.width,
     height: result.height,
     mimeType: 'image/jpeg',
-    fileName: `photo-${Date.now()}-${Math.round(Math.random() * 1000)}.jpg`,
+    fileName,
   };
 }
 
