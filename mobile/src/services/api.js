@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { ensureLocalFileExists } from './localMedia';
 
 const DEFAULT_API_URL = __DEV__ ? 'http://10.0.2.2:8000/api' : 'https://undangan.balisantih.com/api';
@@ -18,7 +19,8 @@ async function request(path, options = {}, token = null) {
       },
     });
   } catch (error) {
-    throw new Error(`Tidak bisa terhubung ke server (${API_URL}). Periksa koneksi internet lalu coba lagi.`);
+    const detail = error?.message ? ` Detail: ${error.message}` : '';
+    throw new Error(`Upload atau koneksi ke server gagal (${API_URL}). Pastikan internet stabil, lalu coba publish lagi.${detail}`);
   }
 
   const data = await response.json().catch(() => ({}));
@@ -48,7 +50,7 @@ async function appendImage(form, key, photo) {
 
   await ensureLocalFileExists(photo, 'foto');
 
-  if (typeof window !== 'undefined') {
+  if (Platform.OS === 'web') {
     const blob = await fetch(photo.uri).then((response) => response.blob());
     form.append(key, blob, photo.fileName || 'photo.jpg');
     return;
@@ -68,7 +70,7 @@ async function appendFile(form, key, file) {
 
   await ensureLocalFileExists(file, 'file musik');
 
-  if (typeof window !== 'undefined') {
+  if (Platform.OS === 'web') {
     const blob = await fetch(file.uri).then((response) => response.blob());
     form.append(key, blob, file.fileName || 'music.mp3');
     return;
