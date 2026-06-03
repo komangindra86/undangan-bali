@@ -187,6 +187,49 @@ class InvitationPublishingTest extends TestCase
             ->assertDontSee('templates/bali-preview/hero-couple.jpg');
     }
 
+    public function test_mobile_form_boolean_strings_are_accepted_when_syncing_draft(): void
+    {
+        $this->seed();
+        $template = InvitationTemplate::where('slug', 'bali-classic')->firstOrFail();
+
+        $register = $this->postJson('/api/register', [
+            'name' => 'Boolean Mobile',
+            'email' => 'boolean-mobile@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertCreated();
+
+        $this->withToken($register->json('token'))->post('/api/invitations/sync-local-draft', [
+            'selected_template' => $template->id,
+            'groom_data' => [
+                'groom_full_name' => 'I Made Wira',
+                'groom_nickname' => 'Wira',
+            ],
+            'bride_data' => [
+                'bride_full_name' => 'Ni Putu Ayu',
+                'bride_nickname' => 'Ayu',
+            ],
+            'event_data' => [
+                'event_type' => 'Pawiwahan',
+                'event_date' => '2026-08-18',
+                'start_time' => '10:00',
+                'venue_name' => 'Bale Banjar',
+                'venue_address' => 'Ubud, Bali',
+            ],
+            'music_data' => ['music_type' => 'none'],
+            'gift_data' => [
+                'is_active' => 'false',
+                'receiver_name' => '',
+                'receiver_note' => '',
+                'minimum_amount' => '10000',
+                'show_amount_public' => 'false',
+                'allow_message' => 'true',
+            ],
+        ])->assertCreated()
+            ->assertJsonPath('data.gift_setting.is_active', false)
+            ->assertJsonPath('data.gift_setting.allow_message', true);
+    }
+
     public function test_editing_a_published_invitation_returns_it_to_draft_until_republished(): void
     {
         $this->seed();

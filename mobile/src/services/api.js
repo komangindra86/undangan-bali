@@ -36,7 +36,7 @@ async function request(path, options = {}, token = null) {
 function appendValues(form, group, values = {}) {
   Object.entries(values).forEach(([key, value]) => {
     if (value !== null && value !== undefined && typeof value !== 'object') {
-      form.append(`${group}[${key}]`, String(value));
+      form.append(`${group}[${key}]`, typeof value === 'boolean' ? (value ? '1' : '0') : String(value));
     }
   });
 }

@@ -30,7 +30,34 @@ class StoreInvitationRequest extends FormRequest
             $nested['template_id'] = $selectedTemplate;
         }
 
+        if (is_array($this->input('gift_data'))) {
+            $giftData = $this->input('gift_data');
+            foreach (['is_active', 'show_amount_public', 'allow_message'] as $field) {
+                if (array_key_exists($field, $giftData)) {
+                    $giftData[$field] = $this->normalizeBoolean($giftData[$field]);
+                }
+            }
+            $this->merge(['gift_data' => $giftData]);
+        }
+
         $this->merge(array_filter($nested, fn ($value) => $value !== null));
+    }
+
+    private function normalizeBoolean(mixed $value): mixed
+    {
+        if (is_bool($value) || $value === 1 || $value === 0) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            return match (strtolower($value)) {
+                'true' => 1,
+                'false' => 0,
+                default => $value,
+            };
+        }
+
+        return $value;
     }
 
     public function rules(): array
