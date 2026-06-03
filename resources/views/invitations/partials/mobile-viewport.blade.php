@@ -32,10 +32,9 @@
         }
     }
 
-    html.invitation-wide-viewport body {
-        min-height: calc(100vh / var(--invitation-viewport-factor));
-        width: calc(100vw / var(--invitation-viewport-factor));
-        zoom: var(--invitation-viewport-factor);
+    html.invitation-wide-viewport .page {
+        max-width: none !important;
+        width: 100vw !important;
     }
 </style>
 <script>
@@ -45,14 +44,17 @@
             var viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
 
             if (screenWidth >= 320 && screenWidth <= 540 && viewportWidth > screenWidth * 1.35) {
-                var factor = Math.min(3, viewportWidth / screenWidth);
+                var meta = document.querySelector('meta[name="viewport"]');
+
+                if (meta && meta.getAttribute('content').indexOf('width=' + screenWidth) === -1) {
+                    meta.setAttribute('content', 'width=' + screenWidth + ', initial-scale=1, viewport-fit=cover');
+                }
+
                 document.documentElement.classList.add('invitation-wide-viewport');
-                document.documentElement.style.setProperty('--invitation-viewport-factor', factor.toFixed(4));
                 return;
             }
 
             document.documentElement.classList.remove('invitation-wide-viewport');
-            document.documentElement.style.removeProperty('--invitation-viewport-factor');
         }
 
         normalizeMobileViewport();
