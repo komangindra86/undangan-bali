@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 async function optimizeImage(asset, maxWidth) {
   const actions = asset.width > maxWidth ? [{ resize: { width: maxWidth } }] : [];
   const result = await manipulateAsync(asset.uri, actions, {
-    compress: 0.72,
+    compress: 0.58,
     format: SaveFormat.JPEG,
   });
 
@@ -29,7 +29,7 @@ export async function pickProfilePhoto() {
     return null;
   }
 
-  return optimizeImage(selection.assets[0], 900);
+  return optimizeImage(selection.assets[0], 760);
 }
 
 export async function pickGalleryPhotos(remainingSlots) {
@@ -45,5 +45,5 @@ export async function pickGalleryPhotos(remainingSlots) {
     return [];
   }
 
-  return Promise.all(selection.assets.slice(0, remainingSlots).map((asset) => optimizeImage(asset, 1280)));
+  return Promise.all(selection.assets.slice(0, remainingSlots).map((asset) => optimizeImage(asset, 960)));
 }

@@ -1,16 +1,23 @@
-const API_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8000/api').replace(/\/$/, '');
+const DEFAULT_API_URL = __DEV__ ? 'http://10.0.2.2:8000/api' : 'https://undangan.balisantih.com/api';
+const API_URL = (process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL).replace(/\/$/, '');
 
 async function request(path, options = {}, token = null) {
   const isFormData = options.body instanceof FormData;
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      Accept: 'application/json',
-      ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
-  });
+  let response;
+
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers: {
+        Accept: 'application/json',
+        ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers || {}),
+      },
+    });
+  } catch (error) {
+    throw new Error(`Tidak bisa terhubung ke server (${API_URL}). Periksa koneksi internet lalu coba lagi.`);
+  }
 
   const data = await response.json().catch(() => ({}));
 
