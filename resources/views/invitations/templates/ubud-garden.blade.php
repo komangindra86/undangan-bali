@@ -12,14 +12,13 @@
 <!doctype html>
 <html lang="id">
 <head>
-    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $isPreview ? 'Preview Ubud Garden' : 'Undangan '.$invitation->groom_nickname.' & '.$invitation->bride_nickname }}</title>
-    @include('invitations.partials.mobile-viewport')
     <style>
         :root { --green:#294537; --sage:#647a61; --paper:#f8f3e8; --cream:#fffaf0; --gold:#ae8752; }
         * { box-sizing:border-box; } html { scroll-behavior:smooth; } body { background:#dcd8cc; color:var(--green); font-family:Arial,sans-serif; margin:0; }
         .banner { background:var(--green); color:#fbebca; font-size:13px; padding:13px; position:fixed; text-align:center; top:0; width:100%; z-index:20; }
-        .page { background:var(--paper); margin:auto; max-width:min(560px, 100vw); min-height:100vh; overflow:hidden; position:relative; }
+        .page { background:var(--paper); margin:auto; max-width:560px; min-height:100vh; overflow:hidden; position:relative; }
         .page:before { background:radial-gradient(circle,#c9bc9940 1px,transparent 1px); background-size:19px 19px; content:""; inset:0; opacity:.6; pointer-events:none; position:absolute; }
         .hero { min-height:100vh; padding:78px 26px 42px; position:relative; text-align:center; }
         .leaf { color:var(--sage); font-size:22px; letter-spacing:12px; margin:24px 0; }

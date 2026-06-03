@@ -15,17 +15,16 @@ class InvitationPublishingTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_template_catalog_has_bali_designs_with_dummy_previews(): void
+    public function test_template_catalog_has_three_bali_designs_with_dummy_previews(): void
     {
         $this->seed();
 
         $this->getJson('/api/templates')
             ->assertOk()
-            ->assertJsonCount(4, 'data')
+            ->assertJsonCount(3, 'data')
             ->assertJsonFragment(['slug' => 'bali-classic'])
             ->assertJsonFragment(['slug' => 'pura-sunset'])
-            ->assertJsonFragment(['slug' => 'ubud-garden'])
-            ->assertJsonFragment(['slug' => 'royal-kamasan']);
+            ->assertJsonFragment(['slug' => 'ubud-garden']);
 
         $this->get('/preview/templates/bali-classic')
             ->assertOk()

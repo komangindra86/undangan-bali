@@ -45,13 +45,6 @@ class DatabaseSeeder extends Seeder
                 'preview_image' => 'templates/bali-preview/gallery-pavilion.jpg',
                 'blade_view' => 'invitations.templates.ubud-garden',
             ],
-            [
-                'name' => 'Royal Kamasan',
-                'slug' => 'royal-kamasan',
-                'thumbnail' => 'templates/bali-preview/gallery-details.jpg',
-                'preview_image' => 'templates/bali-preview/gallery-details.jpg',
-                'blade_view' => 'invitations.templates.royal-kamasan',
-            ],
         ];
 
         foreach ($templates as $template) {
@@ -60,6 +53,8 @@ class DatabaseSeeder extends Seeder
                 'is_premium' => false,
             ]);
         }
+
+        InvitationTemplate::where('slug', 'royal-kamasan')->update(['is_active' => false]);
 
         $musics = [
             ['title' => 'Bali Romantis', 'file_path' => 'musics/bali-romantis.wav'],
