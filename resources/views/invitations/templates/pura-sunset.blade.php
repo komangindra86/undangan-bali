@@ -13,13 +13,14 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{{ $isPreview ? 'Preview Pura Sunset' : 'Undangan '.$invitation->groom_nickname.' & '.$invitation->bride_nickname }}</title>
+    @include('invitations.partials.mobile-viewport')
     <style>
         * { box-sizing: border-box; } html { scroll-behavior: smooth; }
         body { background:#100b12; color:#f9eadf; font-family: Arial, sans-serif; margin:0; }
         .banner { background:#321d29; color:#ffceb0; font-size:13px; left:0; padding:13px; position:fixed; right:0; text-align:center; top:0; z-index:20; }
-        .page { background:#1a1017; box-shadow:0 0 70px #000; margin:auto; max-width:520px; overflow:hidden; }
+        .page { background:#1a1017; box-shadow:0 0 70px #000; margin:auto; max-width:min(520px, 100vw); overflow:hidden; }
         .cover { display:flex; flex-direction:column; height:100vh; justify-content:space-between; overflow:hidden; padding:74px 30px 48px; position:relative; text-align:center; }
         .cover img { animation:cinema 14s ease-in-out infinite alternate; height:100%; inset:0; object-fit:cover; position:absolute; width:100%; }
         .cover:after { background:linear-gradient(to bottom,rgba(20,9,16,.38),rgba(20,9,16,.4) 38%,#1a1017 100%); content:""; inset:0; position:absolute; }

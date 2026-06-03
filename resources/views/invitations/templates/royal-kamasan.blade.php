@@ -17,8 +17,9 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{{ $isPreview ? 'Preview Royal Kamasan' : 'Undangan '.$invitation->groom_nickname.' & '.$invitation->bride_nickname }}</title>
+    @include('invitations.partials.mobile-viewport')
     <style>
         :root {
             --ink: #150d0a;
@@ -62,7 +63,7 @@
             background-size: 28px 28px, 28px 28px, auto;
             box-shadow: 0 0 70px var(--shadow);
             margin: 0 auto;
-            max-width: 560px;
+            max-width: min(560px, 100vw);
             min-height: 100vh;
             overflow: hidden;
             position: relative;

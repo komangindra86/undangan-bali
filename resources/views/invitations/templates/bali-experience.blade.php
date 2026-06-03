@@ -55,8 +55,9 @@
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{{ $isPreview ? 'Preview '.$theme['label'] : 'Undangan '.$invitation->groom_nickname.' & '.$invitation->bride_nickname }}</title>
+    @include('invitations.partials.mobile-viewport')
     <style>
         :root {
             --bg: {{ $theme['background'] }};
@@ -97,7 +98,7 @@
             background-size: 24px 24px, 54px 54px;
             box-shadow: 0 0 50px rgba(0, 0, 0, .4);
             margin: 0 auto;
-            max-width: 540px;
+            max-width: min(540px, 100vw);
             min-height: 100vh;
             overflow: hidden;
         }
