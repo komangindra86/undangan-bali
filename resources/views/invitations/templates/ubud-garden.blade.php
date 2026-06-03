@@ -52,6 +52,10 @@
         .float-in { opacity:0; transform:translateY(18px); transition:.8s ease; }.float-in.seen { opacity:1; transform:none; }
         .player { align-items:center; background:#fff8e8; border:1px solid #dec998; border-radius:30px; bottom:18px; box-shadow:0 5px 22px #0002; display:flex; gap:11px; padding:8px 14px 8px 8px; position:fixed; right:15px; z-index:25; }
         .player button { background:var(--green); border:0; border-radius:50%; color:#fff; height:40px; width:40px; } .player small { color:var(--green); }
+        @media (hover: none) and (pointer: coarse) {
+            .hero { padding:42px 26px 42px; }
+            .arch { height:245px; }
+        }
     </style>
 </head>
 <body>

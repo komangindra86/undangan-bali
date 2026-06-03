@@ -5,25 +5,25 @@
         overflow-x: hidden;
     }
 
-    @supports (min-height: 100dvh) {
-        .hero,
-        .cover {
-            min-height: 100dvh;
-        }
-    }
-
     @media (hover: none) and (pointer: coarse) {
         .page {
-            box-shadow: none !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-            max-width: none !important;
-            width: 100vw !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            max-width: 360px !important;
+            width: min(360px, calc(100vw - 28px)) !important;
+        }
+
+        .hero,
+        .cover {
+            min-height: auto !important;
         }
 
         .banner,
         .preview-banner {
-            width: 100vw;
+            left: 50% !important;
+            right: auto !important;
+            transform: translateX(-50%);
+            width: min(360px, calc(100vw - 28px));
         }
     }
 </style>
