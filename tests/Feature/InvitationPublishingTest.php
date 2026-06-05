@@ -137,6 +137,46 @@ class InvitationPublishingTest extends TestCase
             ->assertUnprocessable();
     }
 
+    public function test_mobile_input_validation_rejects_unsafe_or_layout_breaking_values(): void
+    {
+        $this->seed();
+        $template = InvitationTemplate::firstOrFail();
+
+        $this->postJson('/api/register', [
+            'name' => 'Tester Validasi',
+            'email' => 'tester@gmail',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('email');
+
+        $register = $this->postJson('/api/register', [
+            'name' => 'Tester Validasi',
+            'email' => 'tester-validasi@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertCreated();
+
+        $this->withToken($register->json('token'))->postJson('/api/invitations/sync-local-draft', [
+            'template_id' => $template->id,
+            'groom_full_name' => 'I Made <script>',
+            'groom_nickname' => 'NamaPanggilanTerlaluPanjang',
+            'bride_full_name' => 'Ni Putu Ayu',
+            'bride_nickname' => 'Ayu',
+            'event_type' => 'Pawiwahan',
+            'event_date' => now()->subDay()->toDateString(),
+            'start_time' => '10:00',
+            'venue_name' => 'Bale <script>',
+            'venue_address' => 'Ubud, Bali',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'groom_full_name',
+                'groom_nickname',
+                'event_date',
+                'venue_name',
+            ]);
+    }
+
     public function test_user_uploaded_photos_and_gallery_are_used_on_published_invitation(): void
     {
         Storage::fake('public');

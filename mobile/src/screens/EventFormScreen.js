@@ -6,6 +6,7 @@ import FormField from '../components/FormField';
 import WizardLayout from '../components/WizardLayout';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
+import { cleanText, firstError, isPastDate, todayDateString, validateRequired, validateSafeText } from '../utils/validation';
 
 const EVENT_TYPES = ['Pawiwahan', 'Resepsi'];
 
@@ -19,17 +20,26 @@ export default function EventFormScreen({ navigation }) {
 
   async function next() {
     setFormError(null);
-    const required = ['event_type', 'event_date', 'start_time', 'venue_name', 'venue_address'];
-    if (required.some((field) => !event[field])) {
-      const message = 'Pilih jenis acara dan isi tanggal, jam mulai, nama tempat, serta alamat lengkap.';
-      setFormError(message);
-      Alert.alert('Data acara belum lengkap', message);
-      return;
-    }
-
     const eventDate = event.event_date;
     const startTime = event.start_time;
     const endTime = event.end_time || '';
+    const error = firstError([
+      validateRequired(event.event_type, 'Jenis acara'),
+      validateRequired(eventDate, 'Tanggal acara'),
+      isPastDate(eventDate) ? 'Tanggal acara tidak boleh sebelum hari ini.' : null,
+      validateRequired(startTime, 'Jam mulai'),
+      validateSafeText(event.venue_name, 'Nama tempat', { required: true, max: 120 }),
+      validateSafeText(event.venue_address, 'Alamat lengkap', { required: true, max: 1000 }),
+      validateSafeText(event.opening_quote, 'Kutipan pembuka', { max: 300 }),
+    ]);
+
+    if (error) {
+      const message = error;
+      setFormError(message);
+      Alert.alert('Periksa detail acara', message);
+      return;
+    }
+
     if (endTime && endTime <= startTime) {
       const message = 'Jam selesai harus setelah jam mulai.';
       setFormError(message);
@@ -43,6 +53,9 @@ export default function EventFormScreen({ navigation }) {
         event_date: eventDate,
         start_time: startTime,
         end_time: endTime || null,
+        venue_name: cleanText(event.venue_name),
+        venue_address: cleanText(event.venue_address),
+        opening_quote: cleanText(event.opening_quote),
       });
       navigation.navigate('Location');
     } catch (error) {
@@ -69,7 +82,7 @@ export default function EventFormScreen({ navigation }) {
         ))}
       </View>
       {formError ? <Text style={styles.error}>{formError}</Text> : null}
-      <DateTimeField label="Tanggal acara *" mode="date" value={event.event_date} onChange={(value) => setEvent({ ...event, event_date: value })} />
+      <DateTimeField label="Tanggal acara *" mode="date" minimumDate={dateFromString(todayDateString())} value={event.event_date} onChange={(value) => setEvent({ ...event, event_date: value })} />
       <View style={styles.row}>
         <View style={styles.column}>
           <DateTimeField label="Jam mulai *" mode="time" value={event.start_time} onChange={(value) => setEvent({ ...event, start_time: value })} />
@@ -78,11 +91,16 @@ export default function EventFormScreen({ navigation }) {
           <DateTimeField label="Jam selesai" mode="time" optional value={event.end_time} onChange={(value) => setEvent({ ...event, end_time: value })} />
         </View>
       </View>
-      <FormField label="Nama tempat *" value={event.venue_name} onChangeText={(value) => setEvent({ ...event, venue_name: value })} />
-      <FormField label="Alamat lengkap *" multiline value={event.venue_address} onChangeText={(value) => setEvent({ ...event, venue_address: value })} />
-      <FormField label="Kutipan pembuka" multiline value={event.opening_quote} onChangeText={(value) => setEvent({ ...event, opening_quote: value })} />
+      <FormField label="Nama tempat *" maxLength={120} value={event.venue_name} onChangeText={(value) => setEvent({ ...event, venue_name: value })} />
+      <FormField label="Alamat lengkap *" maxLength={1000} multiline value={event.venue_address} onChangeText={(value) => setEvent({ ...event, venue_address: value })} />
+      <FormField label="Kutipan pembuka" maxLength={300} multiline helperText="Opsional, maksimal 300 karakter." value={event.opening_quote} onChangeText={(value) => setEvent({ ...event, opening_quote: value })} />
     </WizardLayout>
   );
+}
+
+function dateFromString(value) {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
 const styles = StyleSheet.create({

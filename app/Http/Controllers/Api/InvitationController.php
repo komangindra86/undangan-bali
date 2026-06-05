@@ -76,20 +76,29 @@ class InvitationController extends Controller
 
         Validator::make($invitation->toArray(), [
             'template_id' => ['required', 'exists:invitation_templates,id'],
-            'groom_full_name' => ['required', 'string'],
-            'groom_nickname' => ['required', 'string'],
-            'bride_full_name' => ['required', 'string'],
-            'bride_nickname' => ['required', 'string'],
+            'groom_full_name' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
+            'groom_nickname' => ['required', 'string', 'max:18', 'regex:/^[\pL\s.\'-]+$/u'],
+            'bride_full_name' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
+            'bride_nickname' => ['required', 'string', 'max:18', 'regex:/^[\pL\s.\'-]+$/u'],
             'event_type' => ['required', Rule::in(['Pawiwahan', 'Resepsi'])],
-            'event_date' => ['required', 'date'],
+            'event_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required'],
-            'venue_name' => ['required', 'string'],
-            'venue_address' => ['required', 'string'],
-        ], [], [
+            'venue_name' => ['required', 'string', 'max:120', 'not_regex:/[<>]/'],
+            'venue_address' => ['required', 'string', 'max:1000', 'not_regex:/[<>]/'],
+        ], [
+            '*.regex' => ':attribute memiliki format yang tidak valid.',
+            '*.not_regex' => ':attribute tidak boleh mengandung karakter < atau >.',
+            'event_date.after_or_equal' => 'tanggal acara tidak boleh sebelum hari ini.',
+        ], [
             'groom_full_name' => 'nama lengkap mempelai pria',
             'groom_nickname' => 'nama panggilan mempelai pria',
             'bride_full_name' => 'nama lengkap mempelai wanita',
             'bride_nickname' => 'nama panggilan mempelai wanita',
+            'event_type' => 'jenis acara',
+            'event_date' => 'tanggal acara',
+            'start_time' => 'jam mulai',
+            'venue_name' => 'nama tempat',
+            'venue_address' => 'alamat lengkap',
         ])->validate();
 
         DB::transaction(function () use ($invitation) {

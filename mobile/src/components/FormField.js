@@ -1,7 +1,17 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { colors, spacing } from '../theme';
 
-export default function FormField({ label, value, onChangeText, placeholder, multiline = false, keyboardType, secureTextEntry }) {
+export default function FormField({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  multiline = false,
+  keyboardType,
+  secureTextEntry,
+  maxLength,
+  helperText,
+}) {
   const preventCorrection = keyboardType === 'email-address' || keyboardType === 'url';
 
   return (
@@ -15,10 +25,12 @@ export default function FormField({ label, value, onChangeText, placeholder, mul
         multiline={multiline}
         keyboardType={keyboardType}
         secureTextEntry={secureTextEntry}
+        maxLength={maxLength}
         autoCapitalize={preventCorrection ? 'none' : 'sentences'}
         autoCorrect={!preventCorrection}
         style={[styles.input, multiline && styles.multiline]}
       />
+      {helperText ? <Text style={styles.help}>{helperText}</Text> : null}
     </View>
   );
 }
@@ -46,5 +58,10 @@ const styles = StyleSheet.create({
     minHeight: 100,
     paddingTop: spacing.md,
     textAlignVertical: 'top',
+  },
+  help: {
+    color: colors.muted,
+    fontSize: 12,
+    marginTop: spacing.xs,
   },
 });

@@ -5,6 +5,7 @@ import FormField from '../components/FormField';
 import WizardLayout from '../components/WizardLayout';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
+import { cleanText, firstError, validateSafeText } from '../utils/validation';
 
 export default function GiftSetupScreen({ navigation }) {
   const { draft, saveSection, syncing, syncMessage } = useDraft();
@@ -35,6 +36,14 @@ export default function GiftSetupScreen({ navigation }) {
       Alert.alert('Nama penerima diperlukan', 'Masukkan nama pasangan yang akan menerima Wedding Gift.');
       return;
     }
+    const error = firstError([
+      validateSafeText(gift.receiver_name, 'Nama penerima Wedding Gift', { required: gift.is_active, max: 80 }),
+      validateSafeText(gift.receiver_note, 'Catatan Wedding Gift', { max: 300 }),
+    ]);
+    if (error) {
+      Alert.alert('Periksa Wedding Gift', error);
+      return;
+    }
     if (!Number.isInteger(minimum) || minimum < 10000) {
       Alert.alert('Minimum gift tidak valid', 'Nominal minimum Wedding Gift paling kecil Rp10.000.');
       return;
@@ -42,8 +51,8 @@ export default function GiftSetupScreen({ navigation }) {
 
     await saveSection('gift_data', {
       is_active: gift.is_active,
-      receiver_name: gift.receiver_name.trim(),
-      receiver_note: gift.receiver_note.trim(),
+      receiver_name: cleanText(gift.receiver_name),
+      receiver_note: cleanText(gift.receiver_note),
       minimum_amount: minimum,
       show_amount_public: gift.show_amount_public,
       allow_message: gift.allow_message,
@@ -82,6 +91,7 @@ export default function GiftSetupScreen({ navigation }) {
           <FormField
             label="Nama penerima *"
             placeholder="Contoh: Made & Ayu"
+            maxLength={80}
             value={gift.receiver_name}
             onChangeText={(value) => setGift({ ...gift, receiver_name: value })}
           />
@@ -89,6 +99,7 @@ export default function GiftSetupScreen({ navigation }) {
             label="Catatan untuk tamu (opsional)"
             placeholder="Matur suksma atas tanda kasih Anda."
             multiline
+            maxLength={300}
             value={gift.receiver_note}
             onChangeText={(value) => setGift({ ...gift, receiver_note: value })}
           />

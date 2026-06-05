@@ -6,6 +6,7 @@ import FormField from '../components/FormField';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
+import { cleanText, firstError, validateSafeText } from '../utils/validation';
 
 const initialSetting = {
   is_active: false,
@@ -48,6 +49,14 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
       Alert.alert('Nama penerima dibutuhkan', 'Masukkan nama penerima Wedding Gift.');
       return;
     }
+    const error = firstError([
+      validateSafeText(setting.receiver_name, 'Nama penerima Wedding Gift', { required: setting.is_active, max: 80 }),
+      validateSafeText(setting.receiver_note, 'Catatan penerima', { max: 300 }),
+    ]);
+    if (error) {
+      Alert.alert('Periksa Wedding Gift', error);
+      return;
+    }
     if (!Number.isInteger(minimum) || minimum < 10000) {
       Alert.alert('Nominal minimum tidak valid', 'Minimum gift paling kecil Rp10.000.');
       return;
@@ -57,8 +66,8 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
     try {
       const response = await api.saveGiftSetting(invitation.id, {
         is_active: setting.is_active,
-        receiver_name: setting.receiver_name.trim() || null,
-        receiver_note: setting.receiver_note.trim() || null,
+        receiver_name: cleanText(setting.receiver_name) || null,
+        receiver_note: cleanText(setting.receiver_note) || null,
         minimum_amount: minimum,
         show_amount_public: setting.show_amount_public,
         allow_message: setting.allow_message,
@@ -105,6 +114,7 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
         <FormField
           label="Nama penerima"
           placeholder="Contoh: Made & Ayu"
+          maxLength={80}
           value={setting.receiver_name}
           onChangeText={(value) => setSetting({ ...setting, receiver_name: value })}
         />
@@ -112,6 +122,7 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
           label="Catatan penerima (opsional)"
           placeholder="Terima kasih atas tanda kasih Anda."
           multiline
+          maxLength={300}
           value={setting.receiver_note}
           onChangeText={(value) => setSetting({ ...setting, receiver_note: value })}
         />

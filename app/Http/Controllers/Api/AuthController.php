@@ -13,10 +13,22 @@ class AuthController extends Controller
 {
     public function register(Request $request): JsonResponse
     {
+        $request->merge([
+            'name' => trim(preg_replace('/\s+/', ' ', (string) $request->input('name'))),
+            'email' => strtolower(trim((string) $request->input('email'))),
+        ]);
+
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'name' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
+            'email' => ['required', 'email:rfc', 'regex:/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'name.regex' => 'Nama hanya boleh berisi huruf, spasi, titik, petik, atau tanda hubung.',
+            'email.regex' => 'Email harus valid, contoh nama@gmail.com.',
+        ], [
+            'name' => 'nama',
+            'email' => 'email',
+            'password' => 'password',
         ]);
 
         $user = User::create($data + ['role' => 'user']);
@@ -30,9 +42,15 @@ class AuthController extends Controller
 
     public function login(Request $request): JsonResponse
     {
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+        ]);
+
         $data = $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email:rfc', 'regex:/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i'],
             'password' => ['required', 'string'],
+        ], [
+            'email.regex' => 'Email harus valid, contoh nama@gmail.com.',
         ]);
 
         $user = User::where('email', $data['email'])->first();

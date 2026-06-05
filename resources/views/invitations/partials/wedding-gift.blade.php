@@ -51,7 +51,7 @@
         >
             <label class="wg-field">
                 <span>Nama tamu *</span>
-                <input class="wg-input" name="guest_name" maxlength="255" required placeholder="Nama Anda">
+                <input class="wg-input" name="guest_name" maxlength="80" required placeholder="Nama Anda">
             </label>
             <label class="wg-field">
                 <span>Nomor HP (opsional)</span>
@@ -66,7 +66,7 @@
             @if ($giftSetting->allow_message)
                 <label class="wg-field">
                     <span>Ucapan (opsional)</span>
-                    <textarea class="wg-input" name="message" maxlength="500" placeholder="Doa dan ucapan untuk mempelai"></textarea>
+                    <textarea class="wg-input" name="message" maxlength="300" placeholder="Doa dan ucapan untuk mempelai"></textarea>
                 </label>
             @endif
             <div class="wg-breakdown">

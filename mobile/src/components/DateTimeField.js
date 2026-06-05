@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, spacing } from '../theme';
 
-export default function DateTimeField({ label, mode, value, onChange, optional = false }) {
+export default function DateTimeField({ label, mode, value, onChange, optional = false, minimumDate }) {
   const [show, setShow] = useState(false);
   const selectedValue = parsePickerValue(value, mode);
 
@@ -33,6 +33,7 @@ export default function DateTimeField({ label, mode, value, onChange, optional =
           mode={mode}
           display="default"
           is24Hour
+          minimumDate={minimumDate}
           onChange={handleChange}
         />
       ) : null}

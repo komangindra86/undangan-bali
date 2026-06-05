@@ -5,27 +5,34 @@ import FormField from '../components/FormField';
 import WizardLayout from '../components/WizardLayout';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
+import { cleanText } from '../utils/validation';
 
 export default function LocationScreen({ navigation }) {
   const { draft, saveSection, syncing, syncMessage } = useDraft();
   const [location, setLocation] = useState(draft.location_data);
 
   async function next() {
-    const lat = location.latitude;
-    const lng = location.longitude;
-    if (location.google_maps_url && !/^https?:\/\//i.test(location.google_maps_url)) {
-      Alert.alert('Link tidak valid', 'Link Google Maps harus diawali http:// atau https://.');
+    const googleMapsUrl = cleanText(location.google_maps_url);
+    const lat = cleanText(location.latitude);
+    const lng = cleanText(location.longitude);
+    if (googleMapsUrl && !/^https:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.app\.goo\.gl|maps\.google\.[a-z.]+)/i.test(googleMapsUrl)) {
+      Alert.alert('Link Google Maps tidak valid', 'Gunakan link Google Maps yang diawali https://maps.google... atau https://maps.app.goo.gl/...');
       return;
     }
     if ((lat && !lng) || (!lat && lng)) {
       Alert.alert('Pin belum lengkap', 'Latitude dan longitude harus diisi bersama-sama.');
       return;
     }
-    if (lat && (Number(lat) < -90 || Number(lat) > 90 || Number(lng) < -180 || Number(lng) > 180)) {
+    if (lat && (!isCoordinate(lat) || !isCoordinate(lng) || Number(lat) < -90 || Number(lat) > 90 || Number(lng) < -180 || Number(lng) > 180)) {
       Alert.alert('Koordinat tidak valid', 'Periksa kembali latitude dan longitude lokasi.');
       return;
     }
-    await saveSection('location_data', location);
+    await saveSection('location_data', {
+      ...location,
+      google_maps_url: googleMapsUrl,
+      latitude: lat || null,
+      longitude: lng || null,
+    });
     navigation.navigate('Gallery');
   }
 
@@ -77,3 +84,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 });
+
+function isCoordinate(value) {
+  return /^-?\d+(\.\d+)?$/.test(value);
+}
