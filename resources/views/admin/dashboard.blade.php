@@ -56,6 +56,45 @@
             </article>
         </section>
 
+        <section class="mt-6 bg-gradient-to-br from-amber-950/70 via-stone-900 to-stone-950 border border-amber-500/30 rounded-3xl p-5 md:p-6">
+            <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <p class="text-amber-300 tracking-[0.2em] uppercase text-xs">Laporan Penghasilan Platform</p>
+                    <h2 class="font-serif text-2xl mt-2">Fee Wedding Gift</h2>
+                    <p class="text-stone-400 text-sm mt-1">Pendapatan platform dihitung dari biaya layanan transaksi gift yang sudah dibayar.</p>
+                </div>
+                <p class="text-stone-500 text-sm">Sumber: tabel wedding_gift_fees</p>
+            </div>
+
+            <div class="grid sm:grid-cols-2 xl:grid-cols-5 gap-4 mt-5">
+                <article class="rounded-2xl bg-stone-950/80 border border-amber-500/30 p-4">
+                    <p class="text-stone-400 text-sm">Total fee earned</p>
+                    <p class="text-amber-300 font-serif text-3xl mt-2">Rp{{ number_format($summary['platform_fee_earned'], 0, ',', '.') }}</p>
+                    <p class="text-stone-500 text-xs mt-2">{{ number_format($summary['platform_fee_transactions']) }} transaksi paid</p>
+                </article>
+                <article class="rounded-2xl bg-stone-950/80 border border-stone-800 p-4">
+                    <p class="text-stone-400 text-sm">Fee bulan ini</p>
+                    <p class="font-serif text-3xl mt-2">Rp{{ number_format($summary['platform_fee_earned_this_month'], 0, ',', '.') }}</p>
+                    <p class="text-stone-500 text-xs mt-2">Earned pada bulan berjalan</p>
+                </article>
+                <article class="rounded-2xl bg-stone-950/80 border border-sky-500/30 p-4">
+                    <p class="text-stone-400 text-sm">Fee pending</p>
+                    <p class="text-sky-300 font-serif text-3xl mt-2">Rp{{ number_format($summary['platform_fee_pending'], 0, ',', '.') }}</p>
+                    <p class="text-stone-500 text-xs mt-2">Belum jadi pendapatan</p>
+                </article>
+                <article class="rounded-2xl bg-stone-950/80 border border-red-500/30 p-4">
+                    <p class="text-stone-400 text-sm">Fee refunded/gagal</p>
+                    <p class="text-red-300 font-serif text-3xl mt-2">Rp{{ number_format($summary['platform_fee_refunded'], 0, ',', '.') }}</p>
+                    <p class="text-stone-500 text-xs mt-2">Tidak dihitung pendapatan</p>
+                </article>
+                <article class="rounded-2xl bg-stone-950/80 border border-stone-800 p-4">
+                    <p class="text-stone-400 text-sm">Gift paid pasangan</p>
+                    <p class="font-serif text-3xl mt-2">Rp{{ number_format($summary['gift_paid'], 0, ',', '.') }}</p>
+                    <p class="text-stone-500 text-xs mt-2">Nominal milik pasangan</p>
+                </article>
+            </div>
+        </section>
+
         <section class="grid xl:grid-cols-[1.1fr_0.9fr] gap-5 mt-6">
             <article class="bg-stone-900 border border-stone-800 rounded-3xl p-5">
                 <div class="flex items-center justify-between gap-3 mb-4">
@@ -176,6 +215,52 @@
                     @endforelse
                 </div>
             </article>
+        </section>
+
+        <section class="bg-stone-900 border border-stone-800 rounded-3xl p-5 mt-6">
+            <h2 class="font-serif text-xl">Fee platform terbaru</h2>
+            <p class="text-stone-500 text-sm mt-1">Daftar biaya layanan Wedding Gift yang sudah menjadi pendapatan platform.</p>
+
+            <div class="overflow-x-auto mt-4">
+                <table class="w-full text-sm">
+                    <thead class="text-left text-stone-500 border-b border-stone-800">
+                        <tr>
+                            <th class="py-3 pr-4">Tamu</th>
+                            <th class="py-3 pr-4">Undangan</th>
+                            <th class="py-3 pr-4">Pasangan</th>
+                            <th class="py-3 pr-4">Gift</th>
+                            <th class="py-3 pr-4">Fee platform</th>
+                            <th class="py-3 pr-4">Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-800">
+                        @forelse ($recentPlatformFees as $fee)
+                            @php
+                                $gift = $fee->weddingGift;
+                                $invitation = $gift?->invitation;
+                            @endphp
+                            <tr>
+                                <td class="py-3 pr-4">{{ $gift?->guest_name ?? '-' }}</td>
+                                <td class="py-3 pr-4">
+                                    @if ($invitation?->public_url)
+                                        <a href="{{ $invitation->public_url }}" target="_blank" rel="noopener" class="text-amber-200 hover:text-amber-300 underline decoration-amber-500/40 underline-offset-4">
+                                            {{ $invitation->slug }}
+                                        </a>
+                                    @else
+                                        {{ $invitation?->slug ?? '-' }}
+                                    @endif
+                                </td>
+                                <td class="py-3 pr-4">{{ $invitation?->user?->name ?? '-' }}</td>
+                                <td class="py-3 pr-4">Rp{{ number_format($gift?->gift_amount ?? 0, 0, ',', '.') }}</td>
+                                <td class="py-3 pr-4 text-amber-300 font-semibold">Rp{{ number_format($fee->amount, 0, ',', '.') }}</td>
+                                <td class="py-3 pr-4">{{ $fee->updated_at?->format('d/m/Y H:i') ?? '-' }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="py-8 text-center text-stone-500">Belum ada fee platform yang earned.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </section>
     </main>
 </body>

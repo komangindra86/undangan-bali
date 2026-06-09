@@ -137,6 +137,10 @@ class GiftPayoutTest extends TestCase
         $template = $invitation->template;
         $user = $invitation->user;
         $admin = User::where('role', 'admin')->firstOrFail();
+        $this->paidGift($invitation, 'WGIFT-DASHBOARD-FEE', 150000);
+        $invitation->weddingGifts()->where('order_id', 'WGIFT-DASHBOARD-FEE')->firstOrFail()
+            ->fee()
+            ->create(['amount' => 3000, 'status' => 'earned']);
 
         Invitation::create([
             'user_id' => $user->id,
@@ -163,7 +167,11 @@ class GiftPayoutTest extends TestCase
             ->assertSee('Undangan sudah lewat')
             ->assertSee('Pencairan Gift')
             ->assertSee('Klik untuk melihat undangan live')
-            ->assertSee($invitation->public_url, false);
+            ->assertSee($invitation->public_url, false)
+            ->assertSee('Laporan Penghasilan Platform')
+            ->assertSee('Total fee earned')
+            ->assertSee('Rp3.000')
+            ->assertSee('Fee platform terbaru');
 
         $this->actingAs($admin, 'web')->get('/admin/dashboard')
             ->assertOk()
