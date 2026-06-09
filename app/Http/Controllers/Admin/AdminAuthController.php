@@ -25,7 +25,7 @@ class AdminAuthController extends Controller
         if (Auth::guard('web')->attempt($credentials) && Auth::guard('web')->user()?->isAdmin()) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('admin.payouts.index'));
+            return redirect()->intended(route('admin.dashboard'));
         }
 
         Auth::guard('web')->logout();

@@ -7,19 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-stone-950 text-stone-100 min-h-screen">
-    <header class="border-b border-stone-800 bg-stone-950/95 px-4 py-4 md:px-8 md:py-5 sticky top-0 z-20">
-        <div class="max-w-7xl mx-auto flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-                <p class="text-amber-400 tracking-[0.28em] uppercase text-xs">Admin Dashboard</p>
-                <h1 class="font-serif text-2xl md:text-3xl mt-2">Pencairan Wedding Gift</h1>
-                <p class="text-stone-400 text-sm mt-1">Cek rekening tujuan, proses transfer manual, lalu tandai status pencairan.</p>
-            </div>
-            <form method="POST" action="{{ route('admin.logout') }}">
-                @csrf
-                <button class="text-stone-300 border border-stone-700 rounded-xl px-4 py-2 hover:border-amber-500 hover:text-amber-200">Keluar</button>
-            </form>
-        </div>
-    </header>
+    @include('admin.partials.nav', [
+        'title' => 'Pencairan Wedding Gift',
+        'subtitle' => 'Cek rekening tujuan, proses transfer manual, lalu tandai status pencairan.',
+    ])
 
     <main class="max-w-7xl mx-auto p-4 md:p-6">
         @if (session('message'))

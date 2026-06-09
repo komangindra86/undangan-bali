@@ -131,6 +131,43 @@ class GiftPayoutTest extends TestCase
         ])->assertRedirect('/admin/payout');
     }
 
+    public function test_admin_dashboard_shows_invitation_usage_summary(): void
+    {
+        [$invitation] = $this->publishedInvitation();
+        $template = $invitation->template;
+        $user = $invitation->user;
+        $admin = User::where('role', 'admin')->firstOrFail();
+
+        Invitation::create([
+            'user_id' => $user->id,
+            'template_id' => $template->id,
+            'slug' => 'undangan-sudah-lewat',
+            'status' => 'published',
+            'groom_full_name' => 'I Komang Lama',
+            'groom_nickname' => 'Komang',
+            'bride_full_name' => 'Ni Kadek Lama',
+            'bride_nickname' => 'Kadek',
+            'event_type' => 'Pawiwahan',
+            'event_date' => now()->subDay()->toDateString(),
+            'start_time' => '10:00',
+            'venue_name' => 'Bale Banjar',
+            'venue_address' => 'Gianyar, Bali',
+            'published_at' => now()->subDay(),
+        ]);
+
+        $this->actingAs($admin, 'web')->get('/admin')
+            ->assertOk()
+            ->assertSee('Ringkasan Aplikasi')
+            ->assertSee('Pengguna pasangan')
+            ->assertSee('Undangan live')
+            ->assertSee('Undangan sudah lewat')
+            ->assertSee('Pencairan Gift');
+
+        $this->actingAs($admin, 'web')->get('/admin/dashboard')
+            ->assertOk()
+            ->assertSee('Template populer');
+    }
+
     private function publishedInvitation(): array
     {
         $this->seed();
