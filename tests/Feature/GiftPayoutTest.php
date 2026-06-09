@@ -161,7 +161,9 @@ class GiftPayoutTest extends TestCase
             ->assertSee('Pengguna pasangan')
             ->assertSee('Undangan live')
             ->assertSee('Undangan sudah lewat')
-            ->assertSee('Pencairan Gift');
+            ->assertSee('Pencairan Gift')
+            ->assertSee('Klik untuk melihat undangan live')
+            ->assertSee($invitation->public_url, false);
 
         $this->actingAs($admin, 'web')->get('/admin/dashboard')
             ->assertOk()

@@ -78,12 +78,36 @@
                             @forelse ($latestInvitations as $invitation)
                                 <tr>
                                     <td class="py-3 pr-4">
-                                        <p class="font-semibold">{{ $invitation->groom_nickname ?: 'Mempelai' }} &amp; {{ $invitation->bride_nickname ?: 'Pasangan' }}</p>
+                                        @php
+                                            $coupleName = ($invitation->groom_nickname ?: 'Mempelai').' & '.($invitation->bride_nickname ?: 'Pasangan');
+                                            $canOpenLive = $invitation->status === 'published' && $invitation->public_url;
+                                        @endphp
+
+                                        @if ($canOpenLive)
+                                            <a
+                                                href="{{ $invitation->public_url }}"
+                                                target="_blank"
+                                                rel="noopener"
+                                                class="font-semibold text-amber-100 hover:text-amber-300 underline decoration-amber-500/40 underline-offset-4"
+                                            >{{ $coupleName }}</a>
+                                            <p class="text-amber-400 text-xs mt-1">Klik untuk melihat undangan live</p>
+                                        @else
+                                            <p class="font-semibold">{{ $coupleName }}</p>
+                                        @endif
                                         <p class="text-stone-500">{{ $invitation->template?->name ?? 'Template tidak tersedia' }}</p>
                                     </td>
                                     <td class="py-3 pr-4">{{ $invitation->user?->name ?? '-' }}</td>
                                     <td class="py-3 pr-4">
-                                        <span class="rounded-full border border-stone-700 px-3 py-1 text-xs uppercase">{{ $invitation->status }}</span>
+                                        @if ($canOpenLive)
+                                            <a
+                                                href="{{ $invitation->public_url }}"
+                                                target="_blank"
+                                                rel="noopener"
+                                                class="inline-flex rounded-full border border-emerald-500/50 bg-emerald-500/10 px-3 py-1 text-xs uppercase text-emerald-200 hover:border-emerald-300"
+                                            >Published</a>
+                                        @else
+                                            <span class="rounded-full border border-stone-700 px-3 py-1 text-xs uppercase">{{ $invitation->status }}</span>
+                                        @endif
                                     </td>
                                     <td class="py-3 pr-4">{{ $invitation->event_date?->format('d/m/Y') ?? '-' }}</td>
                                 </tr>
