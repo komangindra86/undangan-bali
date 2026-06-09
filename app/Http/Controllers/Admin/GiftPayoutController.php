@@ -15,16 +15,29 @@ class GiftPayoutController extends Controller
     {
         $this->ensureAdmin($request);
 
-        $payouts = GiftPayoutRequest::with(['user', 'invitation'])
+        $status = $request->string('status')->toString();
+        $payoutQuery = GiftPayoutRequest::query();
+        if ($status && in_array($status, ['pending', 'approved', 'processing', 'paid', 'rejected'], true)) {
+            $payoutQuery->where('status', $status);
+        }
+
+        $payouts = $payoutQuery
+            ->with(['user', 'invitation', 'payoutAccount', 'items.weddingGift'])
             ->latest('requested_at')
+            ->latest('id')
             ->paginate(30);
 
         return view('admin.payouts.index', [
             'payouts' => $payouts,
+            'activeStatus' => $status,
             'summary' => [
-                'pending' => GiftPayoutRequest::whereIn('status', ['pending', 'approved', 'processing'])->sum('amount'),
+                'pending_amount' => GiftPayoutRequest::whereIn('status', ['pending', 'approved', 'processing'])->sum('amount'),
+                'pending_count' => GiftPayoutRequest::whereIn('status', ['pending', 'approved', 'processing'])->count(),
+                'paid_count' => GiftPayoutRequest::where('status', 'paid')->count(),
                 'paid' => GiftPayoutRequest::where('status', 'paid')->sum('amount'),
                 'requests' => GiftPayoutRequest::count(),
+                'today_amount' => GiftPayoutRequest::whereDate('requested_at', today())->sum('amount'),
+                'today_count' => GiftPayoutRequest::whereDate('requested_at', today())->count(),
             ],
         ]);
     }

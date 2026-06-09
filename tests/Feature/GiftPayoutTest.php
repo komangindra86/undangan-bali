@@ -72,6 +72,13 @@ class GiftPayoutTest extends TestCase
         ])->assertCreated()->json('data.id');
         $admin = User::where('role', 'admin')->firstOrFail();
 
+        $this->actingAs($admin, 'web')->get('/admin/payout')
+            ->assertOk()
+            ->assertSee('Dashboard Pencairan Wedding Gift')
+            ->assertSee('Rekening tujuan transfer')
+            ->assertSee('9988776655')
+            ->assertSee('Ni Putu Ayu');
+
         $this->actingAs($admin, 'web')->put("/admin/payouts/{$rejected}", [
             'status' => 'rejected',
             'admin_note' => 'Nomor rekening perlu diperbarui.',
@@ -112,13 +119,16 @@ class GiftPayoutTest extends TestCase
         [$invitation] = $this->publishedInvitation();
         $user = $invitation->user;
 
+        $this->get('/admin/payout')->assertRedirect('/login');
+        $this->get('/login')->assertRedirect('/admin/login');
+
         $this->actingAs($user, 'web')->get('/admin/payouts')->assertForbidden();
         auth('web')->logout();
         $this->get('/admin/login')->assertOk()->assertSee('Masuk Admin');
         $this->post('/admin/login', [
             'email' => 'admin@undanganbali.test',
             'password' => 'password',
-        ])->assertRedirect('/admin/payouts');
+        ])->assertRedirect('/admin/payout');
     }
 
     private function publishedInvitation(): array
