@@ -309,6 +309,22 @@ class WeddingGiftTest extends TestCase
         $this->assertDatabaseHas('wedding_gift_fees', ['wedding_gift_id' => $gift->id, 'status' => 'earned']);
     }
 
+    public function test_xendit_webhook_test_payload_with_unknown_external_id_is_accepted(): void
+    {
+        config([
+            'services.xendit.webhook_token' => 'callback-token-test',
+        ]);
+
+        $this->postJson('/api/xendit/webhook', [
+            'id' => '579c8d61f23fa4ca35e52da4',
+            'external_id' => 'invoice_123124123',
+            'amount' => 50000,
+            'status' => 'PAID',
+        ], ['x-callback-token' => 'callback-token-test'])
+            ->assertOk()
+            ->assertJsonPath('transaction_status', 'ignored');
+    }
+
     private function publishedInvitation(): array
     {
         $this->seed();
