@@ -21,6 +21,7 @@ class WeddingGiftTest extends TestCase
         config([
             'services.midtrans.server_key' => 'SB-Mid-server-sandbox-key',
             'services.midtrans.is_production' => false,
+            'services.xendit.payment_provider' => 'midtrans',
             'wedding_gift.fee.type' => 'flat',
             'wedding_gift.fee.value' => 2000,
         ]);
@@ -106,7 +107,7 @@ class WeddingGiftTest extends TestCase
 
     public function test_service_fee_uses_flat_then_percent_tier(): void
     {
-        $setting = new WeddingGiftSetting();
+        $setting = new WeddingGiftSetting;
 
         $this->assertSame(2000, $setting->serviceFeeFor(50000));
         $this->assertSame(2000, $setting->serviceFeeFor(100000));
@@ -216,6 +217,93 @@ class WeddingGiftTest extends TestCase
         $this->getJson("/api/public/wedding-gift/{$gift->order_id}/status")
             ->assertOk()
             ->assertJsonPath('data.transaction_status', 'paid');
+
+        $this->assertDatabaseHas('wedding_gifts', ['id' => $gift->id, 'transaction_status' => 'paid']);
+        $this->assertDatabaseHas('wedding_gift_fees', ['wedding_gift_id' => $gift->id, 'status' => 'earned']);
+    }
+
+    public function test_xendit_provider_creates_payment_link_invoice(): void
+    {
+        config([
+            'services.xendit.payment_provider' => 'xendit',
+            'services.xendit.secret_key' => 'test-secret-key',
+        ]);
+        [$invitation, $token] = $this->publishedInvitation();
+
+        $this->withToken($token)->postJson("/api/invitations/{$invitation->id}/gift-setting", [
+            'is_active' => true,
+            'receiver_name' => 'Wira dan Ayu',
+            'receiver_note' => 'Matur suksma.',
+            'minimum_amount' => 10000,
+            'show_amount_public' => false,
+            'allow_message' => true,
+        ])->assertOk();
+
+        $this->get("/u/{$invitation->slug}")
+            ->assertOk()
+            ->assertSee('Buat Link Pembayaran');
+
+        Http::fake([
+            'https://api.xendit.co/v2/invoices' => Http::response([
+                'id' => 'xendit-invoice-1',
+                'external_id' => "WGIFT-{$invitation->id}-20260613120000-ABC123",
+                'status' => 'PENDING',
+                'amount' => 102000,
+                'invoice_url' => 'https://checkout.xendit.co/web/xendit-invoice-1',
+            ]),
+        ]);
+
+        $response = $this->postJson("/api/public/invitations/{$invitation->slug}/wedding-gift/create", [
+            'guest_name' => 'Komang',
+            'guest_phone' => '08123456789',
+            'gift_amount' => 100000,
+            'message' => 'Selamat berbahagia.',
+        ])->assertCreated()
+            ->assertJsonPath('data.payment_type', 'xendit_invoice')
+            ->assertJsonPath('data.payment_url', 'https://checkout.xendit.co/web/xendit-invoice-1');
+
+        $orderId = $response->json('data.order_id');
+        $this->assertDatabaseHas('wedding_gifts', [
+            'order_id' => $orderId,
+            'midtrans_transaction_id' => 'xendit-invoice-1',
+            'payment_url' => 'https://checkout.xendit.co/web/xendit-invoice-1',
+            'payment_type' => 'xendit_invoice',
+            'transaction_status' => 'pending',
+        ]);
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.xendit.co/v2/invoices'
+            && $request['external_id'] === $orderId
+            && $request['amount'] === 102000
+            && $request['metadata']['invitation_id'] === $invitation->id
+            && $request->hasHeader('Authorization'));
+    }
+
+    public function test_xendit_webhook_requires_callback_token_and_marks_invoice_paid(): void
+    {
+        config([
+            'services.xendit.webhook_token' => 'callback-token-test',
+        ]);
+        [$invitation] = $this->publishedInvitation();
+        $gift = $this->pendingGift($invitation);
+        $gift->update([
+            'midtrans_transaction_id' => 'xendit-invoice-1',
+            'payment_type' => 'xendit_invoice',
+        ]);
+        $payload = [
+            'id' => 'xendit-invoice-1',
+            'external_id' => $gift->order_id,
+            'amount' => 102000,
+            'status' => 'PAID',
+            'paid_at' => '2026-06-13T12:15:00.000Z',
+        ];
+
+        $this->postJson('/api/xendit/webhook', $payload, ['x-callback-token' => 'wrong'])
+            ->assertForbidden();
+        $this->assertDatabaseHas('wedding_gifts', ['id' => $gift->id, 'transaction_status' => 'pending']);
+
+        $this->postJson('/api/xendit/webhook', $payload, ['x-callback-token' => 'callback-token-test'])
+            ->assertOk()
+            ->assertJsonPath('transaction_status', 'paid');
 
         $this->assertDatabaseHas('wedding_gifts', ['id' => $gift->id, 'transaction_status' => 'paid']);
         $this->assertDatabaseHas('wedding_gift_fees', ['wedding_gift_id' => $gift->id, 'status' => 'earned']);

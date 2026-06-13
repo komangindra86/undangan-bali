@@ -19,6 +19,7 @@ class WeddingGift extends Model
         'payment_type',
         'qr_string',
         'qr_image_url',
+        'payment_url',
         'transaction_status',
         'fraud_status',
         'paid_at',

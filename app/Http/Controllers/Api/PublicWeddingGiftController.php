@@ -7,6 +7,7 @@ use App\Http\Requests\StoreWeddingGiftRequest;
 use App\Models\Invitation;
 use App\Models\WeddingGift;
 use App\Services\MidtransService;
+use App\Services\XenditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -15,7 +16,7 @@ use Throwable;
 
 class PublicWeddingGiftController extends Controller
 {
-    public function store(StoreWeddingGiftRequest $request, string $slug, MidtransService $midtrans): JsonResponse
+    public function store(StoreWeddingGiftRequest $request, string $slug, MidtransService $midtrans, XenditService $xendit): JsonResponse
     {
         $invitation = Invitation::with('giftSetting')
             ->where('slug', $slug)
@@ -40,50 +41,72 @@ class PublicWeddingGiftController extends Controller
             'service_fee' => $serviceFee,
             'total_amount' => $request->integer('gift_amount') + $serviceFee,
             'order_id' => $this->uniqueOrderId($invitation),
-            'payment_type' => 'qris',
+            'payment_type' => $this->paymentProvider() === 'xendit' ? 'xendit_invoice' : 'qris',
             'transaction_status' => 'pending',
         ]);
         $gift->fee()->create(['amount' => $serviceFee, 'status' => 'pending']);
 
         try {
-            $response = $midtrans->chargeQris($gift);
-            $qrAction = collect($response['actions'] ?? [])->firstWhere('name', 'generate-qr-code');
-            $gift->update([
-                'midtrans_transaction_id' => $response['transaction_id'] ?? null,
-                'qr_string' => $response['qr_string'] ?? null,
-                'qr_image_url' => $qrAction['url'] ?? null,
-                'raw_response' => $response,
-            ]);
+            if ($this->paymentProvider() === 'xendit') {
+                $response = $xendit->createInvoice($gift->load('invitation'));
+                $gift->update([
+                    'midtrans_transaction_id' => $response['id'] ?? null,
+                    'payment_url' => $response['invoice_url'] ?? null,
+                    'raw_response' => $response,
+                ]);
+            } else {
+                $response = $midtrans->chargeQris($gift);
+                $qrAction = collect($response['actions'] ?? [])->firstWhere('name', 'generate-qr-code');
+                $gift->update([
+                    'midtrans_transaction_id' => $response['transaction_id'] ?? null,
+                    'qr_string' => $response['qr_string'] ?? null,
+                    'qr_image_url' => $qrAction['url'] ?? null,
+                    'raw_response' => $response,
+                ]);
+            }
         } catch (Throwable $exception) {
-            Log::error('Midtrans QRIS charge failed.', ['order_id' => $gift->order_id, 'error' => $exception->getMessage()]);
+            Log::error('Wedding Gift payment creation failed.', [
+                'provider' => $this->paymentProvider(),
+                'order_id' => $gift->order_id,
+                'error' => $exception->getMessage(),
+            ]);
             $gift->update(['transaction_status' => 'failure']);
             $gift->fee()->update(['status' => 'refunded']);
 
             return response()->json([
-                'message' => 'QRIS belum berhasil dibuat. Silakan coba kembali.',
+                'message' => 'Pembayaran belum berhasil dibuat. Silakan coba kembali.',
             ], 502);
         }
 
         return response()->json([
-            'message' => 'QRIS siap dipindai.',
+            'message' => $this->paymentProvider() === 'xendit' ? 'Link pembayaran siap dibuka.' : 'QRIS siap dipindai.',
             'data' => $this->publicGiftData($gift->fresh()),
         ], 201);
     }
 
-    public function status(string $orderId, MidtransService $midtrans): JsonResponse
+    public function status(string $orderId, MidtransService $midtrans, XenditService $xendit): JsonResponse
     {
         $gift = WeddingGift::where('order_id', $orderId)->firstOrFail();
 
         if ($gift->transaction_status === 'pending') {
             try {
-                $payload = $midtrans->status($gift->order_id);
-                if (($payload['order_id'] ?? null) !== $gift->order_id
-                    || (int) round((float) ($payload['gross_amount'] ?? -1)) !== $gift->total_amount) {
-                    throw new \RuntimeException('Status Midtrans tidak cocok dengan transaksi.');
+                if ($gift->payment_type === 'xendit_invoice') {
+                    $payload = $xendit->invoice($gift->midtrans_transaction_id);
+                    if (($payload['external_id'] ?? null) !== $gift->order_id
+                        || (int) ($payload['amount'] ?? -1) !== $gift->total_amount) {
+                        throw new \RuntimeException('Status Xendit tidak cocok dengan transaksi.');
+                    }
+                    $gift = $xendit->applyTrustedStatus($gift, $payload);
+                } else {
+                    $payload = $midtrans->status($gift->order_id);
+                    if (($payload['order_id'] ?? null) !== $gift->order_id
+                        || (int) round((float) ($payload['gross_amount'] ?? -1)) !== $gift->total_amount) {
+                        throw new \RuntimeException('Status Midtrans tidak cocok dengan transaksi.');
+                    }
+                    $gift = $midtrans->applyTrustedStatus($gift, $payload);
                 }
-                $gift = $midtrans->applyTrustedStatus($gift, $payload);
             } catch (Throwable $exception) {
-                Log::warning('Midtrans status check failed.', ['order_id' => $gift->order_id, 'error' => $exception->getMessage()]);
+                Log::warning('Wedding Gift status check failed.', ['order_id' => $gift->order_id, 'error' => $exception->getMessage()]);
             }
         }
 
@@ -109,8 +132,14 @@ class PublicWeddingGiftController extends Controller
             'payment_type' => $gift->payment_type,
             'qr_string' => $gift->qr_string,
             'qr_image_url' => $gift->qr_image_url,
+            'payment_url' => $gift->payment_url,
             'transaction_status' => $gift->transaction_status,
             'paid_at' => $gift->paid_at,
         ];
+    }
+
+    private function paymentProvider(): string
+    {
+        return config('services.xendit.payment_provider') === 'xendit' ? 'xendit' : 'midtrans';
     }
 }

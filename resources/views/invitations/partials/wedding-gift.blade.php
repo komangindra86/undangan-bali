@@ -4,6 +4,7 @@
     $flatBelowAmount = (int) config('wedding_gift.fee.flat_below_amount');
     $flatFee = (int) config('wedding_gift.fee.flat_value');
     $percentFee = (float) config('wedding_gift.fee.percent_value');
+    $paymentProvider = config('services.xendit.payment_provider') === 'xendit' ? 'xendit' : 'midtrans';
 @endphp
 <style>
     .wg-section { padding: 64px 22px; text-align: center; }
@@ -20,6 +21,8 @@
     .wg-line { color: #665848; display: flex; justify-content: space-between; padding: 6px 0; }
     .wg-total { border-top: 1px solid #dfd0b4; color: #34281d; font-weight: 700; margin-top: 8px; padding-top: 13px; }
     .wg-button { background: #b38b50; border: 0; border-radius: 999px; color: #fff9ee; cursor: pointer; font: 700 14px Arial, sans-serif; min-height: 50px; padding: 14px 20px; width: 100%; }
+    .wg-pay-link { background: #2f6f63; border-radius: 999px; color: white; display: none; font: 700 14px Arial, sans-serif; margin-top: 16px; min-height: 50px; padding: 16px 20px; text-align: center; text-decoration: none; }
+    .wg-pay-link.visible { display: block; }
     .wg-button:disabled { cursor: wait; opacity: .62; }
     .wg-status { color: #ad453e; display: none; font: 13px/1.6 Arial, sans-serif; margin: 14px 0 0; text-align: center; }
     .wg-result { border-top: 1px solid #e3d8c3; display: none; margin-top: 27px; padding-top: 27px; text-align: center; }
@@ -34,7 +37,7 @@
     <div class="wg-card">
         <p class="wg-label">Wedding Gift</p>
         <h2 class="wg-title">Kirim Tanda Kasih</h2>
-        <p class="wg-note">Doa restu Anda sudah sangat berarti. Bila berkenan, tanda kasih dapat dikirim aman melalui QRIS.</p>
+        <p class="wg-note">Doa restu Anda sudah sangat berarti. Bila berkenan, tanda kasih dapat dikirim aman melalui {{ $paymentProvider === 'xendit' ? 'link pembayaran Xendit' : 'QRIS' }}.</p>
         <div class="wg-receiver">
             Untuk <strong>{{ $giftSetting->receiver_name }}</strong>
             @if ($giftSetting->receiver_note)
@@ -48,6 +51,7 @@
             data-flat-below-amount="{{ $flatBelowAmount }}"
             data-flat-fee="{{ $flatFee }}"
             data-percent-fee="{{ $percentFee }}"
+            data-payment-provider="{{ $paymentProvider }}"
         >
             <label class="wg-field">
                 <span>Nama tamu *</span>
@@ -75,15 +79,16 @@
                 <div class="wg-line wg-total"><span>Total Bayar</span><strong data-wg-total>Rp0</strong></div>
             </div>
             <p class="wg-note">Biaya layanan: Rp{{ number_format($flatFee, 0, ',', '.') }} untuk gift di bawah Rp{{ number_format($flatBelowAmount, 0, ',', '.') }}, dan {{ rtrim(rtrim(number_format($percentFee, 2, ',', '.'), '0'), ',') }}% untuk Rp{{ number_format($flatBelowAmount, 0, ',', '.') }} ke atas.</p>
-            <button type="submit" class="wg-button">{{ $isPreview ? 'Lihat Simulasi QRIS' : 'Buat QRIS untuk Bayar' }}</button>
+            <button type="submit" class="wg-button">{{ $isPreview ? 'Lihat Simulasi Pembayaran' : ($paymentProvider === 'xendit' ? 'Buat Link Pembayaran' : 'Buat QRIS untuk Bayar') }}</button>
             <p class="wg-status" data-wg-error></p>
             <div class="wg-result" data-wg-result>
-                <h3>Scan QRIS</h3>
-                <p class="wg-note">Pindai QR berikut melalui aplikasi pembayaran Anda, lalu cek status setelah pembayaran selesai.</p>
+                <h3>{{ $paymentProvider === 'xendit' ? 'Link Pembayaran' : 'Scan QRIS' }}</h3>
+                <p class="wg-note">{{ $paymentProvider === 'xendit' ? 'Buka halaman pembayaran Xendit, selesaikan pembayaran, lalu cek status setelah pembayaran selesai.' : 'Pindai QR berikut melalui aplikasi pembayaran Anda, lalu cek status setelah pembayaran selesai.' }}</p>
                 <div class="wg-qr" data-wg-qr-demo style="{{ $isPreview ? '' : 'display:none' }}">
-                    <div style="aspect-ratio:1; background:repeating-linear-gradient(45deg,#30291f 0 8px,#fff 8px 16px); border-radius:10px; display:grid; place-items:center; color:#30291f; font:700 18px Arial,sans-serif;">QRIS<br>DEMO</div>
+                    <div style="aspect-ratio:1; background:repeating-linear-gradient(45deg,#30291f 0 8px,#fff 8px 16px); border-radius:10px; display:grid; place-items:center; color:#30291f; font:700 18px Arial,sans-serif;">DEMO<br>BAYAR</div>
                 </div>
                 <img class="wg-qr" data-wg-qr alt="QRIS Wedding Gift" style="{{ $isPreview ? 'display:none' : '' }}">
+                <a class="wg-pay-link" data-wg-pay-link target="_blank" rel="noopener">Buka Pembayaran</a>
                 <div class="wg-breakdown">
                     <div class="wg-line"><span>Nominal Gift</span><strong data-result-amount></strong></div>
                     <div class="wg-line"><span>Biaya Layanan</span><strong data-result-fee></strong></div>
@@ -108,6 +113,7 @@
         const error = form.querySelector('[data-wg-error]');
         const result = form.querySelector('[data-wg-result]');
         const isPreview = form.dataset.preview === '1';
+        const paymentProvider = form.dataset.paymentProvider;
         let orderId = null;
 
         function feeFor(amount) {
@@ -130,7 +136,7 @@
             error.classList.remove('visible');
             const button = form.querySelector('.wg-button');
             button.disabled = true;
-            button.textContent = isPreview ? 'Menyiapkan demo...' : 'Membuat QRIS...';
+            button.textContent = isPreview ? 'Menyiapkan demo...' : (paymentProvider === 'xendit' ? 'Membuat link...' : 'Membuat QRIS...');
             const payload = Object.fromEntries(new FormData(form).entries());
             payload.gift_amount = Number(payload.gift_amount);
             try {
@@ -140,7 +146,7 @@
                     form.querySelector('[data-result-amount]').textContent = formatRupiah(amount);
                     form.querySelector('[data-result-fee]').textContent = formatRupiah(fee);
                     form.querySelector('[data-result-total]').textContent = formatRupiah(amount + fee);
-                    form.querySelector('[data-wg-payment-status]').textContent = 'Ini hanya simulasi preview. QRIS asli dibuat setelah undangan dipublish.';
+                    form.querySelector('[data-wg-payment-status]').textContent = 'Ini hanya simulasi preview. Pembayaran asli dibuat setelah undangan dipublish.';
                     result.classList.add('visible');
                     result.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     return;
@@ -153,16 +159,25 @@
                 const body = await response.json();
                 if (!response.ok) {
                     const validation = body.errors ? Object.values(body.errors).flat().join(' ') : body.message;
-                    throw new Error(validation || 'QRIS belum berhasil dibuat.');
+                    throw new Error(validation || 'Pembayaran belum berhasil dibuat.');
                 }
                 const data = body.data;
                 orderId = data.order_id;
                 const qr = form.querySelector('[data-wg-qr]');
+                const payLink = form.querySelector('[data-wg-pay-link]');
                 if (data.qr_image_url) {
                     qr.src = data.qr_image_url;
                     qr.style.display = 'block';
                 } else {
                     qr.style.display = 'none';
+                }
+                if (data.payment_url) {
+                    payLink.href = data.payment_url;
+                    payLink.classList.add('visible');
+                    form.querySelector('[data-wg-payment-status]').textContent = 'Link pembayaran sudah siap. Silakan buka pembayaran, lalu cek status setelah selesai.';
+                } else {
+                    payLink.removeAttribute('href');
+                    payLink.classList.remove('visible');
                 }
                 form.querySelector('[data-result-amount]').textContent = formatRupiah(data.gift_amount);
                 form.querySelector('[data-result-fee]').textContent = formatRupiah(data.service_fee);
@@ -174,13 +189,13 @@
                 error.classList.add('visible');
             } finally {
                 button.disabled = false;
-                button.textContent = isPreview ? 'Lihat Simulasi QRIS' : 'Buat QRIS untuk Bayar';
+                button.textContent = isPreview ? 'Lihat Simulasi Pembayaran' : (paymentProvider === 'xendit' ? 'Buat Link Pembayaran' : 'Buat QRIS untuk Bayar');
             }
         });
 
         form.querySelector('[data-wg-check]').addEventListener('click', async (event) => {
             if (isPreview) {
-                form.querySelector('[data-wg-payment-status]').textContent = 'Status demo: menunggu pembayaran. Pada undangan asli, status diperiksa dari Midtrans.';
+                form.querySelector('[data-wg-payment-status]').textContent = 'Status demo: menunggu pembayaran. Pada undangan asli, status diperiksa dari payment gateway.';
                 return;
             }
             if (!orderId) return;

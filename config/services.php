@@ -41,4 +41,10 @@ return [
         'is_production' => (bool) env('MIDTRANS_IS_PRODUCTION', false),
     ],
 
+    'xendit' => [
+        'secret_key' => env('XENDIT_SECRET_KEY'),
+        'webhook_token' => env('XENDIT_WEBHOOK_TOKEN'),
+        'payment_provider' => env('WEDDING_GIFT_PAYMENT_PROVIDER', 'midtrans'),
+    ],
+
 ];

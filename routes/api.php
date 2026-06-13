@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\PublicWeddingGiftController;
 use App\Http\Controllers\Api\TemplateController;
 use App\Http\Controllers\Api\WeddingGiftDashboardController;
 use App\Http\Controllers\Api\WeddingGiftSettingController;
+use App\Http\Controllers\Api\XenditWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -21,6 +22,7 @@ Route::get('/musics', [MusicController::class, 'index']);
 Route::post('/public/invitations/{slug}/wedding-gift/create', [PublicWeddingGiftController::class, 'store']);
 Route::get('/public/wedding-gift/{orderId}/status', [PublicWeddingGiftController::class, 'status']);
 Route::post('/midtrans/webhook', [MidtransWebhookController::class, 'handle']);
+Route::post('/xendit/webhook', [XenditWebhookController::class, 'handle']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
