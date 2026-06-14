@@ -1,6 +1,7 @@
 @php
     $giftSetting = $invitation->giftSetting;
     $isPreview = $isPreview ?? false;
+    $isPaymentDemo = $isPaymentDemo ?? false;
     $flatBelowAmount = (int) config('wedding_gift.fee.flat_below_amount');
     $flatFee = (int) config('wedding_gift.fee.flat_value');
     $percentFee = (float) config('wedding_gift.fee.percent_value');
@@ -21,6 +22,7 @@
     .wg-line { color: #665848; display: flex; justify-content: space-between; padding: 6px 0; }
     .wg-total { border-top: 1px solid #dfd0b4; color: #34281d; font-weight: 700; margin-top: 8px; padding-top: 13px; }
     .wg-button { background: #b38b50; border: 0; border-radius: 999px; color: #fff9ee; cursor: pointer; font: 700 14px Arial, sans-serif; min-height: 50px; padding: 14px 20px; width: 100%; }
+    .wg-demo-badge { background: #e8f4ef; border: 1px solid #b8ddcd; border-radius: 14px; color: #27604b; font: 700 13px/1.55 Arial, sans-serif; margin: 0 0 22px; padding: 13px 14px; text-align: center; }
     .wg-pay-link { background: #2f6f63; border-radius: 999px; color: white; display: none; font: 700 14px Arial, sans-serif; margin-top: 16px; min-height: 50px; padding: 16px 20px; text-align: center; text-decoration: none; }
     .wg-pay-link.visible { display: block; }
     .wg-button:disabled { cursor: wait; opacity: .62; }
@@ -37,6 +39,9 @@
     <div class="wg-card">
         <p class="wg-label">Wedding Gift</p>
         <h2 class="wg-title">Kirim Tanda Kasih</h2>
+        @if ($isPaymentDemo)
+            <p class="wg-demo-badge">Demo pembayaran Xendit mode tes. Tidak ada uang asli yang masuk.</p>
+        @endif
         <p class="wg-note">Doa restu Anda sudah sangat berarti. Bila berkenan, tanda kasih dapat dikirim aman melalui {{ $paymentProvider === 'xendit' ? 'link pembayaran Xendit' : 'QRIS' }}.</p>
         <div class="wg-receiver">
             Untuk <strong>{{ $giftSetting->receiver_name }}</strong>

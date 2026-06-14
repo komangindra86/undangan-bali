@@ -278,6 +278,26 @@ class WeddingGiftTest extends TestCase
             && $request->hasHeader('Authorization'));
     }
 
+    public function test_public_xendit_payment_demo_uses_published_invitation_not_preview_simulation(): void
+    {
+        config([
+            'services.xendit.payment_provider' => 'xendit',
+        ]);
+        $this->seed();
+
+        $this->get('/demo/wedding-gift-xendit')
+            ->assertOk()
+            ->assertSee('Demo pembayaran Xendit mode tes')
+            ->assertSee('Buat Link Pembayaran')
+            ->assertSee('data-preview="0"', false);
+
+        $invitation = Invitation::where('slug', 'demo-wedding-gift-xendit')->firstOrFail();
+
+        $this->assertSame('published', $invitation->status);
+        $this->assertTrue($invitation->giftSetting->is_active);
+        $this->assertSame('Wira & Ayu', $invitation->giftSetting->receiver_name);
+    }
+
     public function test_xendit_webhook_requires_callback_token_and_marks_invoice_paid(): void
     {
         config([

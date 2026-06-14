@@ -11,6 +11,8 @@ use Illuminate\View\View;
 
 class PublicInvitationController extends Controller
 {
+    private const PAYMENT_DEMO_SLUG = 'demo-wedding-gift-xendit';
+
     public function show(Request $request, string $slug): View
     {
         $invitation = Invitation::with(['template', 'music', 'giftSetting'])
@@ -68,6 +70,56 @@ class PublicInvitationController extends Controller
         return view($template->blade_view ?: 'invitations.templates.bali-experience', [
             'invitation' => $invitation,
             'isPreview' => true,
+        ]);
+    }
+
+    public function paymentDemo(): View
+    {
+        $template = InvitationTemplate::where('slug', 'bali-classic')->first()
+            ?: InvitationTemplate::where('is_active', true)->orderBy('id')->firstOrFail();
+
+        $invitation = Invitation::updateOrCreate(
+            ['slug' => self::PAYMENT_DEMO_SLUG],
+            [
+                'template_id' => $template->id,
+                'status' => 'published',
+                'groom_full_name' => 'I Made Wira Adnyana',
+                'groom_nickname' => 'Wira',
+                'groom_father_name' => 'I Ketut Darma',
+                'groom_mother_name' => 'Ni Luh Sari',
+                'bride_full_name' => 'Ni Putu Ayu Lestari',
+                'bride_nickname' => 'Ayu',
+                'bride_father_name' => 'I Wayan Sudarta',
+                'bride_mother_name' => 'Ni Made Rini',
+                'opening_quote' => 'Demo undangan Bali untuk mencoba alur Wedding Gift Xendit mode tes.',
+                'event_type' => 'Pawiwahan',
+                'event_date' => Carbon::parse('2026-08-18'),
+                'start_time' => '10:00',
+                'end_time' => '13:00',
+                'venue_name' => 'Bale Banjar Ubud',
+                'venue_address' => 'Jalan Raya Ubud, Gianyar, Bali',
+                'google_maps_url' => 'https://maps.google.com/?q=-8.5069,115.2625',
+                'music_type' => 'none',
+                'published_at' => now(),
+            ]
+        );
+
+        $invitation->giftSetting()->updateOrCreate([], [
+            'is_active' => true,
+            'receiver_name' => 'Wira & Ayu',
+            'receiver_note' => 'Demo pembayaran mode tes. Tidak ada uang asli yang masuk.',
+            'fee_type' => config('wedding_gift.fee.type'),
+            'fee_value' => config('wedding_gift.fee.value'),
+            'minimum_amount' => config('wedding_gift.minimum_amount'),
+            'show_amount_public' => false,
+            'allow_message' => true,
+        ]);
+
+        $invitation->load(['template', 'music', 'giftSetting']);
+
+        return view($template->blade_view ?: 'invitations.templates.bali-experience', [
+            'invitation' => $invitation,
+            'isPaymentDemo' => true,
         ]);
     }
 }
