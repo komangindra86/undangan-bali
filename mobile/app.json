@@ -2,7 +2,7 @@
   "expo": {
     "name": "Undangan Pernikahan Bali",
     "slug": "undangan-pernikahan-bali",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -29,7 +29,8 @@
     },
     "android": {
       "package": "com.balisantih.undanganbali",
-      "versionCode": 7,
+      "versionCode": 8,
+      "softwareKeyboardLayoutMode": "resize",
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS",

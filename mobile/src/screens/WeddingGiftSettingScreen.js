@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import FormField from '../components/FormField';
+import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
@@ -91,7 +92,7 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={commonStyles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.content}>
         <Text style={commonStyles.eyebrow}>Pengaturan</Text>
         <Text style={commonStyles.title}>Wedding Gift</Text>
         <Text style={styles.subtitle}>{invitation.groom_nickname} & {invitation.bride_nickname}</Text>
@@ -151,7 +152,7 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
         <PrimaryButton title="Simpan Pengaturan" onPress={save} loading={saving} style={styles.button} />
         <SecondaryButton title="Lihat Dashboard Gift" onPress={() => navigation.navigate('WeddingGiftDashboard', { invitation })} style={styles.secondary} />
         <Text onPress={() => navigation.goBack()} style={styles.back}>Kembali ke Undangan Saya</Text>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

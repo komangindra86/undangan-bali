@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import FormField from '../components/FormField';
+import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
@@ -60,7 +61,7 @@ export default function PayoutAccountScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={commonStyles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.content}>
         <Text style={commonStyles.eyebrow}>Pencairan Gift</Text>
         <Text style={commonStyles.title}>Rekening Penerima</Text>
         <Text style={styles.help}>Dana gift akan ditransfer manual oleh admin ke rekening ini. Pastikan nama dan nomor rekening benar.</Text>
@@ -72,7 +73,7 @@ export default function PayoutAccountScreen({ navigation, route }) {
         <PrimaryButton title="Simpan Rekening" onPress={save} loading={saving} style={styles.button} />
         {invitation && account.id ? <SecondaryButton title="Lanjut Ajukan Pencairan" onPress={() => navigation.navigate('RequestPayout', { invitation })} style={styles.secondary} /> : null}
         <Text onPress={() => navigation.goBack()} style={styles.back}>Kembali</Text>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

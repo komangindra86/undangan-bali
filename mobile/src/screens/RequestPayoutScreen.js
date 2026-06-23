@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import FormField from '../components/FormField';
+import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
@@ -64,7 +65,7 @@ export default function RequestPayoutScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={commonStyles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.content}>
         <Text style={commonStyles.eyebrow}>Klaim Wedding Gift</Text>
         <Text style={commonStyles.title}>Ajukan Pencairan</Text>
         <View style={styles.balance}>
@@ -88,7 +89,7 @@ export default function RequestPayoutScreen({ navigation, route }) {
         <Text style={styles.disclaimer}>Admin akan memeriksa pengajuan dan mentransfer dana ke rekening tersimpan. Nominal yang diajukan tidak dapat diajukan ulang selama diproses.</Text>
         <PrimaryButton title="Kirim Pengajuan" onPress={submit} loading={sending} disabled={!dashboard.payout_account || !dashboard.summary.available_balance} style={styles.button} />
         <Text onPress={() => navigation.goBack()} style={styles.back}>Kembali</Text>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

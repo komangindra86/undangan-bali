@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import FormField from '../components/FormField';
+import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
 import { useAuth } from '../context/AuthContext';
 import { useDraft } from '../context/DraftContext';
 import { commonStyles, spacing } from '../theme';
@@ -57,20 +58,18 @@ export default function RegisterScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={[commonStyles.screen, styles.safe]}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={commonStyles.eyebrow}>Daftar</Text>
-          <Text style={commonStyles.title}>Buat akun Anda</Text>
-          <Text style={[commonStyles.body, styles.body]}>Satu langkah lagi untuk menerbitkan undangan.</Text>
-          <FormField label="Nama" maxLength={80} value={form.name} onChangeText={(value) => setForm({ ...form, name: value })} />
-          <FormField label="Email" keyboardType="email-address" value={form.email} onChangeText={(value) => setForm({ ...form, email: value })} placeholder="nama@gmail.com" />
-          <FormField label="Konfirmasi email" keyboardType="email-address" value={form.email_confirmation} onChangeText={(value) => setForm({ ...form, email_confirmation: value })} placeholder="nama@gmail.com" />
-          <FormField label="Password" secureTextEntry value={form.password} onChangeText={(value) => setForm({ ...form, password: value })} helperText="Minimal 8 karakter." />
-          <FormField label="Konfirmasi password" secureTextEntry value={form.password_confirmation} onChangeText={(value) => setForm({ ...form, password_confirmation: value })} />
-          <PrimaryButton title={publishAfterAuth ? 'Daftar & Publish' : 'Daftar'} onPress={submit} loading={loading} style={styles.submit} />
-          <SecondaryButton title="Sudah punya akun? Masuk" onPress={() => navigation.replace('Login', { publishAfterAuth, returnTo })} />
-        </ScrollView>
-      </KeyboardAvoidingView>
+      <KeyboardAwareScrollView contentContainerStyle={styles.content}>
+        <Text style={commonStyles.eyebrow}>Daftar</Text>
+        <Text style={commonStyles.title}>Buat akun Anda</Text>
+        <Text style={[commonStyles.body, styles.body]}>Satu langkah lagi untuk menerbitkan undangan.</Text>
+        <FormField label="Nama" maxLength={80} value={form.name} onChangeText={(value) => setForm({ ...form, name: value })} />
+        <FormField label="Email" keyboardType="email-address" value={form.email} onChangeText={(value) => setForm({ ...form, email: value })} placeholder="nama@gmail.com" />
+        <FormField label="Konfirmasi email" keyboardType="email-address" value={form.email_confirmation} onChangeText={(value) => setForm({ ...form, email_confirmation: value })} placeholder="nama@gmail.com" />
+        <FormField label="Password" secureTextEntry value={form.password} onChangeText={(value) => setForm({ ...form, password: value })} helperText="Minimal 8 karakter." />
+        <FormField label="Konfirmasi password" secureTextEntry value={form.password_confirmation} onChangeText={(value) => setForm({ ...form, password_confirmation: value })} />
+        <PrimaryButton title={publishAfterAuth ? 'Daftar & Publish' : 'Daftar'} onPress={submit} loading={loading} style={styles.submit} />
+        <SecondaryButton title="Sudah punya akun? Masuk" onPress={() => navigation.replace('Login', { publishAfterAuth, returnTo })} />
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text } from 'react-native';
+import { Alert, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import FormField from '../components/FormField';
+import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
 import { useAuth } from '../context/AuthContext';
 import { useDraft } from '../context/DraftContext';
 import { commonStyles, spacing } from '../theme';
@@ -45,24 +46,22 @@ export default function LoginScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={[commonStyles.screen, styles.safe]}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <Text style={commonStyles.eyebrow}>Masuk</Text>
-          <Text style={commonStyles.title}>Selamat datang kembali</Text>
-          <Text style={[commonStyles.body, styles.body]}>
-            {sessionExpired
-              ? 'Sesi Anda sudah berakhir. Masuk kembali untuk melihat undangan yang tersimpan.'
-              : 'Masuk untuk melihat, menyimpan, dan membagikan undangan Anda.'}
-          </Text>
-          <FormField label="Email" keyboardType="email-address" value={email} onChangeText={setEmail} placeholder="email@contoh.com" />
-          <FormField label="Password" secureTextEntry value={password} onChangeText={setPassword} placeholder="Minimal 8 karakter" />
-          <PrimaryButton title={publishAfterAuth ? 'Masuk & Publish' : 'Masuk'} onPress={submit} loading={loading} style={styles.submit} />
-          <SecondaryButton
-            title="Belum punya akun? Daftar"
-            onPress={() => navigation.replace('Register', { publishAfterAuth, returnTo })}
-          />
-        </ScrollView>
-      </KeyboardAvoidingView>
+      <KeyboardAwareScrollView contentContainerStyle={styles.content}>
+        <Text style={commonStyles.eyebrow}>Masuk</Text>
+        <Text style={commonStyles.title}>Selamat datang kembali</Text>
+        <Text style={[commonStyles.body, styles.body]}>
+          {sessionExpired
+            ? 'Sesi Anda sudah berakhir. Masuk kembali untuk melihat undangan yang tersimpan.'
+            : 'Masuk untuk melihat, menyimpan, dan membagikan undangan Anda.'}
+        </Text>
+        <FormField label="Email" keyboardType="email-address" value={email} onChangeText={setEmail} placeholder="email@contoh.com" />
+        <FormField label="Password" secureTextEntry value={password} onChangeText={setPassword} placeholder="Minimal 8 karakter" />
+        <PrimaryButton title={publishAfterAuth ? 'Masuk & Publish' : 'Masuk'} onPress={submit} loading={loading} style={styles.submit} />
+        <SecondaryButton
+          title="Belum punya akun? Daftar"
+          onPress={() => navigation.replace('Register', { publishAfterAuth, returnTo })}
+        />
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
