@@ -32,7 +32,7 @@ class InvitationPublishingTest extends TestCase
             ->assertSee('Preview dummy')
             ->assertSee('Galeri Bahagia')
             ->assertSee('Wedding Gift')
-            ->assertSee('Lihat Simulasi QRIS');
+            ->assertSee('Lihat Simulasi Pembayaran');
 
         $this->get('/preview/templates/pura-sunset')
             ->assertOk()
@@ -40,7 +40,7 @@ class InvitationPublishingTest extends TestCase
             ->assertSee('Momen Bahagia')
             ->assertSee('Rg Veda X.85.42')
             ->assertSee('Wedding Gift')
-            ->assertSee('Lihat Simulasi QRIS');
+            ->assertSee('Lihat Simulasi Pembayaran');
 
         $this->get('/preview/templates/ubud-garden')
             ->assertOk()
@@ -48,7 +48,7 @@ class InvitationPublishingTest extends TestCase
             ->assertSee('Tema terang editorial')
             ->assertSee('Galeri Bahagia')
             ->assertSee('Wedding Gift')
-            ->assertSee('Lihat Simulasi QRIS');
+            ->assertSee('Lihat Simulasi Pembayaran');
     }
 
     public function test_local_draft_can_be_synced_after_register_and_published(): void
