@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { useKeyboardAwareScroll } from './KeyboardAwareScrollView';
 import { colors, spacing } from '../theme';
 
 export default function FormField({
@@ -11,11 +13,14 @@ export default function FormField({
   secureTextEntry,
   maxLength,
   helperText,
+  onFocus,
 }) {
   const preventCorrection = keyboardType === 'email-address' || keyboardType === 'url';
+  const groupRef = useRef(null);
+  const scrollToFocusedInput = useKeyboardAwareScroll();
 
   return (
-    <View style={styles.group}>
+    <View ref={groupRef} style={styles.group}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         value={value || ''}
@@ -28,6 +33,10 @@ export default function FormField({
         maxLength={maxLength}
         autoCapitalize={preventCorrection ? 'none' : 'sentences'}
         autoCorrect={!preventCorrection}
+        onFocus={(event) => {
+          scrollToFocusedInput?.(groupRef);
+          onFocus?.(event);
+        }}
         style={[styles.input, multiline && styles.multiline]}
       />
       {helperText ? <Text style={styles.help}>{helperText}</Text> : null}
