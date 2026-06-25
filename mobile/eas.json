@@ -8,7 +8,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://platform.balisantih.com/api"
+        "EXPO_PUBLIC_API_URL": "https://undangan.balisantih.com/api"
       }
     },
     "production": {
@@ -16,7 +16,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://platform.balisantih.com/api"
+        "EXPO_PUBLIC_API_URL": "https://undangan.balisantih.com/api"
       }
     }
   },

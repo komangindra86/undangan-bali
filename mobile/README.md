@@ -90,7 +90,7 @@ Copy-Item .env.example .env
 Gunakan URL sesuai target:
 
 ```text
-Production/Play Store: EXPO_PUBLIC_API_URL=https://platform.balisantih.com/api
+Production/Play Store: EXPO_PUBLIC_API_URL=https://undangan.balisantih.com/api
 Android emulator: EXPO_PUBLIC_API_URL=http://10.0.2.2:8000/api
 iOS simulator:     EXPO_PUBLIC_API_URL=http://127.0.0.1:8000/api
 Perangkat fisik:   EXPO_PUBLIC_API_URL=http://ALAMAT-IP-LAN-PC:8000/api
@@ -115,7 +115,7 @@ npx expo start
 Backend production sudah diarahkan ke:
 
 ```text
-https://platform.balisantih.com/api
+https://undangan.balisantih.com/api
 ```
 
 Build AAB untuk Play Store:
