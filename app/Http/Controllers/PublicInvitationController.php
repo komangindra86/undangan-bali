@@ -28,7 +28,7 @@ class PublicInvitationController extends Controller
 
         $view = $invitation->template->blade_view ?: 'invitations.templates.bali-classic';
 
-        if ($invitation->media_deleted_at) {
+        if ($invitation->media_deleted_at && ! $invitation->isRetentionExempt()) {
             $view = 'invitations.archived';
         }
 

@@ -17,6 +17,7 @@ class ArchiveExpiredInvitations extends Command
         $cutoff = today()->subDays($days);
 
         $query = Invitation::query()
+            ->withoutRetentionExemptions()
             ->where('status', 'published')
             ->whereDate('event_date', '<=', $cutoff);
 

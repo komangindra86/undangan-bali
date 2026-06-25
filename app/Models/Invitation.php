@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Invitation extends Model
 {
+    public const RETENTION_EXEMPT_SLUG_PREFIXES = ['preview-', 'demo-'];
+
     protected $appends = ['public_url'];
 
     protected $fillable = [
@@ -90,6 +92,29 @@ class Invitation extends Model
     public function payoutRequests()
     {
         return $this->hasMany(GiftPayoutRequest::class);
+    }
+
+    public function scopeWithoutRetentionExemptions($query)
+    {
+        foreach (self::RETENTION_EXEMPT_SLUG_PREFIXES as $prefix) {
+            $query->where(function ($query) use ($prefix) {
+                $query->whereNull('slug')
+                    ->orWhere('slug', 'not like', $prefix.'%');
+            });
+        }
+
+        return $query;
+    }
+
+    public function isRetentionExempt(): bool
+    {
+        foreach (self::RETENTION_EXEMPT_SLUG_PREFIXES as $prefix) {
+            if (str_starts_with((string) $this->slug, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getPublicUrlAttribute(): ?string

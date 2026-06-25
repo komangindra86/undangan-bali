@@ -18,6 +18,7 @@ class CleanupArchivedInvitationMedia extends Command
         $cutoff = today()->subDays($days);
 
         $query = Invitation::query()
+            ->withoutRetentionExemptions()
             ->where('status', 'archived')
             ->whereNull('media_deleted_at')
             ->whereDate('event_date', '<=', $cutoff);

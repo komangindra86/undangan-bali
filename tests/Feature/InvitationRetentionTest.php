@@ -74,6 +74,29 @@ class InvitationRetentionTest extends TestCase
             ->assertSee('media foto/musiknya telah dibersihkan');
     }
 
+    public function test_demo_and_preview_slugs_are_never_archived_or_cleaned_up(): void
+    {
+        Storage::fake('public');
+        $this->seed();
+        Storage::disk('public')->put('invitations/photos/demo.jpg', 'fake-file');
+
+        $demo = $this->publishedInvitation(now()->subDays(120)->toDateString(), [
+            'slug' => 'demo-wedding-gift-xendit',
+            'groom_photo' => 'invitations/photos/demo.jpg',
+        ]);
+        $preview = $this->publishedInvitation(now()->subDays(120)->toDateString(), [
+            'slug' => 'preview-bali-classic',
+        ]);
+
+        Artisan::call('invitations:archive-expired');
+        Artisan::call('invitations:cleanup-media');
+
+        $this->assertSame('published', $demo->fresh()->status);
+        $this->assertSame('published', $preview->fresh()->status);
+        $this->assertNull($demo->fresh()->media_deleted_at);
+        Storage::disk('public')->assertExists('invitations/photos/demo.jpg');
+    }
+
     private function publishedInvitation(string $eventDate, array $overrides = []): Invitation
     {
         $template = InvitationTemplate::firstOrFail();
