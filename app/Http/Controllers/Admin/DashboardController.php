@@ -32,6 +32,8 @@ class DashboardController extends Controller
                 'published' => (clone $published)->count(),
                 'live' => (clone $published)->whereDate('event_date', '>=', $today)->count(),
                 'expired' => (clone $published)->whereDate('event_date', '<', $today)->count(),
+                'archived' => Invitation::where('status', 'archived')->count(),
+                'media_deleted' => Invitation::whereNotNull('media_deleted_at')->count(),
                 'views' => InvitationView::count(),
                 'gift_paid' => WeddingGift::where('transaction_status', 'paid')->sum('gift_amount'),
                 'payout_pending' => GiftPayoutRequest::whereIn('status', ['pending', 'approved', 'processing'])->sum('amount'),

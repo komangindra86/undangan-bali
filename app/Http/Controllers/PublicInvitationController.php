@@ -17,7 +17,7 @@ class PublicInvitationController extends Controller
     {
         $invitation = Invitation::with(['template', 'music', 'giftSetting'])
             ->where('slug', $slug)
-            ->where('status', 'published')
+            ->whereIn('status', ['published', 'archived'])
             ->firstOrFail();
 
         $invitation->views()->create([
@@ -27,6 +27,10 @@ class PublicInvitationController extends Controller
         ]);
 
         $view = $invitation->template->blade_view ?: 'invitations.templates.bali-classic';
+
+        if ($invitation->media_deleted_at) {
+            $view = 'invitations.archived';
+        }
 
         return view($view, ['invitation' => $invitation]);
     }

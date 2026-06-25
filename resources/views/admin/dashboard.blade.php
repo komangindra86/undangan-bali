@@ -40,10 +40,12 @@
             <article class="bg-stone-900 border border-stone-800 rounded-3xl p-5">
                 <p class="text-stone-400 text-sm">Published total</p>
                 <p class="font-serif text-3xl mt-2">{{ number_format($summary['published']) }}</p>
+                <p class="text-stone-500 text-sm mt-2">{{ number_format($summary['archived']) }} archived</p>
             </article>
             <article class="bg-stone-900 border border-stone-800 rounded-3xl p-5">
                 <p class="text-stone-400 text-sm">Total view undangan</p>
                 <p class="font-serif text-3xl mt-2">{{ number_format($summary['views']) }}</p>
+                <p class="text-stone-500 text-sm mt-2">{{ number_format($summary['media_deleted']) }} media dibersihkan</p>
             </article>
             <article class="bg-stone-900 border border-stone-800 rounded-3xl p-5">
                 <p class="text-stone-400 text-sm">Gift paid pasangan</p>

@@ -40,6 +40,8 @@ class Invitation extends Model
         'music_type',
         'music_file',
         'published_at',
+        'archived_at',
+        'media_deleted_at',
     ];
 
     protected function casts(): array
@@ -47,6 +49,8 @@ class Invitation extends Model
         return [
             'event_date' => 'date',
             'published_at' => 'datetime',
+            'archived_at' => 'datetime',
+            'media_deleted_at' => 'datetime',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'gallery_photos' => 'array',
@@ -90,7 +94,7 @@ class Invitation extends Model
 
     public function getPublicUrlAttribute(): ?string
     {
-        return $this->status === 'published' && $this->slug
+        return in_array($this->status, ['published', 'archived'], true) && $this->slug
             ? route('invitations.public', $this->slug)
             : null;
     }
