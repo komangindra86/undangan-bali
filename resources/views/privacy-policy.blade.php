@@ -17,7 +17,7 @@
             <p>
                 Undangan Pernikahan Bali membantu pasangan membuat, menyimpan, dan membagikan undangan digital.
                 Kebijakan ini menjelaskan data yang kami kumpulkan, cara penggunaannya, dan pilihan Anda saat memakai aplikasi mobile
-                maupun halaman web undangan di <strong>undangan.balisantih.com</strong>.
+                maupun halaman web undangan di <strong>platform.balisantih.com</strong>.
             </p>
 
             <div>
