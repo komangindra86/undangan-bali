@@ -451,7 +451,7 @@
         @unless ($isPreview)
             <button id="share" class="share">Bagikan Undangan</button>
         @endunless
-        <p class="watermark">Dibuat gratis dengan aplikasi Undangan Pernikahan Bali</p>
+        <p class="watermark">@include('invitations.partials.app-credit')</p>
     </section>
 </main>
 

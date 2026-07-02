@@ -112,7 +112,7 @@
         <p class="closing-title">Matur Suksma</p>
         <p class="muted">Merupakan kehormatan bagi kami apabila Anda berkenan hadir memberikan doa restu.</p>
         @unless($isPreview)<button id="share" class="share">Bagikan Undangan</button>@endunless
-        <p class="watermark">Dibuat gratis dengan aplikasi Undangan Pernikahan Bali</p>
+        <p class="watermark">@include('invitations.partials.app-credit')</p>
     </section>
 </main>
 @if ($musicPath && ! $isPreview)

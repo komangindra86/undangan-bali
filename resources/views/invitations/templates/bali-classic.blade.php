@@ -82,7 +82,7 @@
             <p class="font-serif text-2xl text-amber-100">Terima Kasih</p>
             <p class="text-sm text-stone-300 mt-4">Merupakan kehormatan bagi kami apabila Anda berkenan hadir.</p>
             <button id="share" class="mt-9 rounded-full border border-amber-500 text-amber-200 px-7 py-3">Bagikan Undangan</button>
-            <p class="mt-16 text-xs text-stone-500">Dibuat gratis dengan aplikasi Undangan Pernikahan Bali</p>
+            <p class="mt-16 text-xs text-stone-500">@include('invitations.partials.app-credit')</p>
         </section>
     </main>
 
