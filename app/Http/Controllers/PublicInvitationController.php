@@ -79,6 +79,7 @@ class PublicInvitationController extends Controller
 
     public function paymentDemo(): View
     {
+        $isLiveEnvironment = app()->environment('production');
         $template = InvitationTemplate::where('slug', 'bali-classic')->first()
             ?: InvitationTemplate::where('is_active', true)->orderBy('id')->firstOrFail();
 
@@ -95,7 +96,9 @@ class PublicInvitationController extends Controller
                 'bride_nickname' => 'Ayu',
                 'bride_father_name' => 'I Wayan Sudarta',
                 'bride_mother_name' => 'Ni Made Rini',
-                'opening_quote' => 'Demo undangan Bali untuk mencoba alur Wedding Gift Xendit mode tes.',
+                'opening_quote' => $isLiveEnvironment
+                    ? 'Demo undangan Bali untuk melihat tampilan Wedding Gift.'
+                    : 'Demo undangan Bali untuk mencoba alur Wedding Gift Xendit mode tes.',
                 'event_type' => 'Pawiwahan',
                 'event_date' => Carbon::parse('2026-08-18'),
                 'start_time' => '10:00',
@@ -111,7 +114,9 @@ class PublicInvitationController extends Controller
         $invitation->giftSetting()->updateOrCreate([], [
             'is_active' => true,
             'receiver_name' => 'Wira & Ayu',
-            'receiver_note' => 'Demo pembayaran mode tes. Tidak ada uang asli yang masuk.',
+            'receiver_note' => $isLiveEnvironment
+                ? 'Demo tampilan Wedding Gift. Pembayaran asli hanya tersedia pada undangan pelanggan.'
+                : 'Demo pembayaran mode tes. Tidak ada uang asli yang masuk.',
             'fee_type' => config('wedding_gift.fee.type'),
             'fee_value' => config('wedding_gift.fee.value'),
             'minimum_amount' => config('wedding_gift.minimum_amount'),
@@ -123,7 +128,8 @@ class PublicInvitationController extends Controller
 
         return view($template->blade_view ?: 'invitations.templates.bali-experience', [
             'invitation' => $invitation,
-            'isPaymentDemo' => true,
+            'isPaymentDemo' => ! $isLiveEnvironment,
+            'isPreview' => $isLiveEnvironment,
         ]);
     }
 }

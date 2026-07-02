@@ -298,6 +298,21 @@ class WeddingGiftTest extends TestCase
         $this->assertSame('Wira & Ayu', $invitation->giftSetting->receiver_name);
     }
 
+    public function test_public_xendit_payment_demo_is_preview_only_in_production(): void
+    {
+        $this->app->detectEnvironment(fn () => 'production');
+        config([
+            'services.xendit.payment_provider' => 'xendit',
+        ]);
+        $this->seed();
+
+        $this->get('/demo/wedding-gift-xendit')
+            ->assertOk()
+            ->assertDontSee('Demo pembayaran Xendit mode tes')
+            ->assertSee('Lihat Simulasi Pembayaran')
+            ->assertSee('data-preview="1"', false);
+    }
+
     public function test_xendit_webhook_requires_callback_token_and_marks_invoice_paid(): void
     {
         config([
