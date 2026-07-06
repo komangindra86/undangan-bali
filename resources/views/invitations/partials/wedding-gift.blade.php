@@ -42,7 +42,7 @@
         @if ($isPaymentDemo)
             <p class="wg-demo-badge">Demo pembayaran Xendit mode tes. Tidak ada uang asli yang masuk.</p>
         @endif
-        <p class="wg-note">Doa restu Anda sudah sangat berarti. Bila berkenan, tanda kasih dapat dikirim aman melalui {{ $paymentProvider === 'xendit' ? 'link pembayaran Xendit' : 'QRIS' }}.</p>
+        <p class="wg-note">Doa restu Anda sudah sangat berarti. Bila berkenan, tanda kasih dapat dikirim aman melalui QRIS.</p>
         <div class="wg-receiver">
             Untuk <strong>{{ $giftSetting->receiver_name }}</strong>
             @if ($giftSetting->receiver_note)
@@ -84,16 +84,16 @@
                 <div class="wg-line wg-total"><span>Total Bayar</span><strong data-wg-total>Rp0</strong></div>
             </div>
             <p class="wg-note">Biaya layanan: Rp{{ number_format($flatFee, 0, ',', '.') }} untuk gift di bawah Rp{{ number_format($flatBelowAmount, 0, ',', '.') }}, dan {{ rtrim(rtrim(number_format($percentFee, 2, ',', '.'), '0'), ',') }}% untuk Rp{{ number_format($flatBelowAmount, 0, ',', '.') }} ke atas.</p>
-            <button type="submit" class="wg-button">{{ $isPreview ? 'Lihat Simulasi Pembayaran' : ($paymentProvider === 'xendit' ? 'Buat Link Pembayaran' : 'Buat QRIS untuk Bayar') }}</button>
+            <button type="submit" class="wg-button">{{ $isPreview ? 'Lihat Simulasi Pembayaran' : 'Buat QRIS untuk Bayar' }}</button>
             <p class="wg-status" data-wg-error></p>
             <div class="wg-result" data-wg-result>
-                <h3>{{ $paymentProvider === 'xendit' ? 'Link Pembayaran' : 'Scan QRIS' }}</h3>
-                <p class="wg-note">{{ $paymentProvider === 'xendit' ? 'Buka halaman pembayaran Xendit, selesaikan pembayaran, lalu cek status setelah pembayaran selesai.' : 'Pindai QR berikut melalui aplikasi pembayaran Anda, lalu cek status setelah pembayaran selesai.' }}</p>
+                <h3>Scan QRIS</h3>
+                <p class="wg-note">{{ $paymentProvider === 'xendit' ? 'Buka QRIS Xendit, selesaikan pembayaran, lalu cek status setelah pembayaran selesai.' : 'Pindai QR berikut melalui aplikasi pembayaran Anda, lalu cek status setelah pembayaran selesai.' }}</p>
                 <div class="wg-qr" data-wg-qr-demo style="{{ $isPreview ? '' : 'display:none' }}">
                     <div style="aspect-ratio:1; background:repeating-linear-gradient(45deg,#30291f 0 8px,#fff 8px 16px); border-radius:10px; display:grid; place-items:center; color:#30291f; font:700 18px Arial,sans-serif;">DEMO<br>BAYAR</div>
                 </div>
                 <img class="wg-qr" data-wg-qr alt="QRIS Wedding Gift" style="{{ $isPreview ? 'display:none' : '' }}">
-                <a class="wg-pay-link" data-wg-pay-link target="_blank" rel="noopener">Buka Pembayaran</a>
+                <a class="wg-pay-link" data-wg-pay-link target="_blank" rel="noopener">Buka QRIS Xendit</a>
                 <div class="wg-breakdown">
                     <div class="wg-line"><span>Nominal Gift</span><strong data-result-amount></strong></div>
                     <div class="wg-line"><span>Biaya Layanan</span><strong data-result-fee></strong></div>
@@ -141,7 +141,7 @@
             error.classList.remove('visible');
             const button = form.querySelector('.wg-button');
             button.disabled = true;
-            button.textContent = isPreview ? 'Menyiapkan demo...' : (paymentProvider === 'xendit' ? 'Membuat link...' : 'Membuat QRIS...');
+            button.textContent = isPreview ? 'Menyiapkan demo...' : 'Membuat QRIS...';
             const payload = Object.fromEntries(new FormData(form).entries());
             payload.gift_amount = Number(payload.gift_amount);
             try {
@@ -179,7 +179,7 @@
                 if (data.payment_url) {
                     payLink.href = data.payment_url;
                     payLink.classList.add('visible');
-                    form.querySelector('[data-wg-payment-status]').textContent = 'Link pembayaran sudah siap. Silakan buka pembayaran, lalu cek status setelah selesai.';
+                    form.querySelector('[data-wg-payment-status]').textContent = 'QRIS Xendit sudah siap. Silakan buka QRIS, lalu cek status setelah selesai.';
                 } else {
                     payLink.removeAttribute('href');
                     payLink.classList.remove('visible');
@@ -194,7 +194,7 @@
                 error.classList.add('visible');
             } finally {
                 button.disabled = false;
-                button.textContent = isPreview ? 'Lihat Simulasi Pembayaran' : (paymentProvider === 'xendit' ? 'Buat Link Pembayaran' : 'Buat QRIS untuk Bayar');
+                button.textContent = isPreview ? 'Lihat Simulasi Pembayaran' : 'Buat QRIS untuk Bayar';
             }
         });
 

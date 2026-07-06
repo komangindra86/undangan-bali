@@ -222,7 +222,7 @@ class WeddingGiftTest extends TestCase
         $this->assertDatabaseHas('wedding_gift_fees', ['wedding_gift_id' => $gift->id, 'status' => 'earned']);
     }
 
-    public function test_xendit_provider_creates_payment_link_invoice(): void
+    public function test_xendit_provider_creates_qris_only_invoice(): void
     {
         config([
             'services.xendit.payment_provider' => 'xendit',
@@ -241,7 +241,8 @@ class WeddingGiftTest extends TestCase
 
         $this->get("/u/{$invitation->slug}")
             ->assertOk()
-            ->assertSee('Buat Link Pembayaran');
+            ->assertSee('Buat QRIS untuk Bayar')
+            ->assertDontSee('Buat Link Pembayaran');
 
         Http::fake([
             'https://api.xendit.co/v2/invoices' => Http::response([
@@ -274,6 +275,7 @@ class WeddingGiftTest extends TestCase
         Http::assertSent(fn ($request) => $request->url() === 'https://api.xendit.co/v2/invoices'
             && $request['external_id'] === $orderId
             && $request['amount'] === 102000
+            && $request['payment_methods'] === ['QRIS']
             && $request['metadata']['invitation_id'] === $invitation->id
             && $request->hasHeader('Authorization'));
     }
@@ -288,7 +290,8 @@ class WeddingGiftTest extends TestCase
         $this->get('/demo/wedding-gift-xendit')
             ->assertOk()
             ->assertSee('Demo pembayaran Xendit mode tes')
-            ->assertSee('Buat Link Pembayaran')
+            ->assertSee('Buat QRIS untuk Bayar')
+            ->assertDontSee('Buat Link Pembayaran')
             ->assertSee('data-preview="0"', false);
 
         $invitation = Invitation::where('slug', 'demo-wedding-gift-xendit')->firstOrFail();

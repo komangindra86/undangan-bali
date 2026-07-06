@@ -79,7 +79,7 @@ class PublicWeddingGiftController extends Controller
         }
 
         return response()->json([
-            'message' => $this->paymentProvider() === 'xendit' ? 'Link pembayaran siap dibuka.' : 'QRIS siap dipindai.',
+            'message' => 'QRIS siap dipindai.',
             'data' => $this->publicGiftData($gift->fresh()),
         ], 201);
     }

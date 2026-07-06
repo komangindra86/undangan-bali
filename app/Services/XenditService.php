@@ -18,6 +18,7 @@ class XenditService
                 'amount' => $gift->total_amount,
                 'description' => 'Wedding Gift '.$gift->invitation->groom_nickname.' & '.$gift->invitation->bride_nickname,
                 'currency' => 'IDR',
+                'payment_methods' => ['QRIS'],
                 'customer' => array_filter([
                     'given_names' => $gift->guest_name,
                     'mobile_number' => $gift->guest_phone,
