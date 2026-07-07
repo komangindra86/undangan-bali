@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('invitations:archive-expired')->dailyAt('02:10');
 Schedule::command('invitations:cleanup-media')->dailyAt('02:30');
+Schedule::command('invitations:delete-expired-drafts')->dailyAt('02:50');

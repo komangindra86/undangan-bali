@@ -97,6 +97,50 @@ class InvitationRetentionTest extends TestCase
         Storage::disk('public')->assertExists('invitations/photos/demo.jpg');
     }
 
+    public function test_unpublished_drafts_older_than_retention_window_are_deleted_with_media(): void
+    {
+        Storage::fake('public');
+        $this->seed();
+
+        foreach ([
+            'invitations/photos/draft-groom.jpg',
+            'invitations/photos/draft-bride.jpg',
+            'invitations/gallery/draft-one.jpg',
+            'invitations/musics/draft-song.mp3',
+        ] as $path) {
+            Storage::disk('public')->put($path, 'fake-file');
+        }
+
+        $expiredDraft = $this->draftInvitation([
+            'created_at' => now()->subDays(8),
+            'updated_at' => now()->subDays(8),
+            'groom_photo' => 'invitations/photos/draft-groom.jpg',
+            'bride_photo' => 'invitations/photos/draft-bride.jpg',
+            'gallery_photos' => ['invitations/gallery/draft-one.jpg'],
+            'music_type' => 'upload',
+            'music_file' => 'invitations/musics/draft-song.mp3',
+        ]);
+        $recentDraft = $this->draftInvitation([
+            'created_at' => now()->subDays(6),
+            'updated_at' => now()->subDays(6),
+        ]);
+        $republishDraft = $this->draftInvitation([
+            'slug' => 'retention-republish-draft',
+            'created_at' => now()->subDays(30),
+            'updated_at' => now()->subDays(30),
+        ]);
+
+        Artisan::call('invitations:delete-expired-drafts');
+
+        $this->assertDatabaseMissing('invitations', ['id' => $expiredDraft->id]);
+        $this->assertDatabaseHas('invitations', ['id' => $recentDraft->id]);
+        $this->assertDatabaseHas('invitations', ['id' => $republishDraft->id]);
+        Storage::disk('public')->assertMissing('invitations/photos/draft-groom.jpg');
+        Storage::disk('public')->assertMissing('invitations/photos/draft-bride.jpg');
+        Storage::disk('public')->assertMissing('invitations/gallery/draft-one.jpg');
+        Storage::disk('public')->assertMissing('invitations/musics/draft-song.mp3');
+    }
+
     private function publishedInvitation(string $eventDate, array $overrides = []): Invitation
     {
         $template = InvitationTemplate::firstOrFail();
@@ -118,5 +162,27 @@ class InvitationRetentionTest extends TestCase
             'published_at' => now()->subDays(100),
             ...$overrides,
         ]);
+    }
+
+    private function draftInvitation(array $overrides = []): Invitation
+    {
+        $template = InvitationTemplate::firstOrFail();
+
+        $invitation = Invitation::create([
+            'template_id' => $template->id,
+            'status' => 'draft',
+            'groom_full_name' => 'I Made Draft',
+            'groom_nickname' => 'Draft',
+            'bride_full_name' => 'Ni Putu Draft',
+            'bride_nickname' => 'Draft',
+            'music_type' => 'none',
+            ...$overrides,
+        ]);
+
+        if ($overrides !== []) {
+            $invitation->forceFill($overrides)->save();
+        }
+
+        return $invitation;
     }
 }
