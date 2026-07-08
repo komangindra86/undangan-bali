@@ -97,6 +97,22 @@ Perangkat fisik:   EXPO_PUBLIC_API_URL=http://ALAMAT-IP-LAN-PC:8000/api
 ```
 
 Untuk perangkat fisik, atur juga `APP_URL` backend ke alamat LAN yang sama agar link public hasil publish dapat dibuka dari ponsel.
+
+Untuk Google Login, buat OAuth Client ID di Google Cloud Console lalu isi environment mobile:
+
+```text
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=android-client-id.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=web-client-id.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=
+EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID=
+```
+
+Backend juga harus mengizinkan Client ID yang sama melalui `.env`:
+
+```text
+GOOGLE_CLIENT_IDS=android-client-id.apps.googleusercontent.com,web-client-id.apps.googleusercontent.com
+```
+
 Jalankan backend agar dapat dijangkau perangkat pada jaringan yang sama:
 
 ```powershell

@@ -64,6 +64,12 @@ export function AuthProvider({ children }) {
     return response;
   }
 
+  async function googleLogin(idToken) {
+    const response = await api.googleLogin(idToken);
+    await persistSession(response);
+    return response;
+  }
+
   async function logout() {
     try {
       if (token) {
@@ -93,6 +99,7 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(token),
       login,
       register,
+      googleLogin,
       logout,
       expireSession,
     }),

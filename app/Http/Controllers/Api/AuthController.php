@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\GoogleAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -63,6 +65,35 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login berhasil.',
+            'user' => $user,
+            'token' => $user->createToken('expo-mobile')->plainTextToken,
+        ]);
+    }
+
+    public function google(Request $request, GoogleAuthService $google): JsonResponse
+    {
+        $data = $request->validate([
+            'id_token' => ['required', 'string'],
+        ]);
+
+        $googleUser = $google->verifiedUser($data['id_token']);
+        $user = User::where('email', $googleUser['email'])->first();
+
+        if ($user?->isAdmin()) {
+            throw ValidationException::withMessages([
+                'id_token' => 'Akun admin tidak dapat masuk dari aplikasi mobile.',
+            ]);
+        }
+
+        $user ??= User::create([
+            'name' => $googleUser['name'] ?: 'User Google',
+            'email' => $googleUser['email'],
+            'password' => Hash::make(Str::password(32)),
+            'role' => 'user',
+        ]);
+
+        return response()->json([
+            'message' => 'Login Google berhasil.',
             'user' => $user,
             'token' => $user->createToken('expo-mobile')->plainTextToken,
         ]);

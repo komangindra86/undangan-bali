@@ -47,4 +47,8 @@ return [
         'payment_provider' => env('WEDDING_GIFT_PAYMENT_PROVIDER', 'midtrans'),
     ],
 
+    'google' => [
+        'client_ids' => array_filter(array_map('trim', explode(',', (string) env('GOOGLE_CLIENT_IDS', '')))),
+    ],
+
 ];

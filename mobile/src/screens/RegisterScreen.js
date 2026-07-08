@@ -1,21 +1,36 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import FormField from '../components/FormField';
+import GoogleAuthButton from '../components/GoogleAuthButton';
 import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
 import { useAuth } from '../context/AuthContext';
 import { useDraft } from '../context/DraftContext';
-import { commonStyles, spacing } from '../theme';
+import { colors, commonStyles, spacing } from '../theme';
 import { cleanText, firstError, validateEmail, validateName } from '../utils/validation';
 
 export default function RegisterScreen({ navigation, route }) {
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const { publishDraft } = useDraft();
   const [form, setForm] = useState({ name: '', email: '', email_confirmation: '', password: '', password_confirmation: '' });
   const [loading, setLoading] = useState(false);
   const publishAfterAuth = route.params?.publishAfterAuth;
   const returnTo = route.params?.returnTo;
+
+  const continueAfterAuth = useCallback(
+    async (session) => {
+      if (publishAfterAuth) {
+        const publication = await publishDraft(session.token);
+        navigation.replace('Share', { publication });
+      } else if (returnTo === 'MyInvitations') {
+        navigation.replace('MyInvitations');
+      } else {
+        navigation.popTo('Landing');
+      }
+    },
+    [navigation, publishAfterAuth, publishDraft, returnTo],
+  );
 
   async function submit() {
     const email = cleanText(form.email).toLowerCase();
@@ -41,20 +56,25 @@ export default function RegisterScreen({ navigation, route }) {
         email,
         email_confirmation: emailConfirmation,
       });
-      if (publishAfterAuth) {
-        const publication = await publishDraft(session.token);
-        navigation.replace('Share', { publication });
-      } else if (returnTo === 'MyInvitations') {
-        navigation.replace('MyInvitations');
-      } else {
-        navigation.popTo('Landing');
-      }
+      await continueAfterAuth(session);
     } catch (error) {
       Alert.alert('Registrasi gagal', error.message);
     } finally {
       setLoading(false);
     }
   }
+
+  const submitGoogle = useCallback(
+    async (idToken) => {
+      try {
+        const session = await googleLogin(idToken);
+        await continueAfterAuth(session);
+      } catch (error) {
+        Alert.alert('Daftar dengan Google gagal', error.message);
+      }
+    },
+    [continueAfterAuth, googleLogin],
+  );
 
   return (
     <SafeAreaView style={[commonStyles.screen, styles.safe]}>
@@ -68,6 +88,8 @@ export default function RegisterScreen({ navigation, route }) {
         <FormField label="Password" secureTextEntry value={form.password} onChangeText={(value) => setForm({ ...form, password: value })} helperText="Minimal 8 karakter." />
         <FormField label="Konfirmasi password" secureTextEntry value={form.password_confirmation} onChangeText={(value) => setForm({ ...form, password_confirmation: value })} />
         <PrimaryButton title={publishAfterAuth ? 'Daftar & Publish' : 'Daftar'} onPress={submit} loading={loading} style={styles.submit} />
+        <Text style={styles.divider}>atau</Text>
+        <GoogleAuthButton title="Daftar dengan Google" onToken={submitGoogle} disabled={loading} style={styles.google} />
         <SecondaryButton title="Sudah punya akun? Masuk" onPress={() => navigation.replace('Login', { publishAfterAuth, returnTo })} />
       </KeyboardAwareScrollView>
     </SafeAreaView>
@@ -89,6 +111,14 @@ const styles = StyleSheet.create({
   },
   submit: {
     marginTop: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  divider: {
+    color: colors.muted,
+    textAlign: 'center',
+    marginVertical: spacing.sm,
+  },
+  google: {
     marginBottom: spacing.sm,
   },
 });

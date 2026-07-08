@@ -2,7 +2,8 @@
   "expo": {
     "name": "Undangan Pernikahan Bali",
     "slug": "undangan-pernikahan-bali",
-    "version": "1.0.7",
+    "scheme": "undanganbali",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -16,7 +17,8 @@
         }
       ],
       "expo-asset",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-web-browser"
     ],
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -29,7 +31,7 @@
     },
     "android": {
       "package": "com.balisantih.undanganbali",
-      "versionCode": 8,
+      "versionCode": 9,
       "softwareKeyboardLayoutMode": "resize",
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
