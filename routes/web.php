@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminPasswordController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GiftPayoutController;
 use App\Http\Controllers\PublicInvitationController;
@@ -23,10 +24,12 @@ Route::get('/preview/templates/{template:slug}', [PublicInvitationController::cl
 
 Route::get('/admin/login', [AdminAuthController::class, 'create'])->name('admin.login');
 Route::get('/login', fn () => redirect()->route('admin.login'))->name('login');
-Route::post('/admin/login', [AdminAuthController::class, 'store'])->name('admin.login.store');
+Route::post('/admin/login', [AdminAuthController::class, 'store'])->middleware('throttle:5,1')->name('admin.login.store');
 Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/dashboard', DashboardController::class)->name('dashboard.index');
+    Route::get('/password', [AdminPasswordController::class, 'edit'])->name('password.edit');
+    Route::put('/password', [AdminPasswordController::class, 'update'])->middleware('throttle:6,1')->name('password.update');
     Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
     Route::get('/payout', [GiftPayoutController::class, 'index'])->name('payout.index');
     Route::get('/payouts', [GiftPayoutController::class, 'index'])->name('payouts.index');

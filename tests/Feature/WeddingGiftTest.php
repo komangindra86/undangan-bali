@@ -303,11 +303,11 @@ class WeddingGiftTest extends TestCase
 
     public function test_public_xendit_payment_demo_is_preview_only_in_production(): void
     {
+        $this->seed();
         $this->app->detectEnvironment(fn () => 'production');
         config([
             'services.xendit.payment_provider' => 'xendit',
         ]);
-        $this->seed();
 
         $this->get('/demo/wedding-gift-xendit')
             ->assertOk()
