@@ -1,7 +1,7 @@
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, StyleSheet, Text } from 'react-native';
 import { colors, spacing } from '../theme';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -22,6 +22,21 @@ const hasGoogleClient = Boolean(
 );
 
 export default function GoogleAuthButton({ title = 'Lanjutkan dengan Google', onToken, disabled = false, style }) {
+  const platformClientId =
+    Platform.OS === 'android'
+      ? googleConfig.androidClientId
+      : Platform.OS === 'ios'
+        ? googleConfig.iosClientId
+        : googleConfig.webClientId || googleConfig.expoClientId;
+
+  if (!platformClientId) {
+    return <DisabledGoogleAuthButton title={title} disabled={disabled} style={style} />;
+  }
+
+  return <ReadyGoogleAuthButton title={title} onToken={onToken} disabled={disabled} style={style} />;
+}
+
+function ReadyGoogleAuthButton({ title, onToken, disabled, style }) {
   const [request, response, promptAsync] = Google.useAuthRequest(googleConfig);
   const [loading, setLoading] = useState(false);
   const handledResponse = useRef(null);
@@ -87,6 +102,32 @@ export default function GoogleAuthButton({ title = 'Lanjutkan dengan Google', on
       style={({ pressed }) => [styles.button, pressed && styles.pressed, (disabled || loading) && styles.disabled, style]}
     >
       {loading ? <ActivityIndicator color={colors.text} /> : <Text style={styles.text}>{title}</Text>}
+    </Pressable>
+  );
+}
+
+function DisabledGoogleAuthButton({ title, disabled, style }) {
+  function showMissingConfig() {
+    const envName =
+      Platform.OS === 'android'
+        ? 'EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID'
+        : Platform.OS === 'ios'
+          ? 'EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID'
+          : 'EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID';
+
+    Alert.alert(
+      'Google Login belum aktif',
+      `Client ID untuk platform ini belum dikonfigurasi. Isi ${envName} lalu jalankan ulang aplikasi.`,
+    );
+  }
+
+  return (
+    <Pressable
+      disabled={disabled}
+      onPress={showMissingConfig}
+      style={({ pressed }) => [styles.button, pressed && styles.pressed, disabled && styles.disabled, style]}
+    >
+      <Text style={styles.text}>{title}</Text>
     </Pressable>
   );
 }
