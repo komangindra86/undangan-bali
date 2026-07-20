@@ -12,13 +12,15 @@ class MomentResource extends JsonResource
     {
         $cover = $this->groom_photo ?: $this->bride_photo;
         $setting = $this->relationLoaded('giftSetting') ? $this->giftSetting : null;
+        $groomNickname = $this->safeDisplayText($this->groom_nickname) ?: 'Mempelai';
+        $brideNickname = $this->safeDisplayText($this->bride_nickname) ?: 'Pasangan';
 
         return [
             'id' => $this->id,
-            'groom_nickname' => $this->groom_nickname,
-            'bride_nickname' => $this->bride_nickname,
-            'names' => trim($this->groom_nickname.' & '.$this->bride_nickname),
-            'caption' => $this->moment_caption,
+            'groom_nickname' => $groomNickname,
+            'bride_nickname' => $brideNickname,
+            'names' => $groomNickname.' & '.$brideNickname,
+            'caption' => $this->safeDisplayText($this->moment_caption),
             'cover_photo_url' => $cover ? url(Storage::disk('public')->url($cover)) : null,
             'template_name' => $this->template?->name,
             'published_at' => $this->published_at?->toISOString(),
@@ -30,5 +32,17 @@ class MomentResource extends JsonResource
             ],
             'comments_count' => (int) ($this->comments_count ?? 0),
         ];
+    }
+
+    private function safeDisplayText(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $withoutExecutableTags = preg_replace('#<(script|style)\b[^>]*>.*?</\1>#is', '', $value);
+        $plainText = trim(preg_replace('/\s+/u', ' ', strip_tags($withoutExecutableTags)));
+
+        return $plainText !== '' ? $plainText : null;
     }
 }

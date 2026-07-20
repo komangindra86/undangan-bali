@@ -86,6 +86,24 @@ class SocialMomentTest extends TestCase
         $this->assertDatabaseCount('social_notifications', 2);
     }
 
+    public function test_feed_excludes_demo_and_sanitizes_legacy_names(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $invitation->update([
+            'groom_nickname' => '<script>alert(1)</script>',
+            'bride_nickname' => '<b>Ayu</b>',
+        ]);
+        $demo = $invitation->replicate();
+        $demo->slug = 'demo-social-feed';
+        $demo->save();
+
+        $this->getJson('/api/moments')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.names', 'Mempelai & Ayu')
+            ->assertJsonMissing(['slug' => 'demo-social-feed']);
+    }
+
     private function publishedInvitation(): Invitation
     {
         $owner = User::factory()->create(['role' => 'user']);

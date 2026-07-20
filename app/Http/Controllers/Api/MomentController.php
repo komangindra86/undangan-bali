@@ -97,6 +97,7 @@ class MomentController extends Controller
     private function feedQuery()
     {
         return Invitation::query()
+            ->withoutRetentionExemptions()
             ->where('status', 'published')
             ->whereNull('archived_at')
             ->whereNull('media_deleted_at')
