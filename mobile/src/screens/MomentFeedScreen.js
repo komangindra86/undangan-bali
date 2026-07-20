@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -9,6 +10,7 @@ export default function MomentFeedScreen({ navigation }) {
   const { isAuthenticated } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedHeight, setFeedHeight] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -24,44 +26,71 @@ export default function MomentFeedScreen({ navigation }) {
   }, [load]);
 
   return (
-    <SafeAreaView style={commonStyles.screen}>
-      <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={loading} onRefresh={load} tintColor={colors.gold} />}>
+    <SafeAreaView style={commonStyles.screen} onLayout={(event) => setFeedHeight(event.nativeEvent.layout.height)}>
+      {feedHeight ? (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={({ item }) => <MomentSlide item={item} height={feedHeight} onPress={() => navigation.navigate('MomentDetail', { id: item.id })} />}
+          pagingEnabled
+          decelerationRate="fast"
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={1}
+          maxToRenderPerBatch={2}
+          windowSize={3}
+          removeClippedSubviews
+          onRefresh={load}
+          refreshing={loading}
+          getItemLayout={(_, index) => ({ length: feedHeight, offset: feedHeight * index, index })}
+        />
+      ) : null}
+      {loading && !items.length ? <View style={styles.loading}><ActivityIndicator color={colors.gold} /></View> : null}
+      {!loading && !items.length ? <EmptyFeed /> : null}
+      <View pointerEvents="box-none" style={styles.overlay}>
         <View style={styles.header}>
           <View>
-            <Text style={commonStyles.eyebrow}>Moment</Text>
-            <Text style={styles.title}>Cerita Pernikahan Bali</Text>
+            <Text style={styles.eyebrow}>Moment</Text>
+            <Text style={styles.title}>Pernikahan Bali</Text>
           </View>
           <View style={styles.headerActions}>
             {isAuthenticated ? <Pressable onPress={() => navigation.navigate('Notifications')}><Text style={styles.headerLink}>Notifikasi</Text></Pressable> : null}
             <Pressable onPress={() => navigation.navigate(isAuthenticated ? 'MyInvitations' : 'Login', isAuthenticated ? undefined : { returnTo: 'MyInvitations' })}><Text style={styles.headerLink}>Akun</Text></Pressable>
           </View>
         </View>
-        <Text style={styles.subtitle}>Rayakan momen bahagia pasangan Bali. Detail acara tetap dibagikan langsung oleh pemilik undangan.</Text>
-        <Pressable style={styles.create} onPress={() => navigation.navigate('Template')}>
-          <Text style={styles.createText}>+ Buat Undangan Gratis</Text>
+        <Pressable style={styles.floatingCreate} onPress={() => navigation.navigate('Template')}>
+          <Text style={styles.plus}>+</Text>
+          <Text style={styles.floatingLabel}>Buat{`\n`}Undangan</Text>
         </Pressable>
-        {loading && !items.length ? <ActivityIndicator color={colors.gold} style={styles.loader} /> : null}
-        {!loading && !items.length ? <Text style={styles.empty}>Moment pernikahan akan tampil di sini setelah undangan dipublish.</Text> : null}
-        {items.map((item) => <MomentCard key={item.id} item={item} onPress={() => navigation.navigate('MomentDetail', { id: item.id })} />)}
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
-function MomentCard({ item, onPress }) {
+function MomentSlide({ item, height, onPress }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
-      {item.cover_photo_url ? <Image source={{ uri: item.cover_photo_url }} style={styles.photo} /> : <View style={styles.photoPlaceholder}><Text style={styles.initials}>{initials(item)}</Text></View>}
-      <View style={styles.cardBody}>
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.slide, { height }, pressed && styles.pressed]}>
+      {item.cover_photo_url ? <ImageBackground source={{ uri: item.cover_photo_url }} style={styles.cover} resizeMode="cover" /> : <View style={styles.placeholder}><Text style={styles.initials}>{initials(item)}</Text></View>}
+      <LinearGradient colors={['transparent', '#15110dcc']} locations={[0.25, 1]} style={styles.shade} />
+      <View style={styles.slideInfo}>
         <Text style={styles.names}>{item.names}</Text>
-        {item.caption ? <Text numberOfLines={2} style={styles.caption}>{item.caption}</Text> : <Text style={styles.caption}>Membagikan cerita menuju hari bahagia.</Text>}
+        <Text numberOfLines={2} style={styles.caption}>{item.caption || 'Membagikan cerita menuju hari bahagia.'}</Text>
         <View style={styles.metrics}>
           <Text style={styles.metric}>Like {item.reactions?.like || 0}</Text>
           <Text style={styles.metric}>Love {item.reactions?.love || 0}</Text>
           <Text style={styles.metric}>{item.comments_count || 0} komentar</Text>
         </View>
+        <Text style={styles.tapHint}>Ketuk untuk melihat Moment</Text>
       </View>
     </Pressable>
+  );
+}
+
+function EmptyFeed() {
+  return (
+    <View style={styles.emptyWrap}>
+      <Text style={styles.emptyTitle}>Moment akan hadir di sini</Text>
+      <Text style={styles.empty}>Undangan yang dipublish otomatis tampil sebagai Moment dengan foto dan nama panggilan pasangan.</Text>
+    </View>
   );
 }
 
@@ -70,24 +99,29 @@ function initials(item) {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: spacing.lg, paddingBottom: spacing.xl },
+  overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'space-between', padding: spacing.lg },
   header: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
   headerActions: { alignItems: 'flex-end', gap: spacing.sm },
+  eyebrow: { color: colors.goldLight, fontSize: 11, fontWeight: '800', letterSpacing: 3, textTransform: 'uppercase' },
   headerLink: { color: colors.goldLight, fontSize: 13, fontWeight: '700', paddingVertical: 3 },
-  title: { color: colors.text, fontSize: 27, fontWeight: '700', marginTop: spacing.xs },
-  subtitle: { color: colors.muted, lineHeight: 21, marginTop: spacing.md },
-  create: { alignItems: 'center', backgroundColor: colors.gold, borderRadius: 15, marginTop: spacing.lg, minHeight: 50, justifyContent: 'center' },
-  createText: { color: colors.background, fontWeight: '800' },
-  loader: { marginTop: spacing.xl },
-  empty: { color: colors.muted, lineHeight: 22, marginTop: spacing.xl, textAlign: 'center' },
-  card: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 20, borderWidth: 1, marginTop: spacing.md, overflow: 'hidden' },
+  title: { color: colors.text, fontSize: 24, fontWeight: '700', marginTop: spacing.xs },
+  slide: { backgroundColor: colors.background, overflow: 'hidden', width: '100%' },
+  cover: { ...StyleSheet.absoluteFillObject },
+  placeholder: { ...StyleSheet.absoluteFillObject, alignItems: 'center', backgroundColor: colors.surfaceAlt, justifyContent: 'center' },
+  shade: { ...StyleSheet.absoluteFillObject },
   pressed: { opacity: 0.8 },
-  photo: { aspectRatio: 1.25, width: '100%' },
-  photoPlaceholder: { alignItems: 'center', aspectRatio: 1.25, backgroundColor: colors.surfaceAlt, justifyContent: 'center' },
   initials: { color: colors.goldLight, fontSize: 42, fontWeight: '700', letterSpacing: 3 },
-  cardBody: { padding: spacing.md },
-  names: { color: colors.text, fontSize: 21, fontWeight: '700' },
-  caption: { color: colors.muted, lineHeight: 20, marginTop: spacing.xs },
+  slideInfo: { bottom: 54, left: spacing.lg, position: 'absolute', right: 96 },
+  names: { color: colors.text, fontSize: 28, fontWeight: '800' },
+  caption: { color: '#e3d9cb', lineHeight: 21, marginTop: spacing.xs },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginTop: spacing.md },
   metric: { color: colors.goldLight, fontSize: 12 },
+  tapHint: { color: '#d5c6b2', fontSize: 11, marginTop: spacing.sm },
+  floatingCreate: { alignItems: 'center', alignSelf: 'flex-end', backgroundColor: colors.gold, borderColor: '#efd69e', borderRadius: 42, borderWidth: 2, height: 82, justifyContent: 'center', marginBottom: 6, shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 10, width: 82 },
+  plus: { color: colors.background, fontSize: 28, fontWeight: '400', lineHeight: 27 },
+  floatingLabel: { color: colors.background, fontSize: 10, fontWeight: '800', lineHeight: 12, textAlign: 'center' },
+  loading: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  emptyWrap: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl },
+  emptyTitle: { color: colors.text, fontSize: 22, fontWeight: '700', textAlign: 'center' },
+  empty: { color: colors.muted, lineHeight: 22, marginTop: spacing.sm, textAlign: 'center' },
 });
