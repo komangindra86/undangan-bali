@@ -35,6 +35,18 @@ class PublicInvitationController extends Controller
         return view($view, ['invitation' => $invitation]);
     }
 
+    public function gift(string $slug): View
+    {
+        $invitation = Invitation::with('giftSetting')
+            ->where('slug', $slug)
+            ->where('status', 'published')
+            ->firstOrFail();
+
+        abort_unless($invitation->giftSetting?->is_active, 404);
+
+        return view('gifts.public', ['invitation' => $invitation]);
+    }
+
     public function preview(InvitationTemplate $template): View
     {
         abort_unless($template->is_active, 404);

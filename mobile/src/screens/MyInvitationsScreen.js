@@ -11,6 +11,15 @@ export default function MyInvitationsScreen({ navigation }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  async function toggleFeed(item) {
+    try {
+      const response = await api.setFeedVisibility(item.id, !item.is_hidden_from_feed, token);
+      setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, is_hidden_from_feed: response.data.is_hidden_from_feed } : entry));
+    } catch (error) {
+      Alert.alert('Feed Moment', error.message);
+    }
+  }
+
   useEffect(() => {
     if (!token) {
       navigation.replace('Login', { returnTo: 'MyInvitations' });
@@ -55,6 +64,13 @@ export default function MyInvitationsScreen({ navigation }) {
                 <SecondaryButton
                   title="Dashboard Gift"
                   onPress={() => navigation.navigate('WeddingGiftDashboard', { invitation: item })}
+                  style={styles.giftButton}
+                />
+                <SecondaryButton title="Kelola Timeline Moment" onPress={() => navigation.navigate('ManageMoments', { invitation: item })} style={styles.giftButton} />
+                <SecondaryButton title="Permintaan Undangan" onPress={() => navigation.navigate('InvitationRequests', { invitation: item })} style={styles.giftButton} />
+                <SecondaryButton
+                  title={item.is_hidden_from_feed ? 'Tampilkan di Feed Moment' : 'Sembunyikan dari Feed Moment'}
+                  onPress={() => toggleFeed(item)}
                   style={styles.giftButton}
                 />
               </>

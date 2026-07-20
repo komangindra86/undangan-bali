@@ -6,13 +6,19 @@ import GalleryScreen from '../screens/GalleryScreen';
 import GiftSetupScreen from '../screens/GiftSetupScreen';
 import LandingScreen from '../screens/LandingScreen';
 import LocationScreen from '../screens/LocationScreen';
+import ManageMomentsScreen from '../screens/ManageMomentsScreen';
 import LoginScreen from '../screens/LoginScreen';
+import MomentDetailScreen from '../screens/MomentDetailScreen';
+import MomentFeedScreen from '../screens/MomentFeedScreen';
 import MusicScreen from '../screens/MusicScreen';
+import NotificationsScreen from '../screens/NotificationsScreen';
+import InvitationRequestsScreen from '../screens/InvitationRequestsScreen';
 import MyInvitationsScreen from '../screens/MyInvitationsScreen';
 import PreviewScreen from '../screens/PreviewScreen';
 import PayoutAccountScreen from '../screens/PayoutAccountScreen';
 import PayoutHistoryScreen from '../screens/PayoutHistoryScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import RequestInvitationScreen from '../screens/RequestInvitationScreen';
 import RequestPayoutScreen from '../screens/RequestPayoutScreen';
 import ShareScreen from '../screens/ShareScreen';
 import SplashScreen from '../screens/SplashScreen';
@@ -27,6 +33,12 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
       <Stack.Screen name="Splash" component={SplashScreen} />
+      <Stack.Screen name="MomentFeed" component={MomentFeedScreen} />
+      <Stack.Screen name="MomentDetail" component={MomentDetailScreen} />
+      <Stack.Screen name="RequestInvitation" component={RequestInvitationScreen} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen name="InvitationRequests" component={InvitationRequestsScreen} />
+      <Stack.Screen name="ManageMoments" component={ManageMomentsScreen} />
       <Stack.Screen name="Landing" component={LandingScreen} />
       <Stack.Screen name="Template" component={TemplateScreen} />
       <Stack.Screen name="TemplatePreview" component={TemplatePreviewScreen} />

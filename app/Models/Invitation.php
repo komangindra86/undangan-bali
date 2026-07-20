@@ -44,6 +44,8 @@ class Invitation extends Model
         'published_at',
         'archived_at',
         'media_deleted_at',
+        'is_hidden_from_feed',
+        'moment_caption',
     ];
 
     protected function casts(): array
@@ -56,6 +58,7 @@ class Invitation extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'gallery_photos' => 'array',
+            'is_hidden_from_feed' => 'boolean',
         ];
     }
 
@@ -92,6 +95,31 @@ class Invitation extends Model
     public function payoutRequests()
     {
         return $this->hasMany(GiftPayoutRequest::class);
+    }
+
+    public function moments()
+    {
+        return $this->hasMany(InvitationMoment::class);
+    }
+
+    public function invitationRequests()
+    {
+        return $this->hasMany(InvitationRequest::class);
+    }
+
+    public function reactions()
+    {
+        return $this->hasMany(InvitationReaction::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(InvitationComment::class);
+    }
+
+    public function socialNotifications()
+    {
+        return $this->hasMany(SocialNotification::class);
     }
 
     public function scopeWithoutRetentionExemptions($query)

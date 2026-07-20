@@ -109,6 +109,15 @@ async function draftFormData(draft, includeMedia, methodOverride = null) {
   return form;
 }
 
+async function socialMomentFormData(values) {
+  const form = new FormData();
+  form.append('title', values.title);
+  if (values.body) form.append('body', values.body);
+  if (values.occurred_at) form.append('occurred_at', values.occurred_at);
+  await appendImage(form, 'photo', values.photo);
+  return form;
+}
+
 export const api = {
   baseUrl: API_URL,
   siteUrl: API_URL.replace(/\/api$/, ''),
@@ -119,12 +128,26 @@ export const api = {
   me: (token) => request('/me', {}, token),
   templates: () => request('/templates'),
   musics: () => request('/musics'),
+  moments: () => request('/moments'),
+  moment: (id) => request(`/moments/${id}`),
+  requestInvitation: (id, values) => request(`/moments/${id}/request-invitation`, { method: 'POST', body: JSON.stringify(values) }),
+  reactToMoment: (id, type, token) => request(`/moments/${id}/reaction`, { method: 'POST', body: JSON.stringify({ type }) }, token),
+  removeMomentReaction: (id, token) => request(`/moments/${id}/reaction`, { method: 'DELETE' }, token),
+  commentOnMoment: (id, body, token) => request(`/moments/${id}/comments`, { method: 'POST', body: JSON.stringify({ body }) }, token),
+  notifications: (token) => request('/social/notifications', {}, token),
+  readNotification: (id, token) => request(`/social/notifications/${id}/read`, { method: 'PUT' }, token),
   invitations: (token) => request('/invitations', {}, token),
   syncDraft: async (draft, token, includeMedia = true) =>
     request('/invitations/sync-local-draft', { method: 'POST', body: await draftFormData(draft, includeMedia) }, token),
   updateDraft: async (id, draft, token, includeMedia = false) =>
     request(`/invitations/${id}`, { method: 'POST', body: await draftFormData(draft, includeMedia, 'PUT') }, token),
   publish: (id, token) => request(`/invitations/${id}/publish`, { method: 'POST' }, token),
+  setFeedVisibility: (id, isHidden, token) => request(`/invitations/${id}/feed-visibility`, { method: 'PUT', body: JSON.stringify({ is_hidden_from_feed: isHidden }) }, token),
+  invitationRequests: (id, token) => request(`/invitations/${id}/invitation-requests`, {}, token),
+  markInvitationRequestShared: (id, requestId, token) => request(`/invitations/${id}/invitation-requests/${requestId}/shared`, { method: 'PUT' }, token),
+  invitationMoments: (id, token) => request(`/invitations/${id}/moments`, {}, token),
+  createInvitationMoment: async (id, values, token) => request(`/invitations/${id}/moments`, { method: 'POST', body: await socialMomentFormData(values) }, token),
+  deleteInvitationMoment: (id, momentId, token) => request(`/invitations/${id}/moments/${momentId}`, { method: 'DELETE' }, token),
   giftSetting: (id, token) => request(`/invitations/${id}/gift-setting`, {}, token),
   saveGiftSetting: (id, values, token) =>
     request(`/invitations/${id}/gift-setting`, { method: 'POST', body: JSON.stringify(values) }, token),

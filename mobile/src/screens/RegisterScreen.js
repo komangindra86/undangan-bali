@@ -23,13 +23,13 @@ export default function RegisterScreen({ navigation, route }) {
       if (publishAfterAuth) {
         const publication = await publishDraft(session.token);
         navigation.replace('Share', { publication });
-      } else if (returnTo === 'MyInvitations') {
-        navigation.replace('MyInvitations');
+      } else if (returnTo) {
+        navigation.replace(returnTo, route.params?.returnParams);
       } else {
-        navigation.popTo('Landing');
+        navigation.popTo('MomentFeed');
       }
     },
-    [navigation, publishAfterAuth, publishDraft, returnTo],
+    [navigation, publishAfterAuth, publishDraft, returnTo, route.params?.returnParams],
   );
 
   async function submit() {
@@ -90,7 +90,7 @@ export default function RegisterScreen({ navigation, route }) {
         <PrimaryButton title={publishAfterAuth ? 'Daftar & Publish' : 'Daftar'} onPress={submit} loading={loading} style={styles.submit} />
         <Text style={styles.divider}>atau</Text>
         <GoogleAuthButton title="Daftar dengan Google" onToken={submitGoogle} disabled={loading} style={styles.google} />
-        <SecondaryButton title="Sudah punya akun? Masuk" onPress={() => navigation.replace('Login', { publishAfterAuth, returnTo })} />
+        <SecondaryButton title="Sudah punya akun? Masuk" onPress={() => navigation.replace('Login', { publishAfterAuth, returnTo, returnParams: route.params?.returnParams })} />
       </KeyboardAwareScrollView>
     </SafeAreaView>
   );

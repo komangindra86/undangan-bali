@@ -25,13 +25,13 @@ export default function LoginScreen({ navigation, route }) {
       if (publishAfterAuth) {
         const publication = await publishDraft(session.token);
         navigation.replace('Share', { publication });
-      } else if (returnTo === 'MyInvitations') {
-        navigation.replace('MyInvitations');
+      } else if (returnTo) {
+        navigation.replace(returnTo, route.params?.returnParams);
       } else {
-        navigation.popTo('Landing');
+        navigation.popTo('MomentFeed');
       }
     },
-    [navigation, publishAfterAuth, publishDraft, returnTo],
+    [navigation, publishAfterAuth, publishDraft, returnTo, route.params?.returnParams],
   );
 
   async function submit() {
@@ -81,7 +81,7 @@ export default function LoginScreen({ navigation, route }) {
         <GoogleAuthButton title="Masuk dengan Google" onToken={submitGoogle} disabled={loading} style={styles.google} />
         <SecondaryButton
           title="Belum punya akun? Daftar"
-          onPress={() => navigation.replace('Register', { publishAfterAuth, returnTo })}
+          onPress={() => navigation.replace('Register', { publishAfterAuth, returnTo, returnParams: route.params?.returnParams })}
         />
       </KeyboardAwareScrollView>
     </SafeAreaView>

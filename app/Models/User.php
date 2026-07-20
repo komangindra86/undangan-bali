@@ -64,6 +64,26 @@ class User extends Authenticatable
         return $this->hasMany(GiftPayoutRequest::class);
     }
 
+    public function invitationRequests()
+    {
+        return $this->hasMany(InvitationRequest::class, 'requester_user_id');
+    }
+
+    public function invitationReactions()
+    {
+        return $this->hasMany(InvitationReaction::class);
+    }
+
+    public function invitationComments()
+    {
+        return $this->hasMany(InvitationComment::class);
+    }
+
+    public function socialNotifications()
+    {
+        return $this->hasMany(SocialNotification::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

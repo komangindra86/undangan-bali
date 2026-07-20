@@ -114,6 +114,8 @@ class StoreInvitationRequest extends FormRequest
             'google_maps_url' => ['nullable', 'url', 'max:2048', 'regex:/^https:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.app\.goo\.gl|maps\.google\.[a-z.]+)/i'],
             'music_type' => ['nullable', Rule::in(['none', 'default', 'upload'])],
             'music_file' => ['nullable', 'file', 'mimes:mp3,wav,m4a', 'max:10240'],
+            'is_hidden_from_feed' => ['nullable', 'boolean'],
+            'moment_caption' => ['nullable', 'string', 'max:300', 'not_regex:/[<>]/'],
             'gift_data' => ['nullable', 'array'],
             'gift_data.is_active' => ['required_with:gift_data', 'boolean'],
             'gift_data.receiver_name' => ['nullable', 'required_if:gift_data.is_active,true,1', 'string', 'max:80', 'not_regex:/[<>]/'],

@@ -16,6 +16,9 @@ Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
 Route::get('/u/{slug}', [PublicInvitationController::class, 'show'])
     ->name('invitations.public');
 
+Route::get('/gift/{slug}', [PublicInvitationController::class, 'gift'])
+    ->name('gifts.public');
+
 Route::get('/demo/wedding-gift-xendit', [PublicInvitationController::class, 'paymentDemo'])
     ->name('demo.wedding-gift-xendit');
 
