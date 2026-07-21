@@ -19,7 +19,15 @@
       "expo-asset",
       "@react-native-community/datetimepicker",
       "expo-web-browser",
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#c59b50",
+          "defaultChannel": "social"
+        }
+      ]
     ],
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -40,7 +48,6 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
         "android.permission.SYSTEM_ALERT_WINDOW",
-        "android.permission.VIBRATE",
         "android.permission.CAMERA",
         "android.permission.WRITE_EXTERNAL_STORAGE"
       ],

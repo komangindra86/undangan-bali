@@ -84,6 +84,11 @@ class User extends Authenticatable
         return $this->hasMany(SocialNotification::class);
     }
 
+    public function pushTokens()
+    {
+        return $this->hasMany(PushToken::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

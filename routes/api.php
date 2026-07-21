@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\MidtransWebhookController;
 use App\Http\Controllers\Api\MomentController;
 use App\Http\Controllers\Api\MusicController;
 use App\Http\Controllers\Api\PublicWeddingGiftController;
+use App\Http\Controllers\Api\PushTokenController;
 use App\Http\Controllers\Api\SocialController;
 use App\Http\Controllers\Api\TemplateController;
 use App\Http\Controllers\Api\WeddingGiftDashboardController;
@@ -54,5 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/moments/{invitation}/comments', [SocialController::class, 'comment'])->middleware('throttle:6,1');
     Route::get('/social/notifications', [SocialController::class, 'notifications']);
     Route::put('/social/notifications/{notification}/read', [SocialController::class, 'readNotification']);
+    Route::post('/push-tokens', [PushTokenController::class, 'store']);
+    Route::delete('/push-tokens', [PushTokenController::class, 'destroy']);
     Route::apiResource('invitations', InvitationController::class);
 });

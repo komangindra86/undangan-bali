@@ -16,6 +16,7 @@ export const SESSION_KEYS = {
   user: 'auth_user',
   hasAccountOnDevice: 'has_account_on_device',
   remoteInvitationId: 'remote_invitation_id',
+  pushToken: 'expo_push_token',
 };
 
 export const emptyDraft = {

@@ -136,6 +136,8 @@ export const api = {
   commentOnMoment: (id, body, token) => request(`/moments/${id}/comments`, { method: 'POST', body: JSON.stringify({ body }) }, token),
   notifications: (token) => request('/social/notifications', {}, token),
   readNotification: (id, token) => request(`/social/notifications/${id}/read`, { method: 'PUT' }, token),
+  registerPushToken: (values, token) => request('/push-tokens', { method: 'POST', body: JSON.stringify(values) }, token),
+  unregisterPushToken: (pushToken, token) => request('/push-tokens', { method: 'DELETE', body: JSON.stringify({ token: pushToken }) }, token),
   invitations: (token) => request('/invitations', {}, token),
   syncDraft: async (draft, token, includeMedia = true) =>
     request('/invitations/sync-local-draft', { method: 'POST', body: await draftFormData(draft, includeMedia) }, token),

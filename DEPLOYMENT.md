@@ -193,6 +193,7 @@ php artisan storage:link
 php artisan optimize:clear
 php artisan optimize
 sudo chown -R www-data:www-data storage bootstrap/cache
+sudo systemctl restart undangan-bali-queue.service
 sudo systemctl reload php8.2-fpm
 sudo systemctl reload nginx
 ```
@@ -202,6 +203,29 @@ Atau jalankan:
 ```bash
 bash scripts/deploy-vps.sh
 ```
+
+### Queue worker
+
+Notifikasi push diproses lewat Laravel queue. Pasang service sekali setelah clone/deploy:
+
+```bash
+sudo cp scripts/undangan-bali-queue.service /etc/systemd/system/undangan-bali-queue.service
+sudo systemctl daemon-reload
+sudo systemctl enable --now undangan-bali-queue.service
+sudo systemctl status undangan-bali-queue.service
+```
+
+### Push notification Android
+
+Push perangkat memakai Expo Push Service dan FCM V1. Konfigurasi sekali sebelum build AAB:
+
+1. Hubungkan project ke akun Expo dengan `eas init`, lalu isi `EXPO_PUBLIC_EAS_PROJECT_ID` pada environment build mobile.
+2. Daftarkan package Android `com.balisantih.undanganbali` di Firebase.
+3. Simpan `google-services.json` di folder `mobile/` dan tambahkan `android.googleServicesFile` ke `mobile/app.json`.
+4. Upload Firebase service account FCM V1 melalui `eas credentials` atau dashboard EAS.
+5. Jika enhanced push security Expo diaktifkan, isi `EXPO_PUSH_ACCESS_TOKEN` hanya di `.env` backend VPS.
+
+Jangan commit `google-services.json`, Firebase service account, atau Expo access token.
 
 ## 6. Webhook Midtrans
 

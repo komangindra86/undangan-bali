@@ -1,0 +1,17 @@
+[Unit]
+Description=Undangan Bali Laravel Queue Worker
+After=network.target mysql.service php8.2-fpm.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/undangan-bali
+ExecStart=/usr/bin/php8.2 artisan queue:work database --sleep=3 --tries=3 --timeout=60 --max-time=3600
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=70
+
+[Install]
+WantedBy=multi-user.target

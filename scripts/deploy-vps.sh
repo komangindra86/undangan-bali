@@ -12,6 +12,7 @@ php8.2 artisan optimize:clear
 php8.2 artisan optimize
 
 sudo chown -R www-data:www-data storage bootstrap/cache
+sudo systemctl is-enabled --quiet undangan-bali-queue.service && sudo systemctl restart undangan-bali-queue.service || true
 sudo systemctl reload php8.2-fpm
 sudo systemctl reload nginx
 

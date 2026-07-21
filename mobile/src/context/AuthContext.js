@@ -73,12 +73,20 @@ export function AuthProvider({ children }) {
   async function logout() {
     try {
       if (token) {
+        const pushToken = await AsyncStorage.getItem(SESSION_KEYS.pushToken);
+        if (pushToken) {
+          try {
+            await api.unregisterPushToken(pushToken, token);
+          } catch (_) {
+            // Logout must still succeed if the device is temporarily offline.
+          }
+        }
         await api.logout(token);
       }
     } finally {
       setToken(null);
       setUser(null);
-      await AsyncStorage.multiRemove([SESSION_KEYS.token, SESSION_KEYS.user]);
+      await AsyncStorage.multiRemove([SESSION_KEYS.token, SESSION_KEYS.user, SESSION_KEYS.pushToken]);
     }
   }
 

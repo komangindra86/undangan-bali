@@ -51,4 +51,10 @@ return [
         'client_ids' => array_filter(array_map('trim', explode(',', (string) env('GOOGLE_CLIENT_IDS', '')))),
     ],
 
+    'expo' => [
+        'push_url' => env('EXPO_PUSH_URL', 'https://exp.host/--/api/v2/push/send'),
+        'receipt_url' => env('EXPO_PUSH_RECEIPT_URL', 'https://exp.host/--/api/v2/push/getReceipts'),
+        'access_token' => env('EXPO_PUSH_ACCESS_TOKEN'),
+    ],
+
 ];
