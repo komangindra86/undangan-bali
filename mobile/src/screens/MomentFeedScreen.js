@@ -157,6 +157,8 @@ function MomentSlide({ item, height, width, isFirst, onPress }) {
           initialNumToRender={1}
           maxToRenderPerBatch={2}
           windowSize={3}
+          onScroll={updateActivePhoto}
+          scrollEventThrottle={16}
           onMomentumScrollEnd={updateActivePhoto}
           getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
           renderItem={({ item: photo }) => (
