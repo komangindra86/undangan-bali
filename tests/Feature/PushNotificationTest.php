@@ -2,13 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Jobs\CheckExpoPushReceipts;
-use App\Jobs\SendExpoPushNotification;
+use App\Jobs\SendFirebasePushNotification;
 use App\Models\Invitation;
 use App\Models\InvitationTemplate;
 use App\Models\PushToken;
 use App\Models\User;
-use App\Services\ExpoPushService;
+use App\Services\FirebasePushService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -21,7 +20,7 @@ class PushNotificationTest extends TestCase
     public function test_authenticated_user_can_register_and_remove_a_device_token(): void
     {
         $user = User::factory()->create();
-        $token = 'ExponentPushToken[Test_device-123]';
+        $token = 'fcm_registration_token:Test-device_123';
 
         $this->actingAs($user, 'sanctum')->postJson('/api/push-tokens', [
             'token' => $token,
@@ -50,7 +49,7 @@ class PushNotificationTest extends TestCase
         $invitation = $this->publishedInvitation();
         PushToken::create([
             'user_id' => $invitation->user_id,
-            'token' => 'ExponentPushToken[Owner_device-123]',
+            'token' => 'fcm_owner_token:Owner-device_123',
             'platform' => 'android',
         ]);
 
@@ -59,66 +58,70 @@ class PushNotificationTest extends TestCase
             'requester_whatsapp' => '081234567890',
         ])->assertCreated();
 
-        Queue::assertPushed(SendExpoPushNotification::class, fn ($job) => $job->userId === $invitation->user_id
+        Queue::assertPushed(SendFirebasePushNotification::class, fn ($job) => $job->userId === $invitation->user_id
             && $job->invitationId === $invitation->id
             && $job->type === 'invitation_request'
         );
     }
 
-    public function test_expo_ticket_is_saved_and_receipt_check_is_queued(): void
+    public function test_fcm_message_is_sent_and_message_id_is_saved(): void
     {
-        Queue::fake();
         Http::fake([
-            'https://exp.host/--/api/v2/push/send' => Http::response([
-                'data' => [['status' => 'ok', 'id' => 'ticket-id-123']],
+            'https://fcm.googleapis.com/v1/projects/test-project/messages:send' => Http::response([
+                'name' => 'projects/test-project/messages/message-id-123',
             ]),
         ]);
         $user = User::factory()->create();
         $pushToken = PushToken::create([
             'user_id' => $user->id,
-            'token' => 'ExponentPushToken[Receipt_device-123]',
+            'token' => 'fcm_receipt_token:Receipt-device_123',
             'platform' => 'android',
         ]);
 
-        app(ExpoPushService::class)->sendToUser($user->id, 'Judul', 'Isi', [
+        $this->firebaseService()->sendToUser($user->id, 'Judul', 'Isi', [
             'screen' => 'Notifications',
+            'invitation_id' => 123,
         ]);
 
         $this->assertDatabaseHas('push_tokens', [
             'id' => $pushToken->id,
-            'last_ticket_id' => 'ticket-id-123',
+            'last_message_id' => 'projects/test-project/messages/message-id-123',
             'last_error' => null,
         ]);
-        Queue::assertPushed(CheckExpoPushReceipts::class, fn ($job) => ($job->receipts['ticket-id-123'] ?? null) === $pushToken->id
-        );
-        Http::assertSent(fn ($request) => $request->url() === 'https://exp.host/--/api/v2/push/send'
-            && $request[0]['to'] === $pushToken->token
-            && $request[0]['channelId'] === 'social'
+        Http::assertSent(fn ($request) => $request->url() === 'https://fcm.googleapis.com/v1/projects/test-project/messages:send'
+            && $request->hasHeader('Authorization', 'Bearer test-access-token')
+            && $request['message']['token'] === $pushToken->token
+            && $request['message']['data']['invitation_id'] === '123'
+            && $request['message']['android']['notification']['channel_id'] === 'social'
         );
     }
 
-    public function test_unregistered_device_ticket_disables_token(): void
+    public function test_unregistered_fcm_device_disables_token(): void
     {
         Http::fake([
-            'https://exp.host/--/api/v2/push/send' => Http::response([
-                'data' => [[
-                    'status' => 'error',
-                    'message' => 'Device is not registered.',
-                    'details' => ['error' => 'DeviceNotRegistered'],
-                ]],
-            ]),
+            'https://fcm.googleapis.com/v1/projects/test-project/messages:send' => Http::response([
+                'error' => [
+                    'code' => 404,
+                    'status' => 'NOT_FOUND',
+                    'message' => 'Requested entity was not found.',
+                    'details' => [[
+                        '@type' => 'type.googleapis.com/google.firebase.fcm.v1.FcmError',
+                        'errorCode' => 'UNREGISTERED',
+                    ]],
+                ],
+            ], 404),
         ]);
         $user = User::factory()->create();
         $pushToken = PushToken::create([
             'user_id' => $user->id,
-            'token' => 'ExponentPushToken[Old_device-123]',
+            'token' => 'fcm_old_token:Old-device_123',
             'platform' => 'android',
         ]);
 
-        app(ExpoPushService::class)->sendToUser($user->id, 'Judul', 'Isi');
+        $this->firebaseService()->sendToUser($user->id, 'Judul', 'Isi');
 
         $this->assertNotNull($pushToken->fresh()->disabled_at);
-        $this->assertStringContainsString('DeviceNotRegistered', $pushToken->fresh()->last_error);
+        $this->assertStringContainsString('UNREGISTERED', $pushToken->fresh()->last_error);
     }
 
     private function publishedInvitation(): Invitation
@@ -142,5 +145,23 @@ class PushNotificationTest extends TestCase
             'event_date' => '2026-08-18',
             'published_at' => now(),
         ]);
+    }
+
+    private function firebaseService(): FirebasePushService
+    {
+        config('services.firebase.send_url', 'https://fcm.googleapis.com/v1/projects/%s/messages:send');
+
+        return new class extends FirebasePushService
+        {
+            protected function accessToken(): string
+            {
+                return 'test-access-token';
+            }
+
+            protected function projectId(): string
+            {
+                return 'test-project';
+            }
+        };
     }
 }

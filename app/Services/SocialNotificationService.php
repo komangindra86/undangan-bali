@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Jobs\SendExpoPushNotification;
+use App\Jobs\SendFirebasePushNotification;
 use App\Models\Invitation;
 use App\Models\PushToken;
 use App\Models\SocialNotification;
@@ -24,7 +24,7 @@ class SocialNotificationService
 
         if (PushToken::where('user_id', $invitation->user_id)->whereNull('disabled_at')->exists()) {
             [$title, $body] = $this->pushCopy($type, $data);
-            SendExpoPushNotification::dispatch(
+            SendFirebasePushNotification::dispatch(
                 $invitation->user_id,
                 $invitation->id,
                 $type,

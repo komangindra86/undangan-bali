@@ -51,10 +51,11 @@ return [
         'client_ids' => array_filter(array_map('trim', explode(',', (string) env('GOOGLE_CLIENT_IDS', '')))),
     ],
 
-    'expo' => [
-        'push_url' => env('EXPO_PUSH_URL', 'https://exp.host/--/api/v2/push/send'),
-        'receipt_url' => env('EXPO_PUSH_RECEIPT_URL', 'https://exp.host/--/api/v2/push/getReceipts'),
-        'access_token' => env('EXPO_PUSH_ACCESS_TOKEN'),
+    'firebase' => [
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+        'credentials' => env('FIREBASE_CREDENTIALS', base_path('firebase-service-account.json')),
+        'token_uri' => env('FIREBASE_TOKEN_URI', 'https://oauth2.googleapis.com/token'),
+        'send_url' => env('FIREBASE_SEND_URL', 'https://fcm.googleapis.com/v1/projects/%s/messages:send'),
     ],
 
 ];

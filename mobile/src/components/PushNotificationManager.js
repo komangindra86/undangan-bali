@@ -28,11 +28,19 @@ export default function PushNotificationManager() {
   useEffect(() => {
     if (loading || !token || Platform.OS === 'web') return undefined;
 
+    const pushTokenSubscription = Platform.OS === 'android'
+      ? Notifications.addPushTokenListener((deviceToken) => {
+        if (deviceToken.type === 'fcm' && typeof deviceToken.data === 'string') {
+          saveDeviceToken(deviceToken.data, token).catch(() => {});
+        }
+      })
+      : null;
+
     registerDevice(token).catch((error) => {
       if (__DEV__) console.warn('Push registration skipped:', error.message);
     });
 
-    return undefined;
+    return () => pushTokenSubscription?.remove();
   }, [loading, token]);
 
   useEffect(() => {
@@ -61,7 +69,7 @@ export default function PushNotificationManager() {
 }
 
 async function registerDevice(authToken) {
-  if (!Device.isDevice) return;
+  if (!Device.isDevice || Platform.OS !== 'android') return;
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('social', {
@@ -80,22 +88,23 @@ async function registerDevice(authToken) {
     : await Notifications.requestPermissionsAsync();
   if (permission.status !== 'granted') return;
 
-  const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID
-    || Constants.easConfig?.projectId
-    || Constants.expoConfig?.extra?.eas?.projectId;
-  if (!projectId) {
-    throw new Error('EXPO_PUBLIC_EAS_PROJECT_ID belum dikonfigurasi.');
+  const deviceToken = await Notifications.getDevicePushTokenAsync();
+  if (deviceToken.type !== 'fcm' || typeof deviceToken.data !== 'string') {
+    throw new Error('Perangkat tidak mengembalikan token Firebase Cloud Messaging.');
   }
 
-  const pushToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+  await saveDeviceToken(deviceToken.data, authToken);
+  await Notifications.setBadgeCountAsync(0);
+}
+
+async function saveDeviceToken(pushToken, authToken) {
   await api.registerPushToken({
     token: pushToken,
-    platform: Platform.OS,
+    platform: 'android',
     device_name: Device.deviceName || null,
     app_version: Constants.expoConfig?.version || null,
   }, authToken);
   await AsyncStorage.setItem(SESSION_KEYS.pushToken, pushToken);
-  await Notifications.setBadgeCountAsync(0);
 }
 
 function handleNotificationResponse(response) {

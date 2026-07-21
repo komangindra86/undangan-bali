@@ -2,11 +2,11 @@
 
 namespace App\Jobs;
 
-use App\Services\ExpoPushService;
+use App\Services\FirebasePushService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
-class SendExpoPushNotification implements ShouldQueue
+class SendFirebasePushNotification implements ShouldQueue
 {
     use Queueable;
 
@@ -25,7 +25,7 @@ class SendExpoPushNotification implements ShouldQueue
         return [10, 60, 180];
     }
 
-    public function handle(ExpoPushService $push): void
+    public function handle(FirebasePushService $push): void
     {
         $push->sendToUser(
             $this->userId,

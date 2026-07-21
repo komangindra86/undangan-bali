@@ -13,7 +13,7 @@ class PushTokenController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'token' => ['required', 'string', 'max:255', 'regex:/^(ExponentPushToken|ExpoPushToken)\[[A-Za-z0-9_-]+\]$/'],
+            'token' => ['required', 'string', 'max:255', 'regex:/^[A-Za-z0-9_:\-]+$/'],
             'platform' => ['required', Rule::in(['android', 'ios'])],
             'device_name' => ['nullable', 'string', 'max:120'],
             'app_version' => ['nullable', 'string', 'max:30'],

@@ -12,7 +12,7 @@ class PushToken extends Model
         'platform',
         'device_name',
         'app_version',
-        'last_ticket_id',
+        'last_message_id',
         'last_error',
         'last_seen_at',
         'disabled_at',
