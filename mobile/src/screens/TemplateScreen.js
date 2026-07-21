@@ -10,6 +10,7 @@ export default function TemplateScreen({ navigation }) {
   const { draft, saveSection, syncing, syncMessage } = useDraft();
   const [templates, setTemplates] = useState([]);
   const [selected, setSelected] = useState(draft.selected_template);
+  const [choosingId, setChoosingId] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,13 +20,22 @@ export default function TemplateScreen({ navigation }) {
       .finally(() => setLoading(false));
   }, []);
 
-  async function next() {
-    if (!selected) {
+  async function useTemplate(template = selected) {
+    if (!template) {
       Alert.alert('Pilih template', 'Silakan review lalu pilih satu desain untuk melanjutkan.');
       return;
     }
-    await saveSection('selected_template', selected);
-    navigation.navigate('GroomBrideForm');
+
+    setSelected(template);
+    setChoosingId(template.id);
+    try {
+      await saveSection('selected_template', template);
+      navigation.navigate('GroomBrideForm');
+    } catch (error) {
+      Alert.alert('Template belum tersimpan', error.message);
+    } finally {
+      setChoosingId(null);
+    }
   }
 
   return (
@@ -34,7 +44,7 @@ export default function TemplateScreen({ navigation }) {
       title="Pilih nuansa Bali"
       subtitle="Lihat preview lengkap dengan data dummy, foto, galeri, dan animasi sebelum memutuskan desain."
       syncMessage={syncMessage}
-      footer={<FooterActions onBack={() => navigation.goBack()} onNext={next} loading={syncing} />}
+      footer={<FooterActions onBack={() => navigation.goBack()} onNext={() => useTemplate()} loading={syncing || choosingId != null} />}
     >
       {loading ? <ActivityIndicator color={colors.gold} /> : null}
       {templates.map((template) => {
@@ -53,11 +63,25 @@ export default function TemplateScreen({ navigation }) {
               <Text style={styles.concept}>{conceptFor(template.slug)}</Text>
               <Text style={styles.detail}>{template.is_premium ? 'Premium' : 'Gratis'} | Foto, animasi, galeri</Text>
               <View style={styles.actions}>
-                <Pressable onPress={() => navigation.navigate('TemplatePreview', { template })} style={styles.reviewButton}>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={choosingId != null}
+                  onPress={() => navigation.navigate('TemplatePreview', { template })}
+                  style={styles.reviewButton}
+                >
                   <Text style={styles.reviewText}>Lihat Preview</Text>
                 </Pressable>
-                <Pressable onPress={() => setSelected(template)} style={[styles.chooseButton, active && styles.chooseActive]}>
-                  <Text style={[styles.chooseText, active && styles.chooseTextActive]}>{active ? 'Dipilih' : 'Gunakan'}</Text>
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={choosingId != null}
+                  onPress={() => useTemplate(template)}
+                  style={[styles.chooseButton, active && styles.chooseActive, choosingId != null && styles.disabled]}
+                >
+                  {choosingId === template.id ? (
+                    <ActivityIndicator color={colors.background} size="small" />
+                  ) : (
+                    <Text style={[styles.chooseText, active && styles.chooseTextActive]}>{active ? 'Lanjutkan' : 'Gunakan'}</Text>
+                  )}
                 </Pressable>
               </View>
             </View>
@@ -166,5 +190,8 @@ const styles = StyleSheet.create({
   },
   chooseTextActive: {
     color: colors.background,
+  },
+  disabled: {
+    opacity: 0.55,
   },
 });
