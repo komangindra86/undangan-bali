@@ -1,18 +1,30 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 
+const feedSession = {
+  activeMomentId: null,
+  activeMomentIndex: 0,
+  hasMore: true,
+  items: [],
+  page: 1,
+  photoIndexes: {},
+};
+
 export default function MomentFeedScreen({ navigation }) {
   const { isAuthenticated } = useAuth();
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const feedRef = useRef(null);
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 });
+  const [items, setItems] = useState(feedSession.items);
+  const [loading, setLoading] = useState(feedSession.items.length === 0);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(feedSession.page);
+  const [hasMore, setHasMore] = useState(feedSession.hasMore);
   const [error, setError] = useState(null);
   const [feedSize, setFeedSize] = useState({ height: 0, width: 0 });
 
@@ -21,9 +33,16 @@ export default function MomentFeedScreen({ navigation }) {
     setError(null);
     try {
       const response = await api.moments(1);
-      setItems(response.data || []);
-      setPage(response.meta?.current_page || 1);
-      setHasMore((response.meta?.current_page || 1) < (response.meta?.last_page || 1));
+      const nextItems = response.data || [];
+      const nextPage = response.meta?.current_page || 1;
+      const nextHasMore = nextPage < (response.meta?.last_page || 1);
+
+      feedSession.items = nextItems;
+      feedSession.page = nextPage;
+      feedSession.hasMore = nextHasMore;
+      setItems(nextItems);
+      setPage(nextPage);
+      setHasMore(nextHasMore);
     } catch (loadError) {
       setError(loadError.message);
     } finally {
@@ -39,10 +58,16 @@ export default function MomentFeedScreen({ navigation }) {
       const response = await api.moments(page + 1);
       setItems((current) => {
         const existingIds = new Set(current.map((item) => item.id));
-        return [...current, ...(response.data || []).filter((item) => !existingIds.has(item.id))];
+        const nextItems = [...current, ...(response.data || []).filter((item) => !existingIds.has(item.id))];
+        feedSession.items = nextItems;
+        return nextItems;
       });
-      setPage(response.meta?.current_page || page + 1);
-      setHasMore((response.meta?.current_page || page + 1) < (response.meta?.last_page || page + 1));
+      const nextPage = response.meta?.current_page || page + 1;
+      const nextHasMore = nextPage < (response.meta?.last_page || page + 1);
+      feedSession.page = nextPage;
+      feedSession.hasMore = nextHasMore;
+      setPage(nextPage);
+      setHasMore(nextHasMore);
     } catch (loadError) {
       setError(loadError.message);
     } finally {
@@ -51,8 +76,38 @@ export default function MomentFeedScreen({ navigation }) {
   }, [hasMore, loading, loadingMore, page]);
 
   useEffect(() => {
-    loadFirstPage();
+    if (!feedSession.items.length) loadFirstPage();
   }, [loadFirstPage]);
+
+  const rememberVisibleMoment = useCallback((index, id) => {
+    feedSession.activeMomentIndex = index;
+    feedSession.activeMomentId = id;
+  }, []);
+
+  const onViewableItemsChanged = useRef(({ viewableItems }) => {
+    const visibleItem = viewableItems.find((entry) => entry.isViewable && entry.index != null);
+    if (visibleItem) {
+      feedSession.activeMomentIndex = visibleItem.index;
+      feedSession.activeMomentId = visibleItem.item.id;
+    }
+  });
+
+  useFocusEffect(useCallback(() => {
+    if (!feedSize.height || !items.length) return undefined;
+
+    const idIndex = feedSession.activeMomentId == null
+      ? -1
+      : items.findIndex((item) => item.id === feedSession.activeMomentId);
+    const restoreIndex = Math.min(
+      Math.max(idIndex >= 0 ? idIndex : feedSession.activeMomentIndex, 0),
+      items.length - 1,
+    );
+    const frame = requestAnimationFrame(() => {
+      feedRef.current?.scrollToIndex({ animated: false, index: restoreIndex });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [feedSize.height, items]));
 
   return (
     <SafeAreaView
@@ -64,6 +119,7 @@ export default function MomentFeedScreen({ navigation }) {
     >
       {feedSize.height && feedSize.width ? (
         <FlatList
+          ref={feedRef}
           data={items}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item, index }) => (
@@ -72,7 +128,14 @@ export default function MomentFeedScreen({ navigation }) {
               height={feedSize.height}
               width={feedSize.width}
               isFirst={index === 0}
-              onPress={() => navigation.navigate('MomentDetail', { id: item.id })}
+              initialPhotoIndex={feedSession.photoIndexes[item.id] || 0}
+              onPhotoChange={(photoIndex) => {
+                feedSession.photoIndexes[item.id] = photoIndex;
+              }}
+              onPress={() => {
+                rememberVisibleMoment(index, item.id);
+                navigation.navigate('MomentDetail', { id: item.id });
+              }}
             />
           )}
           pagingEnabled
@@ -84,6 +147,8 @@ export default function MomentFeedScreen({ navigation }) {
           removeClippedSubviews
           onRefresh={loadFirstPage}
           refreshing={loading}
+          onViewableItemsChanged={onViewableItemsChanged.current}
+          viewabilityConfig={viewabilityConfig.current}
           onEndReached={loadNextPage}
           onEndReachedThreshold={0.7}
           getItemLayout={(_, index) => ({ length: feedSize.height, offset: feedSize.height * index, index })}
@@ -131,15 +196,21 @@ export default function MomentFeedScreen({ navigation }) {
   );
 }
 
-function MomentSlide({ item, height, width, isFirst, onPress }) {
+function MomentSlide({ item, height, width, isFirst, initialPhotoIndex, onPhotoChange, onPress }) {
   const photos = item.photo_urls?.length
     ? item.photo_urls
     : item.cover_photo_url ? [item.cover_photo_url] : [];
-  const [activePhoto, setActivePhoto] = useState(0);
+  const safeInitialPhotoIndex = Math.min(Math.max(initialPhotoIndex, 0), Math.max(photos.length - 1, 0));
+  const [activePhoto, setActivePhoto] = useState(safeInitialPhotoIndex);
 
   function updateActivePhoto(event) {
     const index = Math.round(event.nativeEvent.contentOffset.x / width);
-    setActivePhoto(Math.max(0, Math.min(index, photos.length - 1)));
+    const nextIndex = Math.max(0, Math.min(index, photos.length - 1));
+    setActivePhoto((currentIndex) => {
+      if (currentIndex === nextIndex) return currentIndex;
+      onPhotoChange(nextIndex);
+      return nextIndex;
+    });
   }
 
   return (
@@ -157,12 +228,18 @@ function MomentSlide({ item, height, width, isFirst, onPress }) {
           initialNumToRender={1}
           maxToRenderPerBatch={2}
           windowSize={3}
+          initialScrollIndex={safeInitialPhotoIndex}
           onScroll={updateActivePhoto}
           scrollEventThrottle={16}
           onMomentumScrollEnd={updateActivePhoto}
           getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
-          renderItem={({ item: photo }) => (
-            <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [{ height, width }, pressed && styles.pressed]}>
+          renderItem={({ item: photo, index }) => (
+            <Pressable
+              accessibilityLabel={`Lihat Moment ${item.names}, foto ${index + 1}`}
+              accessibilityRole="button"
+              onPress={onPress}
+              style={({ pressed }) => [{ height, width }, pressed && styles.pressed]}
+            >
               <ImageBackground source={{ uri: photo }} style={styles.cover} resizeMode="cover" />
             </Pressable>
           )}
