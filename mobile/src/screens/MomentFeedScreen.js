@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,6 +19,9 @@ const feedSession = {
 export default function MomentFeedScreen({ navigation }) {
   const { isAuthenticated } = useAuth();
   const feedRef = useRef(null);
+  const feedDraggingRef = useRef(false);
+  const feedSettleTimerRef = useRef(null);
+  const lastFeedOffsetRef = useRef(0);
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 });
   const [items, setItems] = useState(feedSession.items);
   const [loading, setLoading] = useState(feedSession.items.length === 0);
@@ -92,6 +95,37 @@ export default function MomentFeedScreen({ navigation }) {
     }
   });
 
+  const settleFeedOffset = useCallback((offset, animated = false) => {
+    if (!feedSize.height || !items.length) return;
+
+    const index = Math.min(Math.max(Math.round(offset / feedSize.height), 0), items.length - 1);
+    const targetOffset = index * feedSize.height;
+    const item = items[index];
+
+    rememberVisibleMoment(index, item.id);
+    if (Math.abs(offset - targetOffset) > 1) {
+      feedRef.current?.scrollToOffset({ animated, offset: targetOffset });
+    }
+  }, [feedSize.height, items, rememberVisibleMoment]);
+
+  const settleFeedPosition = useCallback((event, animated = false) => {
+    settleFeedOffset(event.nativeEvent.contentOffset.y, animated);
+  }, [settleFeedOffset]);
+
+  const trackFeedScroll = useCallback((event) => {
+    lastFeedOffsetRef.current = event.nativeEvent.contentOffset.y;
+    if (feedDraggingRef.current) return;
+
+    if (feedSettleTimerRef.current) clearTimeout(feedSettleTimerRef.current);
+    feedSettleTimerRef.current = setTimeout(() => {
+      settleFeedOffset(lastFeedOffsetRef.current, true);
+    }, 140);
+  }, [settleFeedOffset]);
+
+  useEffect(() => () => {
+    if (feedSettleTimerRef.current) clearTimeout(feedSettleTimerRef.current);
+  }, []);
+
   useFocusEffect(useCallback(() => {
     if (!feedSize.height || !items.length) return undefined;
 
@@ -138,17 +172,32 @@ export default function MomentFeedScreen({ navigation }) {
               }}
             />
           )}
-          pagingEnabled
+          snapToInterval={feedSize.height}
+          snapToAlignment="start"
+          disableIntervalMomentum
           decelerationRate="fast"
+          bounces={false}
+          overScrollMode="never"
           showsVerticalScrollIndicator={false}
-          initialNumToRender={1}
-          maxToRenderPerBatch={2}
-          windowSize={3}
-          removeClippedSubviews
+          initialNumToRender={2}
+          maxToRenderPerBatch={3}
+          windowSize={5}
+          removeClippedSubviews={false}
           onRefresh={loadFirstPage}
           refreshing={loading}
           onViewableItemsChanged={onViewableItemsChanged.current}
           viewabilityConfig={viewabilityConfig.current}
+          onScroll={trackFeedScroll}
+          scrollEventThrottle={32}
+          onScrollBeginDrag={() => {
+            feedDraggingRef.current = true;
+            if (feedSettleTimerRef.current) clearTimeout(feedSettleTimerRef.current);
+          }}
+          onScrollEndDrag={(event) => {
+            feedDraggingRef.current = false;
+            settleFeedPosition(event, true);
+          }}
+          onMomentumScrollEnd={settleFeedPosition}
           onEndReached={loadNextPage}
           onEndReachedThreshold={0.7}
           getItemLayout={(_, index) => ({ length: feedSize.height, offset: feedSize.height * index, index })}
@@ -164,13 +213,14 @@ export default function MomentFeedScreen({ navigation }) {
           </View>
           <View style={styles.headerActions}>
             {isAuthenticated ? (
-              <Pressable accessibilityRole="button" onPress={() => navigation.navigate('Notifications')}>
+              <Pressable accessibilityRole="button" onPress={() => navigation.navigate('Notifications')} style={styles.headerButton}>
                 <Text style={styles.headerLink}>Notifikasi</Text>
               </Pressable>
             ) : null}
             <Pressable
               accessibilityRole="button"
               onPress={() => navigation.navigate(isAuthenticated ? 'MyInvitations' : 'Login', isAuthenticated ? undefined : { returnTo: 'MyInvitations' })}
+              style={styles.headerButton}
             >
               <Text style={styles.headerLink}>Akun</Text>
             </Pressable>
@@ -201,25 +251,59 @@ function MomentSlide({ item, height, width, isFirst, initialPhotoIndex, onPhotoC
     ? item.photo_urls
     : item.cover_photo_url ? [item.cover_photo_url] : [];
   const safeInitialPhotoIndex = Math.min(Math.max(initialPhotoIndex, 0), Math.max(photos.length - 1, 0));
+  const photoListRef = useRef(null);
+  const photoDraggingRef = useRef(false);
+  const photoSettleTimerRef = useRef(null);
+  const lastPhotoOffsetRef = useRef(safeInitialPhotoIndex * width);
   const [activePhoto, setActivePhoto] = useState(safeInitialPhotoIndex);
 
-  function updateActivePhoto(event) {
-    const index = Math.round(event.nativeEvent.contentOffset.x / width);
+  function settlePhotoOffset(offset, animated = false) {
+    const index = Math.round(offset / width);
     const nextIndex = Math.max(0, Math.min(index, photos.length - 1));
+    const targetOffset = nextIndex * width;
+
     setActivePhoto((currentIndex) => {
       if (currentIndex === nextIndex) return currentIndex;
       onPhotoChange(nextIndex);
       return nextIndex;
     });
+    if (Math.abs(offset - targetOffset) > 1) {
+      photoListRef.current?.scrollToOffset({ animated, offset: targetOffset });
+    }
   }
+
+  function trackPhotoScroll(event) {
+    const offset = event.nativeEvent.contentOffset.x;
+    lastPhotoOffsetRef.current = offset;
+
+    const index = Math.max(0, Math.min(Math.round(offset / width), photos.length - 1));
+    setActivePhoto((currentIndex) => {
+      if (currentIndex === index) return currentIndex;
+      onPhotoChange(index);
+      return index;
+    });
+
+    if (photoDraggingRef.current) return;
+    if (photoSettleTimerRef.current) clearTimeout(photoSettleTimerRef.current);
+    photoSettleTimerRef.current = setTimeout(() => {
+      settlePhotoOffset(lastPhotoOffsetRef.current, true);
+    }, 140);
+  }
+
+  useEffect(() => () => {
+    if (photoSettleTimerRef.current) clearTimeout(photoSettleTimerRef.current);
+  }, []);
 
   return (
     <View style={[styles.slide, { height, width }]}>
       {photos.length ? (
         <FlatList
+          ref={photoListRef}
           data={photos}
           horizontal
-          pagingEnabled
+          snapToInterval={width}
+          snapToAlignment="start"
+          disableIntervalMomentum
           nestedScrollEnabled
           directionalLockEnabled
           decelerationRate="fast"
@@ -229,9 +313,17 @@ function MomentSlide({ item, height, width, isFirst, initialPhotoIndex, onPhotoC
           maxToRenderPerBatch={2}
           windowSize={3}
           initialScrollIndex={safeInitialPhotoIndex}
-          onScroll={updateActivePhoto}
-          scrollEventThrottle={16}
-          onMomentumScrollEnd={updateActivePhoto}
+          onScroll={trackPhotoScroll}
+          scrollEventThrottle={32}
+          onScrollBeginDrag={() => {
+            photoDraggingRef.current = true;
+            if (photoSettleTimerRef.current) clearTimeout(photoSettleTimerRef.current);
+          }}
+          onScrollEndDrag={(event) => {
+            photoDraggingRef.current = false;
+            settlePhotoOffset(event.nativeEvent.contentOffset.x, true);
+          }}
+          onMomentumScrollEnd={(event) => settlePhotoOffset(event.nativeEvent.contentOffset.x)}
           getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
           renderItem={({ item: photo, index }) => (
             <Pressable
@@ -240,7 +332,11 @@ function MomentSlide({ item, height, width, isFirst, initialPhotoIndex, onPhotoC
               onPress={onPress}
               style={({ pressed }) => [{ height, width }, pressed && styles.pressed]}
             >
-              <ImageBackground source={{ uri: photo }} style={styles.cover} resizeMode="cover" />
+              <View style={styles.photoFrame}>
+                <Image blurRadius={18} source={{ uri: photo }} style={styles.photoBackdrop} resizeMode="cover" />
+                <View style={styles.photoBackdropShade} />
+                <Image fadeDuration={180} source={{ uri: photo }} style={styles.photo} resizeMode="contain" />
+              </View>
             </Pressable>
           )}
         />
@@ -264,7 +360,7 @@ function MomentSlide({ item, height, width, isFirst, initialPhotoIndex, onPhotoC
       ) : null}
       <View pointerEvents="none" style={styles.slideInfo}>
         {photos.length > 1 ? <PhotoDots count={photos.length} active={activePhoto} /> : null}
-        <Text style={styles.names}>{item.names}</Text>
+        <Text adjustsFontSizeToFit maxFontSizeMultiplier={1.15} minimumFontScale={0.78} numberOfLines={2} style={styles.names}>{item.names}</Text>
         <Text numberOfLines={2} style={styles.caption}>{item.caption || 'Membagikan cerita menuju hari bahagia.'}</Text>
         <View style={styles.metrics}>
           <View style={styles.metricPill}><Text style={styles.metric}>Suka {item.reactions?.like || 0}</Text></View>
@@ -315,30 +411,34 @@ function initials(item) {
 }
 
 const styles = StyleSheet.create({
-  overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'space-between', padding: spacing.lg },
+  overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
   header: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
-  headerActions: { alignItems: 'flex-end', gap: spacing.sm },
+  headerActions: { flexDirection: 'row', gap: spacing.xs },
+  headerButton: { backgroundColor: '#15110d99', borderColor: '#ffffff1f', borderRadius: 99, borderWidth: 1 },
   eyebrow: { color: colors.goldLight, fontSize: 11, fontWeight: '800', letterSpacing: 3, textTransform: 'uppercase' },
-  headerLink: { color: colors.text, fontSize: 13, fontWeight: '700', paddingHorizontal: spacing.sm, paddingVertical: 4, textShadowColor: '#000', textShadowRadius: 8 },
-  title: { color: colors.text, fontSize: 24, fontWeight: '700', marginTop: spacing.xs, textShadowColor: '#000', textShadowRadius: 8 },
+  headerLink: { color: colors.text, fontSize: 12, fontWeight: '700', paddingHorizontal: spacing.sm, paddingVertical: 7 },
+  title: { color: colors.text, fontSize: 22, fontWeight: '700', marginTop: spacing.xs, textShadowColor: '#000', textShadowRadius: 8 },
   slide: { backgroundColor: colors.background, overflow: 'hidden' },
-  cover: { flex: 1 },
+  photoFrame: { backgroundColor: colors.background, flex: 1, overflow: 'hidden' },
+  photoBackdrop: { ...StyleSheet.absoluteFillObject, opacity: 0.68, transform: [{ scale: 1.08 }] },
+  photoBackdropShade: { ...StyleSheet.absoluteFillObject, backgroundColor: '#15110d55' },
+  photo: { ...StyleSheet.absoluteFillObject },
   placeholder: { alignItems: 'center', backgroundColor: colors.surfaceAlt, justifyContent: 'center' },
   shade: { ...StyleSheet.absoluteFillObject },
   pressed: { opacity: 0.88 },
   buttonPressed: { opacity: 0.82, transform: [{ scale: 0.96 }] },
   initials: { color: colors.goldLight, fontSize: 48, fontWeight: '700', letterSpacing: 3 },
   noPhoto: { color: colors.muted, marginTop: spacing.sm },
-  photoGuide: { alignItems: 'center', backgroundColor: '#15110daa', borderRadius: 99, flexDirection: 'row', left: spacing.lg, paddingHorizontal: 12, paddingVertical: 7, position: 'absolute', top: 88 },
+  photoGuide: { alignItems: 'center', backgroundColor: '#15110dc7', borderColor: '#ffffff1f', borderRadius: 99, borderWidth: 1, flexDirection: 'row', left: spacing.lg, paddingHorizontal: 12, paddingVertical: 7, position: 'absolute', top: 82 },
   photoGuideText: { color: colors.text, fontSize: 11, fontWeight: '700' },
   photoGuideArrow: { color: colors.goldLight, fontSize: 16, marginLeft: 7 },
-  photoCounter: { backgroundColor: '#15110dbb', borderRadius: 99, paddingHorizontal: 11, paddingVertical: 7, position: 'absolute', right: spacing.lg, top: 88 },
+  photoCounter: { backgroundColor: '#15110dc7', borderColor: '#ffffff1f', borderRadius: 99, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 7, position: 'absolute', right: spacing.lg, top: 82 },
   photoCounterText: { color: colors.text, fontSize: 11, fontWeight: '800' },
-  slideInfo: { bottom: 34, left: spacing.lg, position: 'absolute', right: 100 },
+  slideInfo: { bottom: spacing.lg, left: spacing.lg, position: 'absolute', right: 94 },
   dots: { flexDirection: 'row', gap: 5, marginBottom: spacing.sm },
   dot: { backgroundColor: '#ffffff66', borderRadius: 3, height: 5, width: 5 },
   dotActive: { backgroundColor: colors.goldLight, width: 18 },
-  names: { color: colors.text, fontSize: 28, fontWeight: '800', textShadowColor: '#000', textShadowRadius: 8 },
+  names: { color: colors.text, fontSize: 28, fontWeight: '800', lineHeight: 34, textShadowColor: '#000', textShadowRadius: 8 },
   caption: { color: '#f0e7dc', lineHeight: 21, marginTop: spacing.xs, textShadowColor: '#000', textShadowRadius: 7 },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.md },
   metricPill: { backgroundColor: '#15110daa', borderRadius: 99, paddingHorizontal: 10, paddingVertical: 6 },
@@ -347,8 +447,8 @@ const styles = StyleSheet.create({
   detailHintText: { color: colors.text, fontSize: 12, fontWeight: '700' },
   detailHintArrow: { color: colors.goldLight, fontSize: 22, marginLeft: 6 },
   verticalHint: { color: '#d5c6b2', fontSize: 11, marginTop: spacing.xs },
-  floatingCreate: { alignItems: 'center', alignSelf: 'flex-end', backgroundColor: colors.gold, borderColor: '#efd69e', borderRadius: 42, borderWidth: 2, elevation: 8, height: 82, justifyContent: 'center', marginBottom: 6, shadowColor: '#000', shadowOffset: { height: 5, width: 0 }, shadowOpacity: 0.38, shadowRadius: 10, width: 82 },
-  plus: { color: colors.background, fontSize: 28, fontWeight: '400', lineHeight: 27 },
+  floatingCreate: { alignItems: 'center', alignSelf: 'flex-end', backgroundColor: colors.gold, borderColor: '#efd69e', borderRadius: 38, borderWidth: 2, elevation: 8, height: 76, justifyContent: 'center', marginBottom: 6, shadowColor: '#000', shadowOffset: { height: 5, width: 0 }, shadowOpacity: 0.38, shadowRadius: 10, width: 76 },
+  plus: { color: colors.background, fontSize: 25, fontWeight: '400', lineHeight: 24 },
   floatingLabel: { color: colors.background, fontSize: 10, fontWeight: '800', lineHeight: 12, textAlign: 'center' },
   loading: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
   loadingMore: { alignItems: 'center', alignSelf: 'center', backgroundColor: '#15110ddd', borderRadius: 99, bottom: 20, flexDirection: 'row', paddingHorizontal: spacing.md, paddingVertical: spacing.sm, position: 'absolute' },

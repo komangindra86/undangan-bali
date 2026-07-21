@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Keyboard, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { useAuth } from '../context/AuthContext';
@@ -54,6 +54,7 @@ export default function MomentDetailScreen({ navigation, route }) {
     try {
       await api.commentOnMoment(id, comment.trim(), token);
       setComment('');
+      Keyboard.dismiss();
       await load();
     } catch (error) {
       Alert.alert('Komentar belum terkirim', error.message);
@@ -67,37 +68,66 @@ export default function MomentDetailScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={commonStyles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text onPress={() => navigation.goBack()} style={styles.back}>Kembali ke Moment</Text>
-        {moment.cover_photo_url ? <Image source={{ uri: moment.cover_photo_url }} style={styles.cover} /> : null}
-        <Text style={commonStyles.eyebrow}>Moment Pernikahan</Text>
-        <Text style={commonStyles.title}>{moment.names}</Text>
-        <Text style={styles.caption}>{moment.caption || 'Membagikan cerita menuju hari bahagia.'}</Text>
-        <View style={styles.reactions}>
-          <Reaction label={`Like ${moment.reactions?.like || 0}`} onPress={() => react('like')} />
-          <Reaction label={`Love ${moment.reactions?.love || 0}`} onPress={() => react('love')} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}
+        style={styles.fill}
+      >
+        <ScrollView
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+          contentContainerStyle={styles.content}
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text onPress={() => navigation.goBack()} style={styles.back}>Kembali ke Moment</Text>
+          {moment.cover_photo_url ? <Image source={{ uri: moment.cover_photo_url }} style={styles.cover} /> : null}
+          <Text style={commonStyles.eyebrow}>Moment Pernikahan</Text>
+          <Text style={commonStyles.title}>{moment.names}</Text>
+          <Text style={styles.caption}>{moment.caption || 'Membagikan cerita menuju hari bahagia.'}</Text>
+          <View style={styles.reactions}>
+            <Reaction label={`Like ${moment.reactions?.like || 0}`} onPress={() => react('like')} />
+            <Reaction label={`Love ${moment.reactions?.love || 0}`} onPress={() => react('love')} />
+          </View>
+          <PrimaryButton title="Minta Undangan" onPress={() => navigation.navigate('RequestInvitation', { invitation: moment })} style={styles.action} />
+          {moment.gift_active ? <SecondaryButton title="Kirim Wedding Gift" onPress={() => Linking.openURL(moment.gift_url)} style={styles.gift} /> : null}
+          <Text style={styles.privacy}>Jadwal, alamat, dan peta acara tidak ditampilkan di Moment. Pasangan membagikan link undangan secara pribadi.</Text>
+          {moment.timeline?.length ? <Text style={styles.sectionTitle}>Perjalanan Mereka</Text> : null}
+          {moment.timeline?.map((entry) => (
+            <View key={entry.id} style={styles.timeline}>
+              {entry.photo_url ? <Image source={{ uri: entry.photo_url }} style={styles.timelinePhoto} /> : null}
+              <Text style={styles.timelineTitle}>{entry.title}</Text>
+              {entry.body ? <Text style={styles.timelineBody}>{entry.body}</Text> : null}
+            </View>
+          ))}
+          <Text style={styles.sectionTitle}>Komentar</Text>
+          {moment.comments?.length ? moment.comments.map((entry) => (
+            <View key={entry.id} style={styles.comment}>
+              <Text style={styles.commentName}>{entry.user.name}</Text>
+              <Text style={styles.commentBody}>{entry.body}</Text>
+            </View>
+          )) : <Text style={styles.noComments}>Belum ada komentar. Jadilah yang pertama memberi ucapan.</Text>}
+        </ScrollView>
+        <View style={styles.composer}>
+          <TextInput
+            accessibilityLabel="Tulis komentar"
+            maxLength={500}
+            multiline
+            onChangeText={setComment}
+            placeholder="Tulis ucapan hangat..."
+            placeholderTextColor={colors.muted}
+            style={styles.input}
+            value={comment}
+          />
+          <Pressable
+            accessibilityRole="button"
+            disabled={sending}
+            onPress={sendComment}
+            style={({ pressed }) => [styles.send, pressed && styles.sendPressed, sending && styles.sendDisabled]}
+          >
+            {sending ? <ActivityIndicator color={colors.background} size="small" /> : <Text style={styles.sendText}>Kirim</Text>}
+          </Pressable>
         </View>
-        <PrimaryButton title="Minta Undangan" onPress={() => navigation.navigate('RequestInvitation', { invitation: moment })} style={styles.action} />
-        {moment.gift_active ? <SecondaryButton title="Kirim Wedding Gift" onPress={() => Linking.openURL(moment.gift_url)} style={styles.gift} /> : null}
-        <Text style={styles.privacy}>Jadwal, alamat, dan peta acara tidak ditampilkan di Moment. Pasangan membagikan link undangan secara pribadi.</Text>
-        {moment.timeline?.length ? <Text style={styles.sectionTitle}>Perjalanan Mereka</Text> : null}
-        {moment.timeline?.map((entry) => (
-          <View key={entry.id} style={styles.timeline}>
-            {entry.photo_url ? <Image source={{ uri: entry.photo_url }} style={styles.timelinePhoto} /> : null}
-            <Text style={styles.timelineTitle}>{entry.title}</Text>
-            {entry.body ? <Text style={styles.timelineBody}>{entry.body}</Text> : null}
-          </View>
-        ))}
-        <Text style={styles.sectionTitle}>Komentar</Text>
-        <TextInput value={comment} onChangeText={setComment} placeholder="Tulis ucapan hangat" placeholderTextColor={colors.muted} maxLength={500} multiline style={styles.input} />
-        <PrimaryButton title="Kirim Komentar" onPress={sendComment} loading={sending} style={styles.send} />
-        {moment.comments?.length ? moment.comments.map((entry) => (
-          <View key={entry.id} style={styles.comment}>
-            <Text style={styles.commentName}>{entry.user.name}</Text>
-            <Text style={styles.commentBody}>{entry.body}</Text>
-          </View>
-        )) : <Text style={styles.noComments}>Belum ada komentar. Jadilah yang pertama memberi ucapan.</Text>}
-      </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -107,7 +137,8 @@ function Reaction({ label, onPress }) {
 }
 
 const styles = StyleSheet.create({
-  content: { padding: spacing.lg, paddingBottom: spacing.xl },
+  fill: { flex: 1 },
+  content: { padding: spacing.lg, paddingBottom: spacing.lg },
   center: { alignItems: 'center', justifyContent: 'center' },
   back: { color: colors.goldLight, marginBottom: spacing.md },
   cover: { aspectRatio: 1.2, borderRadius: 20, marginBottom: spacing.lg, width: '100%' },
@@ -123,8 +154,12 @@ const styles = StyleSheet.create({
   timelinePhoto: { aspectRatio: 1.3, borderRadius: 12, marginBottom: spacing.md, width: '100%' },
   timelineTitle: { color: colors.goldLight, fontSize: 16, fontWeight: '700' },
   timelineBody: { color: colors.muted, lineHeight: 20, marginTop: spacing.xs },
-  input: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 14, borderWidth: 1, color: colors.text, minHeight: 86, padding: spacing.md, textAlignVertical: 'top' },
-  send: { marginTop: spacing.sm },
+  composer: { alignItems: 'flex-end', backgroundColor: colors.surface, borderTopColor: colors.border, borderTopWidth: 1, flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
+  input: { backgroundColor: colors.background, borderColor: colors.border, borderRadius: 18, borderWidth: 1, color: colors.text, flex: 1, maxHeight: 112, minHeight: 52, paddingHorizontal: spacing.md, paddingVertical: 14, textAlignVertical: 'top' },
+  send: { alignItems: 'center', backgroundColor: colors.gold, borderRadius: 17, height: 52, justifyContent: 'center', paddingHorizontal: spacing.md },
+  sendPressed: { opacity: 0.8 },
+  sendDisabled: { opacity: 0.55 },
+  sendText: { color: colors.background, fontSize: 14, fontWeight: '800' },
   comment: { borderBottomColor: colors.border, borderBottomWidth: 1, paddingVertical: spacing.md },
   commentName: { color: colors.goldLight, fontSize: 13, fontWeight: '700' },
   commentBody: { color: colors.text, lineHeight: 20, marginTop: spacing.xs },
