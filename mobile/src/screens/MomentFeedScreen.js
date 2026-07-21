@@ -10,28 +10,71 @@ export default function MomentFeedScreen({ navigation }) {
   const { isAuthenticated } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [feedHeight, setFeedHeight] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState(null);
+  const [feedSize, setFeedSize] = useState({ height: 0, width: 0 });
 
-  const load = useCallback(async () => {
+  const loadFirstPage = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await api.moments();
+      const response = await api.moments(1);
       setItems(response.data || []);
+      setPage(response.meta?.current_page || 1);
+      setHasMore((response.meta?.current_page || 1) < (response.meta?.last_page || 1));
+    } catch (loadError) {
+      setError(loadError.message);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  const loadNextPage = useCallback(async () => {
+    if (loading || loadingMore || !hasMore) return;
+
+    setLoadingMore(true);
+    try {
+      const response = await api.moments(page + 1);
+      setItems((current) => {
+        const existingIds = new Set(current.map((item) => item.id));
+        return [...current, ...(response.data || []).filter((item) => !existingIds.has(item.id))];
+      });
+      setPage(response.meta?.current_page || page + 1);
+      setHasMore((response.meta?.current_page || page + 1) < (response.meta?.last_page || page + 1));
+    } catch (loadError) {
+      setError(loadError.message);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [hasMore, loading, loadingMore, page]);
+
   useEffect(() => {
-    load();
-  }, [load]);
+    loadFirstPage();
+  }, [loadFirstPage]);
 
   return (
-    <SafeAreaView style={commonStyles.screen} onLayout={(event) => setFeedHeight(event.nativeEvent.layout.height)}>
-      {feedHeight ? (
+    <SafeAreaView
+      style={commonStyles.screen}
+      onLayout={(event) => setFeedSize({
+        height: event.nativeEvent.layout.height,
+        width: event.nativeEvent.layout.width,
+      })}
+    >
+      {feedSize.height && feedSize.width ? (
         <FlatList
           data={items}
           keyExtractor={(item) => String(item.id)}
-          renderItem={({ item }) => <MomentSlide item={item} height={feedHeight} onPress={() => navigation.navigate('MomentDetail', { id: item.id })} />}
+          renderItem={({ item, index }) => (
+            <MomentSlide
+              item={item}
+              height={feedSize.height}
+              width={feedSize.width}
+              isFirst={index === 0}
+              onPress={() => navigation.navigate('MomentDetail', { id: item.id })}
+            />
+          )}
           pagingEnabled
           decelerationRate="fast"
           showsVerticalScrollIndicator={false}
@@ -39,13 +82,15 @@ export default function MomentFeedScreen({ navigation }) {
           maxToRenderPerBatch={2}
           windowSize={3}
           removeClippedSubviews
-          onRefresh={load}
+          onRefresh={loadFirstPage}
           refreshing={loading}
-          getItemLayout={(_, index) => ({ length: feedHeight, offset: feedHeight * index, index })}
+          onEndReached={loadNextPage}
+          onEndReachedThreshold={0.7}
+          getItemLayout={(_, index) => ({ length: feedSize.height, offset: feedSize.height * index, index })}
         />
       ) : null}
       {loading && !items.length ? <View style={styles.loading}><ActivityIndicator color={colors.gold} /></View> : null}
-      {!loading && !items.length ? <EmptyFeed /> : null}
+      {!loading && !items.length ? <EmptyFeed error={error} onRetry={loadFirstPage} /> : null}
       <View pointerEvents="box-none" style={styles.overlay}>
         <View style={styles.header}>
           <View>
@@ -53,43 +98,135 @@ export default function MomentFeedScreen({ navigation }) {
             <Text style={styles.title}>Pernikahan Bali</Text>
           </View>
           <View style={styles.headerActions}>
-            {isAuthenticated ? <Pressable onPress={() => navigation.navigate('Notifications')}><Text style={styles.headerLink}>Notifikasi</Text></Pressable> : null}
-            <Pressable onPress={() => navigation.navigate(isAuthenticated ? 'MyInvitations' : 'Login', isAuthenticated ? undefined : { returnTo: 'MyInvitations' })}><Text style={styles.headerLink}>Akun</Text></Pressable>
+            {isAuthenticated ? (
+              <Pressable accessibilityRole="button" onPress={() => navigation.navigate('Notifications')}>
+                <Text style={styles.headerLink}>Notifikasi</Text>
+              </Pressable>
+            ) : null}
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => navigation.navigate(isAuthenticated ? 'MyInvitations' : 'Login', isAuthenticated ? undefined : { returnTo: 'MyInvitations' })}
+            >
+              <Text style={styles.headerLink}>Akun</Text>
+            </Pressable>
           </View>
         </View>
-        <Pressable style={styles.floatingCreate} onPress={() => navigation.navigate('Template')}>
+        <Pressable
+          accessibilityLabel="Buat undangan gratis"
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.floatingCreate, pressed && styles.buttonPressed]}
+          onPress={() => navigation.navigate('Template')}
+        >
           <Text style={styles.plus}>+</Text>
           <Text style={styles.floatingLabel}>Buat{`\n`}Undangan</Text>
         </Pressable>
       </View>
+      {loadingMore ? (
+        <View style={styles.loadingMore}>
+          <ActivityIndicator color={colors.goldLight} size="small" />
+          <Text style={styles.loadingMoreText}>Memuat Moment berikutnya</Text>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
 
-function MomentSlide({ item, height, onPress }) {
+function MomentSlide({ item, height, width, isFirst, onPress }) {
+  const photos = item.photo_urls?.length
+    ? item.photo_urls
+    : item.cover_photo_url ? [item.cover_photo_url] : [];
+  const [activePhoto, setActivePhoto] = useState(0);
+
+  function updateActivePhoto(event) {
+    const index = Math.round(event.nativeEvent.contentOffset.x / width);
+    setActivePhoto(Math.max(0, Math.min(index, photos.length - 1)));
+  }
+
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.slide, { height }, pressed && styles.pressed]}>
-      {item.cover_photo_url ? <ImageBackground source={{ uri: item.cover_photo_url }} style={styles.cover} resizeMode="cover" /> : <View style={styles.placeholder}><Text style={styles.initials}>{initials(item)}</Text></View>}
-      <LinearGradient colors={['transparent', '#15110dcc']} locations={[0.25, 1]} style={styles.shade} />
-      <View style={styles.slideInfo}>
+    <View style={[styles.slide, { height, width }]}>
+      {photos.length ? (
+        <FlatList
+          data={photos}
+          horizontal
+          pagingEnabled
+          nestedScrollEnabled
+          directionalLockEnabled
+          decelerationRate="fast"
+          keyExtractor={(photo, index) => `${photo}-${index}`}
+          showsHorizontalScrollIndicator={false}
+          initialNumToRender={1}
+          maxToRenderPerBatch={2}
+          windowSize={3}
+          onMomentumScrollEnd={updateActivePhoto}
+          getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
+          renderItem={({ item: photo }) => (
+            <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [{ height, width }, pressed && styles.pressed]}>
+              <ImageBackground source={{ uri: photo }} style={styles.cover} resizeMode="cover" />
+            </Pressable>
+          )}
+        />
+      ) : (
+        <Pressable accessibilityRole="button" onPress={onPress} style={[styles.placeholder, { height, width }]}>
+          <Text style={styles.initials}>{initials(item)}</Text>
+          <Text style={styles.noPhoto}>Belum ada foto</Text>
+        </Pressable>
+      )}
+      <LinearGradient pointerEvents="none" colors={['#15110d55', 'transparent', '#15110de8']} locations={[0, 0.35, 1]} style={styles.shade} />
+      {photos.length > 1 ? (
+        <>
+          <View pointerEvents="none" style={styles.photoGuide}>
+            <Text style={styles.photoGuideText}>Geser foto</Text>
+            <Text style={styles.photoGuideArrow}>↔</Text>
+          </View>
+          <View pointerEvents="none" style={styles.photoCounter}>
+            <Text style={styles.photoCounterText}>{activePhoto + 1} / {photos.length}</Text>
+          </View>
+        </>
+      ) : null}
+      <View pointerEvents="none" style={styles.slideInfo}>
+        {photos.length > 1 ? <PhotoDots count={photos.length} active={activePhoto} /> : null}
         <Text style={styles.names}>{item.names}</Text>
         <Text numberOfLines={2} style={styles.caption}>{item.caption || 'Membagikan cerita menuju hari bahagia.'}</Text>
         <View style={styles.metrics}>
-          <Text style={styles.metric}>Like {item.reactions?.like || 0}</Text>
-          <Text style={styles.metric}>Love {item.reactions?.love || 0}</Text>
-          <Text style={styles.metric}>{item.comments_count || 0} komentar</Text>
+          <View style={styles.metricPill}><Text style={styles.metric}>Suka {item.reactions?.like || 0}</Text></View>
+          <View style={styles.metricPill}><Text style={styles.metric}>Love {item.reactions?.love || 0}</Text></View>
+          <View style={styles.metricPill}><Text style={styles.metric}>{item.comments_count || 0} komentar</Text></View>
         </View>
-        <Text style={styles.tapHint}>Ketuk untuk melihat Moment</Text>
+        <View style={styles.detailHint}>
+          <Text style={styles.detailHintText}>Ketuk foto untuk lihat cerita & interaksi</Text>
+          <Text style={styles.detailHintArrow}>›</Text>
+        </View>
+        {isFirst ? <Text style={styles.verticalHint}>Geser ke atas untuk Moment berikutnya ↑</Text> : null}
       </View>
-    </Pressable>
+    </View>
   );
 }
 
-function EmptyFeed() {
+function PhotoDots({ count, active }) {
+  const visibleCount = Math.min(count, 7);
+  const activeDot = count <= visibleCount
+    ? active
+    : Math.round((active / Math.max(count - 1, 1)) * (visibleCount - 1));
+
+  return (
+    <View style={styles.dots}>
+      {Array.from({ length: visibleCount }).map((_, index) => (
+        <View key={index} style={[styles.dot, index === activeDot && styles.dotActive]} />
+      ))}
+    </View>
+  );
+}
+
+function EmptyFeed({ error, onRetry }) {
   return (
     <View style={styles.emptyWrap}>
-      <Text style={styles.emptyTitle}>Moment akan hadir di sini</Text>
-      <Text style={styles.empty}>Undangan yang dipublish otomatis tampil sebagai Moment dengan foto dan nama panggilan pasangan.</Text>
+      <Text style={styles.emptyTitle}>{error ? 'Feed belum dapat dimuat' : 'Moment akan hadir di sini'}</Text>
+      <Text style={styles.empty}>{error || 'Undangan yang dipublish otomatis tampil sebagai Moment dengan foto dan nama panggilan pasangan.'}</Text>
+      {error ? (
+        <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retryButton}>
+          <Text style={styles.retryText}>Coba Lagi</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -103,25 +240,43 @@ const styles = StyleSheet.create({
   header: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
   headerActions: { alignItems: 'flex-end', gap: spacing.sm },
   eyebrow: { color: colors.goldLight, fontSize: 11, fontWeight: '800', letterSpacing: 3, textTransform: 'uppercase' },
-  headerLink: { color: colors.goldLight, fontSize: 13, fontWeight: '700', paddingVertical: 3 },
-  title: { color: colors.text, fontSize: 24, fontWeight: '700', marginTop: spacing.xs },
-  slide: { backgroundColor: colors.background, overflow: 'hidden', width: '100%' },
-  cover: { ...StyleSheet.absoluteFillObject },
-  placeholder: { ...StyleSheet.absoluteFillObject, alignItems: 'center', backgroundColor: colors.surfaceAlt, justifyContent: 'center' },
+  headerLink: { color: colors.text, fontSize: 13, fontWeight: '700', paddingHorizontal: spacing.sm, paddingVertical: 4, textShadowColor: '#000', textShadowRadius: 8 },
+  title: { color: colors.text, fontSize: 24, fontWeight: '700', marginTop: spacing.xs, textShadowColor: '#000', textShadowRadius: 8 },
+  slide: { backgroundColor: colors.background, overflow: 'hidden' },
+  cover: { flex: 1 },
+  placeholder: { alignItems: 'center', backgroundColor: colors.surfaceAlt, justifyContent: 'center' },
   shade: { ...StyleSheet.absoluteFillObject },
-  pressed: { opacity: 0.8 },
-  initials: { color: colors.goldLight, fontSize: 42, fontWeight: '700', letterSpacing: 3 },
-  slideInfo: { bottom: 54, left: spacing.lg, position: 'absolute', right: 96 },
-  names: { color: colors.text, fontSize: 28, fontWeight: '800' },
-  caption: { color: '#e3d9cb', lineHeight: 21, marginTop: spacing.xs },
-  metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginTop: spacing.md },
-  metric: { color: colors.goldLight, fontSize: 12 },
-  tapHint: { color: '#d5c6b2', fontSize: 11, marginTop: spacing.sm },
-  floatingCreate: { alignItems: 'center', alignSelf: 'flex-end', backgroundColor: colors.gold, borderColor: '#efd69e', borderRadius: 42, borderWidth: 2, height: 82, justifyContent: 'center', marginBottom: 6, shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 10, width: 82 },
+  pressed: { opacity: 0.88 },
+  buttonPressed: { opacity: 0.82, transform: [{ scale: 0.96 }] },
+  initials: { color: colors.goldLight, fontSize: 48, fontWeight: '700', letterSpacing: 3 },
+  noPhoto: { color: colors.muted, marginTop: spacing.sm },
+  photoGuide: { alignItems: 'center', backgroundColor: '#15110daa', borderRadius: 99, flexDirection: 'row', left: spacing.lg, paddingHorizontal: 12, paddingVertical: 7, position: 'absolute', top: 88 },
+  photoGuideText: { color: colors.text, fontSize: 11, fontWeight: '700' },
+  photoGuideArrow: { color: colors.goldLight, fontSize: 16, marginLeft: 7 },
+  photoCounter: { backgroundColor: '#15110dbb', borderRadius: 99, paddingHorizontal: 11, paddingVertical: 7, position: 'absolute', right: spacing.lg, top: 88 },
+  photoCounterText: { color: colors.text, fontSize: 11, fontWeight: '800' },
+  slideInfo: { bottom: 34, left: spacing.lg, position: 'absolute', right: 100 },
+  dots: { flexDirection: 'row', gap: 5, marginBottom: spacing.sm },
+  dot: { backgroundColor: '#ffffff66', borderRadius: 3, height: 5, width: 5 },
+  dotActive: { backgroundColor: colors.goldLight, width: 18 },
+  names: { color: colors.text, fontSize: 28, fontWeight: '800', textShadowColor: '#000', textShadowRadius: 8 },
+  caption: { color: '#f0e7dc', lineHeight: 21, marginTop: spacing.xs, textShadowColor: '#000', textShadowRadius: 7 },
+  metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.md },
+  metricPill: { backgroundColor: '#15110daa', borderRadius: 99, paddingHorizontal: 10, paddingVertical: 6 },
+  metric: { color: colors.goldLight, fontSize: 11, fontWeight: '700' },
+  detailHint: { alignItems: 'center', flexDirection: 'row', marginTop: spacing.sm },
+  detailHintText: { color: colors.text, fontSize: 12, fontWeight: '700' },
+  detailHintArrow: { color: colors.goldLight, fontSize: 22, marginLeft: 6 },
+  verticalHint: { color: '#d5c6b2', fontSize: 11, marginTop: spacing.xs },
+  floatingCreate: { alignItems: 'center', alignSelf: 'flex-end', backgroundColor: colors.gold, borderColor: '#efd69e', borderRadius: 42, borderWidth: 2, elevation: 8, height: 82, justifyContent: 'center', marginBottom: 6, shadowColor: '#000', shadowOffset: { height: 5, width: 0 }, shadowOpacity: 0.38, shadowRadius: 10, width: 82 },
   plus: { color: colors.background, fontSize: 28, fontWeight: '400', lineHeight: 27 },
   floatingLabel: { color: colors.background, fontSize: 10, fontWeight: '800', lineHeight: 12, textAlign: 'center' },
   loading: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  loadingMore: { alignItems: 'center', alignSelf: 'center', backgroundColor: '#15110ddd', borderRadius: 99, bottom: 20, flexDirection: 'row', paddingHorizontal: spacing.md, paddingVertical: spacing.sm, position: 'absolute' },
+  loadingMoreText: { color: colors.text, fontSize: 11, fontWeight: '700', marginLeft: spacing.sm },
   emptyWrap: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl },
   emptyTitle: { color: colors.text, fontSize: 22, fontWeight: '700', textAlign: 'center' },
   empty: { color: colors.muted, lineHeight: 22, marginTop: spacing.sm, textAlign: 'center' },
+  retryButton: { backgroundColor: colors.gold, borderRadius: 14, marginTop: spacing.lg, paddingHorizontal: spacing.lg, paddingVertical: 13 },
+  retryText: { color: colors.background, fontWeight: '800' },
 });

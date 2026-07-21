@@ -128,7 +128,7 @@ export const api = {
   me: (token) => request('/me', {}, token),
   templates: () => request('/templates'),
   musics: () => request('/musics'),
-  moments: () => request('/moments'),
+  moments: (page = 1) => request(`/moments?page=${page}`),
   moment: (id) => request(`/moments/${id}`),
   requestInvitation: (id, values) => request(`/moments/${id}/request-invitation`, { method: 'POST', body: JSON.stringify(values) }),
   reactToMoment: (id, type, token) => request(`/moments/${id}/reaction`, { method: 'POST', body: JSON.stringify({ type }) }, token),

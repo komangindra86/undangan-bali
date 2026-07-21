@@ -10,10 +10,10 @@ class MomentResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $cover = $this->groom_photo ?: $this->bride_photo;
         $setting = $this->relationLoaded('giftSetting') ? $this->giftSetting : null;
         $groomNickname = $this->safeDisplayText($this->groom_nickname) ?: 'Mempelai';
         $brideNickname = $this->safeDisplayText($this->bride_nickname) ?: 'Pasangan';
+        $photoUrls = $this->photoUrls();
 
         return [
             'id' => $this->id,
@@ -21,7 +21,8 @@ class MomentResource extends JsonResource
             'bride_nickname' => $brideNickname,
             'names' => $groomNickname.' & '.$brideNickname,
             'caption' => $this->safeDisplayText($this->moment_caption),
-            'cover_photo_url' => $cover ? url(Storage::disk('public')->url($cover)) : null,
+            'cover_photo_url' => $photoUrls->first(),
+            'photo_urls' => $photoUrls,
             'template_name' => $this->template?->name,
             'published_at' => $this->published_at?->toISOString(),
             'gift_active' => (bool) ($setting?->is_active),
@@ -32,6 +33,21 @@ class MomentResource extends JsonResource
             ],
             'comments_count' => (int) ($this->comments_count ?? 0),
         ];
+    }
+
+    private function photoUrls()
+    {
+        $momentPhotos = $this->relationLoaded('moments')
+            ? $this->moments->pluck('photo_path')
+            : collect();
+
+        return collect([$this->groom_photo, $this->bride_photo])
+            ->merge($this->gallery_photos ?? [])
+            ->merge($momentPhotos)
+            ->filter()
+            ->unique()
+            ->map(fn (string $path) => url(Storage::disk('public')->url($path)))
+            ->values();
     }
 
     private function safeDisplayText(?string $value): ?string

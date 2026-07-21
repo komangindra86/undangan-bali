@@ -104,6 +104,52 @@ class SocialMomentTest extends TestCase
             ->assertJsonMissing(['slug' => 'demo-social-feed']);
     }
 
+    public function test_feed_returns_every_uploaded_photo_without_duplicates(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $invitation->update([
+            'groom_photo' => 'invitations/photos/groom.jpg',
+            'bride_photo' => 'invitations/photos/bride.jpg',
+            'gallery_photos' => [
+                'invitations/gallery/one.jpg',
+                'invitations/gallery/two.jpg',
+                'invitations/photos/groom.jpg',
+            ],
+        ]);
+        $invitation->moments()->create([
+            'title' => 'Prewedding',
+            'photo_path' => 'invitations/moments/prewedding.jpg',
+        ]);
+
+        $this->getJson('/api/moments')
+            ->assertOk()
+            ->assertJsonCount(5, 'data.0.photo_urls')
+            ->assertJsonPath('data.0.cover_photo_url', url('/storage/invitations/photos/groom.jpg'))
+            ->assertJsonPath('data.0.photo_urls.4', url('/storage/invitations/moments/prewedding.jpg'));
+    }
+
+    public function test_feed_is_paginated_ten_moments_per_page(): void
+    {
+        $invitation = $this->publishedInvitation();
+
+        foreach (range(1, 10) as $index) {
+            $copy = $invitation->replicate();
+            $copy->slug = 'wira-ayu-'.$index;
+            $copy->save();
+        }
+
+        $this->getJson('/api/moments')
+            ->assertOk()
+            ->assertJsonCount(10, 'data')
+            ->assertJsonPath('meta.per_page', 10)
+            ->assertJsonPath('meta.last_page', 2);
+
+        $this->getJson('/api/moments?page=2')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('meta.current_page', 2);
+    }
+
     private function publishedInvitation(): Invitation
     {
         $owner = User::factory()->create(['role' => 'user']);

@@ -14,7 +14,7 @@ class MomentController extends Controller
 {
     public function index(): JsonResponse
     {
-        $moments = $this->feedQuery()->paginate(15);
+        $moments = $this->feedQuery()->paginate(10);
 
         return MomentResource::collection($moments)->response();
     }
@@ -104,7 +104,11 @@ class MomentController extends Controller
             ->where('is_hidden_from_feed', false)
             ->whereNotNull('groom_nickname')
             ->whereNotNull('bride_nickname')
-            ->with(['template:id,name', 'giftSetting:invitation_id,is_active'])
+            ->with([
+                'template:id,name',
+                'giftSetting:invitation_id,is_active',
+                'moments:id,invitation_id,photo_path',
+            ])
             ->withCount([
                 'reactions as like_reactions_count' => fn ($query) => $query->where('type', 'like'),
                 'reactions as love_reactions_count' => fn ($query) => $query->where('type', 'love'),
