@@ -43,6 +43,16 @@ class PushNotificationTest extends TestCase
         $this->assertDatabaseMissing('push_tokens', ['token' => $token]);
     }
 
+    public function test_legacy_expo_token_cannot_be_registered_again(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'sanctum')->postJson('/api/push-tokens', [
+            'token' => 'ExponentPushToken[Legacy-device_123]',
+            'platform' => 'android',
+        ])->assertUnprocessable()->assertJsonValidationErrors('token');
+    }
+
     public function test_invitation_request_queues_push_for_the_owner(): void
     {
         Queue::fake();
