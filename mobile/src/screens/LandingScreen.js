@@ -31,14 +31,14 @@ export default function LandingScreen({ navigation }) {
           {isAuthenticated ? (
             <SecondaryButton
               title="Undangan Saya"
-              onPress={() => navigation.navigate('MyInvitations')}
+              onPress={() => navigation.navigate('MainTabs', { screen: 'InvitationsTab' })}
               style={styles.secondary}
             />
           ) : hasAccountOnDevice ? (
             <>
               <SecondaryButton
                 title="Masuk untuk Lihat Undangan Saya"
-                onPress={() => navigation.navigate('Login', { returnTo: 'MyInvitations' })}
+                onPress={() => navigation.navigate('Login', { returnTab: 'InvitationsTab' })}
                 style={styles.secondary}
               />
               <Text style={styles.note}>Buat baru tetap bisa tanpa login.</Text>
@@ -46,7 +46,7 @@ export default function LandingScreen({ navigation }) {
           ) : (
             <>
               <Text style={styles.note}>Tidak perlu akun untuk mulai mencoba.</Text>
-              <Text style={styles.loginLink} onPress={() => navigation.navigate('Login', { returnTo: 'MyInvitations' })}>
+              <Text style={styles.loginLink} onPress={() => navigation.navigate('Login', { returnTab: 'InvitationsTab' })}>
                 Sudah punya undangan? Masuk
               </Text>
             </>

@@ -1,38 +1,35 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { ActivityIndicator, FlatList, Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 
 const feedSession = {
-  activeMomentId: null,
-  activeMomentIndex: 0,
   hasMore: true,
   items: [],
   page: 1,
   photoIndexes: {},
+  scrollOffset: 0,
 };
 
 export default function MomentFeedScreen({ navigation }) {
   const { isAuthenticated } = useAuth();
+  const { width: screenWidth } = useWindowDimensions();
   const feedRef = useRef(null);
-  const feedDraggingRef = useRef(false);
-  const feedSettleTimerRef = useRef(null);
-  const lastFeedOffsetRef = useRef(0);
-  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 60 });
   const [items, setItems] = useState(feedSession.items);
   const [loading, setLoading] = useState(feedSession.items.length === 0);
+  const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(feedSession.page);
   const [hasMore, setHasMore] = useState(feedSession.hasMore);
   const [error, setError] = useState(null);
-  const [feedSize, setFeedSize] = useState({ height: 0, width: 0 });
+  const cardWidth = Math.min(screenWidth - (spacing.md * 2), 680);
 
-  const loadFirstPage = useCallback(async () => {
-    setLoading(true);
+  const loadFirstPage = useCallback(async (refresh = false) => {
+    refresh ? setRefreshing(true) : setLoading(true);
     setError(null);
     try {
       const response = await api.moments(1);
@@ -43,6 +40,7 @@ export default function MomentFeedScreen({ navigation }) {
       feedSession.items = nextItems;
       feedSession.page = nextPage;
       feedSession.hasMore = nextHasMore;
+      if (refresh) feedSession.scrollOffset = 0;
       setItems(nextItems);
       setPage(nextPage);
       setHasMore(nextHasMore);
@@ -50,11 +48,12 @@ export default function MomentFeedScreen({ navigation }) {
       setError(loadError.message);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, []);
 
   const loadNextPage = useCallback(async () => {
-    if (loading || loadingMore || !hasMore) return;
+    if (loading || refreshing || loadingMore || !hasMore) return;
 
     setLoadingMore(true);
     try {
@@ -76,303 +75,191 @@ export default function MomentFeedScreen({ navigation }) {
     } finally {
       setLoadingMore(false);
     }
-  }, [hasMore, loading, loadingMore, page]);
+  }, [hasMore, loading, loadingMore, page, refreshing]);
 
   useEffect(() => {
     if (!feedSession.items.length) loadFirstPage();
   }, [loadFirstPage]);
 
-  const rememberVisibleMoment = useCallback((index, id) => {
-    feedSession.activeMomentIndex = index;
-    feedSession.activeMomentId = id;
-  }, []);
-
-  const onViewableItemsChanged = useRef(({ viewableItems }) => {
-    const visibleItem = viewableItems.find((entry) => entry.isViewable && entry.index != null);
-    if (visibleItem) {
-      feedSession.activeMomentIndex = visibleItem.index;
-      feedSession.activeMomentId = visibleItem.item.id;
-    }
-  });
-
-  const settleFeedOffset = useCallback((offset, animated = false) => {
-    if (!feedSize.height || !items.length) return;
-
-    const index = Math.min(Math.max(Math.round(offset / feedSize.height), 0), items.length - 1);
-    const targetOffset = index * feedSize.height;
-    const item = items[index];
-
-    rememberVisibleMoment(index, item.id);
-    if (Math.abs(offset - targetOffset) > 1) {
-      feedRef.current?.scrollToOffset({ animated, offset: targetOffset });
-    }
-  }, [feedSize.height, items, rememberVisibleMoment]);
-
-  const settleFeedPosition = useCallback((event, animated = false) => {
-    settleFeedOffset(event.nativeEvent.contentOffset.y, animated);
-  }, [settleFeedOffset]);
-
-  const trackFeedScroll = useCallback((event) => {
-    lastFeedOffsetRef.current = event.nativeEvent.contentOffset.y;
-    if (feedDraggingRef.current) return;
-
-    if (feedSettleTimerRef.current) clearTimeout(feedSettleTimerRef.current);
-    feedSettleTimerRef.current = setTimeout(() => {
-      settleFeedOffset(lastFeedOffsetRef.current, true);
-    }, 140);
-  }, [settleFeedOffset]);
-
-  useEffect(() => () => {
-    if (feedSettleTimerRef.current) clearTimeout(feedSettleTimerRef.current);
-  }, []);
-
   useFocusEffect(useCallback(() => {
-    if (!feedSize.height || !items.length) return undefined;
-
-    const idIndex = feedSession.activeMomentId == null
-      ? -1
-      : items.findIndex((item) => item.id === feedSession.activeMomentId);
-    const restoreIndex = Math.min(
-      Math.max(idIndex >= 0 ? idIndex : feedSession.activeMomentIndex, 0),
-      items.length - 1,
-    );
+    if (!items.length || feedSession.scrollOffset <= 0) return undefined;
     const frame = requestAnimationFrame(() => {
-      feedRef.current?.scrollToIndex({ animated: false, index: restoreIndex });
+      feedRef.current?.scrollToOffset({ animated: false, offset: feedSession.scrollOffset });
     });
-
     return () => cancelAnimationFrame(frame);
-  }, [feedSize.height, items]));
+  }, [items.length]));
 
   return (
-    <SafeAreaView
-      style={commonStyles.screen}
-      onLayout={(event) => setFeedSize({
-        height: event.nativeEvent.layout.height,
-        width: event.nativeEvent.layout.width,
-      })}
-    >
-      {feedSize.height && feedSize.width ? (
-        <FlatList
-          ref={feedRef}
-          data={items}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={({ item, index }) => (
-            <MomentSlide
-              item={item}
-              height={feedSize.height}
-              width={feedSize.width}
-              isFirst={index === 0}
-              initialPhotoIndex={feedSession.photoIndexes[item.id] || 0}
-              onPhotoChange={(photoIndex) => {
-                feedSession.photoIndexes[item.id] = photoIndex;
-              }}
-              onPress={() => {
-                rememberVisibleMoment(index, item.id);
-                navigation.navigate('MomentDetail', { id: item.id });
-              }}
-            />
-          )}
-          snapToInterval={feedSize.height}
-          snapToAlignment="start"
-          disableIntervalMomentum
-          decelerationRate="fast"
-          bounces={false}
-          overScrollMode="never"
-          showsVerticalScrollIndicator={false}
-          initialNumToRender={2}
-          maxToRenderPerBatch={3}
-          windowSize={5}
-          removeClippedSubviews={false}
-          onRefresh={loadFirstPage}
-          refreshing={loading}
-          onViewableItemsChanged={onViewableItemsChanged.current}
-          viewabilityConfig={viewabilityConfig.current}
-          onScroll={trackFeedScroll}
-          scrollEventThrottle={32}
-          onScrollBeginDrag={() => {
-            feedDraggingRef.current = true;
-            if (feedSettleTimerRef.current) clearTimeout(feedSettleTimerRef.current);
-          }}
-          onScrollEndDrag={(event) => {
-            feedDraggingRef.current = false;
-            settleFeedPosition(event, true);
-          }}
-          onMomentumScrollEnd={settleFeedPosition}
-          onEndReached={loadNextPage}
-          onEndReachedThreshold={0.7}
-          getItemLayout={(_, index) => ({ length: feedSize.height, offset: feedSize.height * index, index })}
-        />
-      ) : null}
-      {loading && !items.length ? <View style={styles.loading}><ActivityIndicator color={colors.gold} /></View> : null}
-      {!loading && !items.length ? <EmptyFeed error={error} onRetry={loadFirstPage} /> : null}
-      <View pointerEvents="box-none" style={styles.overlay}>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.eyebrow}>Moment</Text>
-            <Text style={styles.title}>Pernikahan Bali</Text>
-          </View>
-          <View style={styles.headerActions}>
-            {isAuthenticated ? (
-              <Pressable accessibilityRole="button" onPress={() => navigation.navigate('Notifications')} style={styles.headerButton}>
-                <Text style={styles.headerLink}>Notifikasi</Text>
-              </Pressable>
-            ) : null}
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => navigation.navigate(isAuthenticated ? 'MyInvitations' : 'Login', isAuthenticated ? undefined : { returnTo: 'MyInvitations' })}
-              style={styles.headerButton}
-            >
-              <Text style={styles.headerLink}>Akun</Text>
-            </Pressable>
-          </View>
-        </View>
-        <Pressable
-          accessibilityLabel="Buat undangan gratis"
-          accessibilityRole="button"
-          style={({ pressed }) => [styles.floatingCreate, pressed && styles.buttonPressed]}
-          onPress={() => navigation.navigate('Template')}
-        >
-          <Text style={styles.plus}>+</Text>
-          <Text style={styles.floatingLabel}>Buat{`\n`}Undangan</Text>
-        </Pressable>
-      </View>
-      {loadingMore ? (
-        <View style={styles.loadingMore}>
-          <ActivityIndicator color={colors.goldLight} size="small" />
-          <Text style={styles.loadingMoreText}>Memuat Moment berikutnya</Text>
+    <SafeAreaView edges={['top']} style={commonStyles.screen}>
+      <FlatList
+        ref={feedRef}
+        data={items}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => (
+          <MomentCard
+            item={item}
+            width={cardWidth}
+            initialPhotoIndex={feedSession.photoIndexes[item.id] || 0}
+            onPhotoChange={(photoIndex) => {
+              feedSession.photoIndexes[item.id] = photoIndex;
+            }}
+            onPress={() => navigation.navigate('MomentDetail', { id: item.id })}
+          />
+        )}
+        contentContainerStyle={styles.listContent}
+        ListHeaderComponent={(
+          <FeedHeader
+            isAuthenticated={isAuthenticated}
+            onNotifications={() => navigation.navigate('NotificationsTab')}
+          />
+        )}
+        ListEmptyComponent={!loading ? <EmptyFeed error={error} onRetry={() => loadFirstPage()} /> : null}
+        ListFooterComponent={<FeedFooter loading={loadingMore} hasMore={hasMore} itemCount={items.length} />}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        refreshing={refreshing}
+        onRefresh={() => loadFirstPage(true)}
+        onEndReached={loadNextPage}
+        onEndReachedThreshold={0.55}
+        onScroll={(event) => {
+          feedSession.scrollOffset = event.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={80}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        initialNumToRender={3}
+        maxToRenderPerBatch={5}
+        windowSize={7}
+      />
+      {loading && !items.length ? (
+        <View style={styles.loading}>
+          <ActivityIndicator color={colors.gold} />
+          <Text style={styles.loadingText}>Memuat Moment...</Text>
         </View>
       ) : null}
     </SafeAreaView>
   );
 }
 
-function MomentSlide({ item, height, width, isFirst, initialPhotoIndex, onPhotoChange, onPress }) {
+function FeedHeader({ isAuthenticated, onNotifications }) {
+  return (
+    <View style={styles.header}>
+      <View style={styles.headerCopy}>
+        <Text style={styles.eyebrow}>Moment Pernikahan Bali</Text>
+        <Text style={styles.title}>Cerita menuju hari bahagia</Text>
+        <Text style={styles.subtitle}>Geser foto untuk melihat galeri, lalu ketuk kartu untuk berinteraksi.</Text>
+      </View>
+      {isAuthenticated ? (
+        <Pressable accessibilityLabel="Buka notifikasi" accessibilityRole="button" onPress={onNotifications} style={styles.notificationButton}>
+          <Ionicons color={colors.goldLight} name="notifications-outline" size={22} />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+function MomentCard({ item, width, initialPhotoIndex, onPhotoChange, onPress }) {
   const photos = item.photo_urls?.length
     ? item.photo_urls
     : item.cover_photo_url ? [item.cover_photo_url] : [];
-  const safeInitialPhotoIndex = Math.min(Math.max(initialPhotoIndex, 0), Math.max(photos.length - 1, 0));
-  const photoListRef = useRef(null);
-  const photoDraggingRef = useRef(false);
-  const photoSettleTimerRef = useRef(null);
-  const lastPhotoOffsetRef = useRef(safeInitialPhotoIndex * width);
-  const [activePhoto, setActivePhoto] = useState(safeInitialPhotoIndex);
+  const safeInitialIndex = Math.min(Math.max(initialPhotoIndex, 0), Math.max(photos.length - 1, 0));
+  const [activePhoto, setActivePhoto] = useState(safeInitialIndex);
+  const mediaWidth = Math.max(width - 2, 1);
+  const mediaHeight = Math.round(Math.min(mediaWidth * 1.08, 610));
 
-  function settlePhotoOffset(offset, animated = false) {
-    const index = Math.round(offset / width);
-    const nextIndex = Math.max(0, Math.min(index, photos.length - 1));
-    const targetOffset = nextIndex * width;
-
-    setActivePhoto((currentIndex) => {
-      if (currentIndex === nextIndex) return currentIndex;
-      onPhotoChange(nextIndex);
-      return nextIndex;
-    });
-    if (Math.abs(offset - targetOffset) > 1) {
-      photoListRef.current?.scrollToOffset({ animated, offset: targetOffset });
-    }
+  function updatePhotoIndex(event) {
+    const nextIndex = Math.max(0, Math.min(
+      Math.round(event.nativeEvent.contentOffset.x / mediaWidth),
+      photos.length - 1,
+    ));
+    setActivePhoto(nextIndex);
+    onPhotoChange(nextIndex);
   }
-
-  function trackPhotoScroll(event) {
-    const offset = event.nativeEvent.contentOffset.x;
-    lastPhotoOffsetRef.current = offset;
-
-    const index = Math.max(0, Math.min(Math.round(offset / width), photos.length - 1));
-    setActivePhoto((currentIndex) => {
-      if (currentIndex === index) return currentIndex;
-      onPhotoChange(index);
-      return index;
-    });
-
-    if (photoDraggingRef.current) return;
-    if (photoSettleTimerRef.current) clearTimeout(photoSettleTimerRef.current);
-    photoSettleTimerRef.current = setTimeout(() => {
-      settlePhotoOffset(lastPhotoOffsetRef.current, true);
-    }, 140);
-  }
-
-  useEffect(() => () => {
-    if (photoSettleTimerRef.current) clearTimeout(photoSettleTimerRef.current);
-  }, []);
 
   return (
-    <View style={[styles.slide, { height, width }]}>
+    <View style={[styles.card, { width }]}>
+      <View style={styles.cardHeader}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{initials(item)}</Text>
+        </View>
+        <View style={styles.cardIdentity}>
+          <Text numberOfLines={1} style={styles.cardNames}>{item.names}</Text>
+          <Text style={styles.cardMeta}>Moment pernikahan</Text>
+        </View>
+        <View style={styles.publicPill}>
+          <Ionicons color={colors.success} name="earth-outline" size={12} />
+          <Text style={styles.publicText}>Publik</Text>
+        </View>
+      </View>
+
       {photos.length ? (
-        <FlatList
-          ref={photoListRef}
-          data={photos}
-          horizontal
-          snapToInterval={width}
-          snapToAlignment="start"
-          disableIntervalMomentum
-          nestedScrollEnabled
-          directionalLockEnabled
-          decelerationRate="fast"
-          keyExtractor={(photo, index) => `${photo}-${index}`}
-          showsHorizontalScrollIndicator={false}
-          initialNumToRender={1}
-          maxToRenderPerBatch={2}
-          windowSize={3}
-          initialScrollIndex={safeInitialPhotoIndex}
-          onScroll={trackPhotoScroll}
-          scrollEventThrottle={32}
-          onScrollBeginDrag={() => {
-            photoDraggingRef.current = true;
-            if (photoSettleTimerRef.current) clearTimeout(photoSettleTimerRef.current);
-          }}
-          onScrollEndDrag={(event) => {
-            photoDraggingRef.current = false;
-            settlePhotoOffset(event.nativeEvent.contentOffset.x, true);
-          }}
-          onMomentumScrollEnd={(event) => settlePhotoOffset(event.nativeEvent.contentOffset.x)}
-          getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
-          renderItem={({ item: photo, index }) => (
-            <Pressable
-              accessibilityLabel={`Lihat Moment ${item.names}, foto ${index + 1}`}
-              accessibilityRole="button"
-              onPress={onPress}
-              style={({ pressed }) => [{ height, width }, pressed && styles.pressed]}
-            >
-              <View style={styles.photoFrame}>
-                <Image blurRadius={18} source={{ uri: photo }} style={styles.photoBackdrop} resizeMode="cover" />
-                <View style={styles.photoBackdropShade} />
-                <Image fadeDuration={180} source={{ uri: photo }} style={styles.photo} resizeMode="contain" />
+        <View style={[styles.media, { height: mediaHeight, width: mediaWidth }]}>
+          <FlatList
+            data={photos}
+            horizontal
+            pagingEnabled
+            nestedScrollEnabled
+            directionalLockEnabled
+            decelerationRate="fast"
+            keyExtractor={(photo, index) => `${photo}-${index}`}
+            showsHorizontalScrollIndicator={false}
+            initialScrollIndex={safeInitialIndex}
+            getItemLayout={(_, index) => ({ index, length: mediaWidth, offset: mediaWidth * index })}
+            onMomentumScrollEnd={updatePhotoIndex}
+            renderItem={({ item: photo, index }) => (
+              <Pressable
+                accessibilityLabel={`Buka Moment ${item.names}, foto ${index + 1}`}
+                accessibilityRole="button"
+                onPress={onPress}
+                style={{ height: mediaHeight, width: mediaWidth }}
+              >
+                <Image source={{ uri: photo }} resizeMode="cover" style={styles.photo} />
+              </Pressable>
+            )}
+          />
+          {photos.length > 1 ? (
+            <>
+              <View pointerEvents="none" style={styles.photoCounter}>
+                <Text style={styles.photoCounterText}>{activePhoto + 1} / {photos.length}</Text>
               </View>
-            </Pressable>
-          )}
-        />
+              <View pointerEvents="none" style={styles.swipeHint}>
+                <Ionicons color={colors.goldLight} name="swap-horizontal" size={15} />
+                <Text style={styles.swipeHintText}>Geser foto</Text>
+              </View>
+            </>
+          ) : null}
+        </View>
       ) : (
-        <Pressable accessibilityRole="button" onPress={onPress} style={[styles.placeholder, { height, width }]}>
-          <Text style={styles.initials}>{initials(item)}</Text>
-          <Text style={styles.noPhoto}>Belum ada foto</Text>
+        <Pressable accessibilityRole="button" onPress={onPress} style={[styles.placeholder, { height: mediaHeight }]}>
+          <Text style={styles.placeholderInitials}>{initials(item)}</Text>
+          <Text style={styles.placeholderText}>Belum ada foto</Text>
         </Pressable>
       )}
-      <LinearGradient pointerEvents="none" colors={['#15110d55', 'transparent', '#15110de8']} locations={[0, 0.35, 1]} style={styles.shade} />
-      {photos.length > 1 ? (
-        <>
-          <View pointerEvents="none" style={styles.photoGuide}>
-            <Text style={styles.photoGuideText}>Geser foto</Text>
-            <Text style={styles.photoGuideArrow}>↔</Text>
-          </View>
-          <View pointerEvents="none" style={styles.photoCounter}>
-            <Text style={styles.photoCounterText}>{activePhoto + 1} / {photos.length}</Text>
-          </View>
-        </>
-      ) : null}
-      <View pointerEvents="none" style={styles.slideInfo}>
+
+      <View style={styles.cardBody}>
         {photos.length > 1 ? <PhotoDots count={photos.length} active={activePhoto} /> : null}
-        <Text adjustsFontSizeToFit maxFontSizeMultiplier={1.15} minimumFontScale={0.78} numberOfLines={2} style={styles.names}>{item.names}</Text>
-        <Text numberOfLines={2} style={styles.caption}>{item.caption || 'Membagikan cerita menuju hari bahagia.'}</Text>
         <View style={styles.metrics}>
-          <View style={styles.metricPill}><Text style={styles.metric}>Suka {item.reactions?.like || 0}</Text></View>
-          <View style={styles.metricPill}><Text style={styles.metric}>Love {item.reactions?.love || 0}</Text></View>
-          <View style={styles.metricPill}><Text style={styles.metric}>{item.comments_count || 0} komentar</Text></View>
+          <Metric icon="thumbs-up-outline" label={`${item.reactions?.like || 0} suka`} />
+          <Metric icon="heart-outline" label={`${item.reactions?.love || 0} love`} />
+          <Metric icon="chatbubble-outline" label={`${item.comments_count || 0} komentar`} />
         </View>
-        <View style={styles.detailHint}>
-          <Text style={styles.detailHintText}>Ketuk foto untuk lihat cerita & interaksi</Text>
-          <Text style={styles.detailHintArrow}>›</Text>
-        </View>
-        {isFirst ? <Text style={styles.verticalHint}>Geser ke atas untuk Moment berikutnya ↑</Text> : null}
+        <Text style={styles.caption}>
+          <Text style={styles.captionNames}>{item.names} </Text>
+          {item.caption || 'Membagikan cerita menuju hari bahagia.'}
+        </Text>
+        <Pressable accessibilityRole="button" onPress={onPress} style={styles.detailButton}>
+          <Text style={styles.detailButtonText}>Lihat cerita dan interaksi</Text>
+          <Ionicons color={colors.goldLight} name="chevron-forward" size={17} />
+        </Pressable>
       </View>
+    </View>
+  );
+}
+
+function Metric({ icon, label }) {
+  return (
+    <View style={styles.metric}>
+      <Ionicons color={colors.goldLight} name={icon} size={16} />
+      <Text style={styles.metricText}>{label}</Text>
     </View>
   );
 }
@@ -395,8 +282,11 @@ function PhotoDots({ count, active }) {
 function EmptyFeed({ error, onRetry }) {
   return (
     <View style={styles.emptyWrap}>
+      <View style={styles.emptyIcon}>
+        <Ionicons color={colors.goldLight} name="images-outline" size={30} />
+      </View>
       <Text style={styles.emptyTitle}>{error ? 'Feed belum dapat dimuat' : 'Moment akan hadir di sini'}</Text>
-      <Text style={styles.empty}>{error || 'Undangan yang dipublish otomatis tampil sebagai Moment dengan foto dan nama panggilan pasangan.'}</Text>
+      <Text style={styles.emptyText}>{error || 'Undangan yang dipublish otomatis tampil dengan foto dan nama panggilan pasangan.'}</Text>
       {error ? (
         <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retryButton}>
           <Text style={styles.retryText}>Coba Lagi</Text>
@@ -406,56 +296,66 @@ function EmptyFeed({ error, onRetry }) {
   );
 }
 
+function FeedFooter({ loading, hasMore, itemCount }) {
+  if (loading) {
+    return <ActivityIndicator color={colors.gold} style={styles.footerLoading} />;
+  }
+  if (itemCount && !hasMore) {
+    return <Text style={styles.endText}>Semua Moment sudah ditampilkan.</Text>;
+  }
+  return null;
+}
+
 function initials(item) {
-  return `${item.groom_nickname?.[0] || ''}${item.bride_nickname?.[0] || ''}`.toUpperCase();
+  return `${item.groom_nickname?.[0] || ''}${item.bride_nickname?.[0] || ''}`.toUpperCase() || 'UB';
 }
 
 const styles = StyleSheet.create({
-  overlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'space-between', paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
-  header: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
-  headerActions: { flexDirection: 'row', gap: spacing.xs },
-  headerButton: { backgroundColor: '#15110d99', borderColor: '#ffffff1f', borderRadius: 99, borderWidth: 1 },
-  eyebrow: { color: colors.goldLight, fontSize: 11, fontWeight: '800', letterSpacing: 3, textTransform: 'uppercase' },
-  headerLink: { color: colors.text, fontSize: 12, fontWeight: '700', paddingHorizontal: spacing.sm, paddingVertical: 7 },
-  title: { color: colors.text, fontSize: 22, fontWeight: '700', marginTop: spacing.xs, textShadowColor: '#000', textShadowRadius: 8 },
-  slide: { backgroundColor: colors.background, overflow: 'hidden' },
-  photoFrame: { backgroundColor: colors.background, flex: 1, overflow: 'hidden' },
-  photoBackdrop: { ...StyleSheet.absoluteFillObject, opacity: 0.68, transform: [{ scale: 1.08 }] },
-  photoBackdropShade: { ...StyleSheet.absoluteFillObject, backgroundColor: '#15110d55' },
-  photo: { ...StyleSheet.absoluteFillObject },
+  listContent: { paddingBottom: spacing.xl, paddingHorizontal: spacing.md },
+  header: { alignItems: 'flex-start', alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-between', maxWidth: 680, paddingBottom: spacing.lg, paddingTop: spacing.md, width: '100%' },
+  headerCopy: { flex: 1, paddingRight: spacing.md },
+  eyebrow: { color: colors.gold, fontSize: 11, fontWeight: '800', letterSpacing: 2.4, textTransform: 'uppercase' },
+  title: { color: colors.text, fontSize: 27, fontWeight: '700', lineHeight: 34, marginTop: spacing.xs },
+  subtitle: { color: colors.muted, fontSize: 13, lineHeight: 19, marginTop: spacing.xs },
+  notificationButton: { alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 18, borderWidth: 1, height: 44, justifyContent: 'center', width: 44 },
+  separator: { height: spacing.md },
+  card: { alignSelf: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 22, borderWidth: 1, overflow: 'hidden' },
+  cardHeader: { alignItems: 'center', flexDirection: 'row', padding: spacing.sm },
+  avatar: { alignItems: 'center', backgroundColor: colors.surfaceAlt, borderColor: colors.border, borderRadius: 17, borderWidth: 1, height: 34, justifyContent: 'center', width: 34 },
+  avatarText: { color: colors.goldLight, fontSize: 11, fontWeight: '800' },
+  cardIdentity: { flex: 1, marginLeft: spacing.sm },
+  cardNames: { color: colors.text, fontSize: 14, fontWeight: '700' },
+  cardMeta: { color: colors.muted, fontSize: 11, marginTop: 2 },
+  publicPill: { alignItems: 'center', backgroundColor: '#243127', borderRadius: 99, flexDirection: 'row', gap: 4, paddingHorizontal: 8, paddingVertical: 5 },
+  publicText: { color: colors.success, fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
+  media: { backgroundColor: colors.background, overflow: 'hidden', position: 'relative' },
+  photo: { height: '100%', width: '100%' },
   placeholder: { alignItems: 'center', backgroundColor: colors.surfaceAlt, justifyContent: 'center' },
-  shade: { ...StyleSheet.absoluteFillObject },
-  pressed: { opacity: 0.88 },
-  buttonPressed: { opacity: 0.82, transform: [{ scale: 0.96 }] },
-  initials: { color: colors.goldLight, fontSize: 48, fontWeight: '700', letterSpacing: 3 },
-  noPhoto: { color: colors.muted, marginTop: spacing.sm },
-  photoGuide: { alignItems: 'center', backgroundColor: '#15110dc7', borderColor: '#ffffff1f', borderRadius: 99, borderWidth: 1, flexDirection: 'row', left: spacing.lg, paddingHorizontal: 12, paddingVertical: 7, position: 'absolute', top: 82 },
-  photoGuideText: { color: colors.text, fontSize: 11, fontWeight: '700' },
-  photoGuideArrow: { color: colors.goldLight, fontSize: 16, marginLeft: 7 },
-  photoCounter: { backgroundColor: '#15110dc7', borderColor: '#ffffff1f', borderRadius: 99, borderWidth: 1, paddingHorizontal: 11, paddingVertical: 7, position: 'absolute', right: spacing.lg, top: 82 },
+  placeholderInitials: { color: colors.goldLight, fontSize: 46, fontWeight: '700', letterSpacing: 3 },
+  placeholderText: { color: colors.muted, marginTop: spacing.sm },
+  photoCounter: { backgroundColor: '#15110dcc', borderRadius: 99, paddingHorizontal: 10, paddingVertical: 6, position: 'absolute', right: spacing.sm, top: spacing.sm },
   photoCounterText: { color: colors.text, fontSize: 11, fontWeight: '800' },
-  slideInfo: { bottom: spacing.lg, left: spacing.lg, position: 'absolute', right: 94 },
-  dots: { flexDirection: 'row', gap: 5, marginBottom: spacing.sm },
-  dot: { backgroundColor: '#ffffff66', borderRadius: 3, height: 5, width: 5 },
-  dotActive: { backgroundColor: colors.goldLight, width: 18 },
-  names: { color: colors.text, fontSize: 28, fontWeight: '800', lineHeight: 34, textShadowColor: '#000', textShadowRadius: 8 },
-  caption: { color: '#f0e7dc', lineHeight: 21, marginTop: spacing.xs, textShadowColor: '#000', textShadowRadius: 7 },
-  metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.md },
-  metricPill: { backgroundColor: '#15110daa', borderRadius: 99, paddingHorizontal: 10, paddingVertical: 6 },
-  metric: { color: colors.goldLight, fontSize: 11, fontWeight: '700' },
-  detailHint: { alignItems: 'center', flexDirection: 'row', marginTop: spacing.sm },
-  detailHintText: { color: colors.text, fontSize: 12, fontWeight: '700' },
-  detailHintArrow: { color: colors.goldLight, fontSize: 22, marginLeft: 6 },
-  verticalHint: { color: '#d5c6b2', fontSize: 11, marginTop: spacing.xs },
-  floatingCreate: { alignItems: 'center', alignSelf: 'flex-end', backgroundColor: colors.gold, borderColor: '#efd69e', borderRadius: 38, borderWidth: 2, elevation: 8, height: 76, justifyContent: 'center', marginBottom: 6, shadowColor: '#000', shadowOffset: { height: 5, width: 0 }, shadowOpacity: 0.38, shadowRadius: 10, width: 76 },
-  plus: { color: colors.background, fontSize: 25, fontWeight: '400', lineHeight: 24 },
-  floatingLabel: { color: colors.background, fontSize: 10, fontWeight: '800', lineHeight: 12, textAlign: 'center' },
-  loading: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
-  loadingMore: { alignItems: 'center', alignSelf: 'center', backgroundColor: '#15110ddd', borderRadius: 99, bottom: 20, flexDirection: 'row', paddingHorizontal: spacing.md, paddingVertical: spacing.sm, position: 'absolute' },
-  loadingMoreText: { color: colors.text, fontSize: 11, fontWeight: '700', marginLeft: spacing.sm },
-  emptyWrap: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl },
-  emptyTitle: { color: colors.text, fontSize: 22, fontWeight: '700', textAlign: 'center' },
-  empty: { color: colors.muted, lineHeight: 22, marginTop: spacing.sm, textAlign: 'center' },
-  retryButton: { backgroundColor: colors.gold, borderRadius: 14, marginTop: spacing.lg, paddingHorizontal: spacing.lg, paddingVertical: 13 },
+  swipeHint: { alignItems: 'center', backgroundColor: '#15110dcc', borderRadius: 99, bottom: spacing.sm, flexDirection: 'row', gap: 5, left: spacing.sm, paddingHorizontal: 10, paddingVertical: 6, position: 'absolute' },
+  swipeHintText: { color: colors.text, fontSize: 10, fontWeight: '700' },
+  cardBody: { padding: spacing.md },
+  dots: { alignSelf: 'center', flexDirection: 'row', gap: 5, marginBottom: spacing.sm },
+  dot: { backgroundColor: colors.border, borderRadius: 3, height: 5, width: 5 },
+  dotActive: { backgroundColor: colors.gold, width: 18 },
+  metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  metric: { alignItems: 'center', flexDirection: 'row', gap: 5 },
+  metricText: { color: colors.muted, fontSize: 11, fontWeight: '600' },
+  caption: { color: colors.muted, lineHeight: 21, marginTop: spacing.md },
+  captionNames: { color: colors.text, fontWeight: '700' },
+  detailButton: { alignItems: 'center', borderTopColor: colors.border, borderTopWidth: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.md, paddingTop: spacing.md },
+  detailButtonText: { color: colors.goldLight, fontSize: 13, fontWeight: '700' },
+  loading: { ...StyleSheet.absoluteFillObject, alignItems: 'center', backgroundColor: colors.background, justifyContent: 'center' },
+  loadingText: { color: colors.muted, marginTop: spacing.sm },
+  emptyWrap: { alignItems: 'center', alignSelf: 'center', backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 22, borderWidth: 1, maxWidth: 680, padding: spacing.xl, width: '100%' },
+  emptyIcon: { alignItems: 'center', backgroundColor: colors.surfaceAlt, borderRadius: 28, height: 56, justifyContent: 'center', width: 56 },
+  emptyTitle: { color: colors.text, fontSize: 20, fontWeight: '700', marginTop: spacing.md, textAlign: 'center' },
+  emptyText: { color: colors.muted, lineHeight: 21, marginTop: spacing.xs, textAlign: 'center' },
+  retryButton: { backgroundColor: colors.gold, borderRadius: 14, marginTop: spacing.lg, paddingHorizontal: spacing.lg, paddingVertical: 12 },
   retryText: { color: colors.background, fontWeight: '800' },
+  footerLoading: { marginVertical: spacing.lg },
+  endText: { color: colors.muted, fontSize: 12, marginVertical: spacing.lg, textAlign: 'center' },
 });

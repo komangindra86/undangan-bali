@@ -18,6 +18,7 @@ export default function LoginScreen({ navigation, route }) {
   const [loading, setLoading] = useState(false);
   const publishAfterAuth = route.params?.publishAfterAuth;
   const returnTo = route.params?.returnTo;
+  const returnTab = route.params?.returnTab;
   const sessionExpired = route.params?.sessionExpired;
 
   const continueAfterAuth = useCallback(
@@ -25,13 +26,18 @@ export default function LoginScreen({ navigation, route }) {
       if (publishAfterAuth) {
         const publication = await publishDraft(session.token);
         navigation.replace('Share', { publication });
+      } else if (returnTab || returnTo === 'MyInvitations') {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'MainTabs', params: { screen: returnTab || 'InvitationsTab' } }],
+        });
       } else if (returnTo) {
         navigation.replace(returnTo, route.params?.returnParams);
       } else {
-        navigation.popTo('MomentFeed');
+        navigation.popTo('MainTabs');
       }
     },
-    [navigation, publishAfterAuth, publishDraft, returnTo, route.params?.returnParams],
+    [navigation, publishAfterAuth, publishDraft, returnTab, returnTo, route.params?.returnParams],
   );
 
   async function submit() {
@@ -81,7 +87,7 @@ export default function LoginScreen({ navigation, route }) {
         <GoogleAuthButton title="Masuk dengan Google" onToken={submitGoogle} disabled={loading} style={styles.google} />
         <SecondaryButton
           title="Belum punya akun? Daftar"
-          onPress={() => navigation.replace('Register', { publishAfterAuth, returnTo, returnParams: route.params?.returnParams })}
+          onPress={() => navigation.replace('Register', { publishAfterAuth, returnTab, returnTo, returnParams: route.params?.returnParams })}
         />
       </KeyboardAwareScrollView>
     </SafeAreaView>

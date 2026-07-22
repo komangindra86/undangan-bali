@@ -4,6 +4,7 @@ import { colors, spacing } from '../theme';
 export function PrimaryButton({ title, onPress, loading = false, disabled = false, style }) {
   return (
     <Pressable
+      accessibilityRole="button"
       disabled={loading || disabled}
       onPress={onPress}
       style={({ pressed }) => [
@@ -20,7 +21,7 @@ export function PrimaryButton({ title, onPress, loading = false, disabled = fals
 
 export function SecondaryButton({ title, onPress, style }) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.secondary, pressed && styles.pressed, style]}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.secondary, pressed && styles.pressed, style]}>
       <Text style={styles.secondaryText}>{title}</Text>
     </Pressable>
   );

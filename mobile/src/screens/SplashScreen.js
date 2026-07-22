@@ -11,7 +11,7 @@ export default function SplashScreen({ navigation }) {
 
   useEffect(() => {
     if (!authLoading && !draftLoading) {
-      const timer = setTimeout(() => navigation.replace('MomentFeed'), 900);
+      const timer = setTimeout(() => navigation.replace('MainTabs'), 900);
       return () => clearTimeout(timer);
     }
     return undefined;

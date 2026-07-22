@@ -24,6 +24,13 @@ export default function ShareScreen({ navigation, route }) {
     await Linking.openURL(whatsAppUrl);
   }
 
+  function openMyInvitations() {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'MainTabs', params: { screen: 'InvitationsTab' } }],
+    });
+  }
+
   return (
     <LinearGradient colors={['#15110d', '#281e13']} style={commonStyles.screen}>
       <SafeAreaView style={styles.safe}>
@@ -40,7 +47,7 @@ export default function ShareScreen({ navigation, route }) {
         <SecondaryButton title="Bagikan lewat aplikasi lain" onPress={shareInvitation} style={styles.button} />
         <SecondaryButton title="Copy Link" onPress={copyLink} style={styles.button} />
         <SecondaryButton title="Buka Undangan di Browser" onPress={() => Linking.openURL(url)} style={styles.button} />
-        <Text style={styles.home} onPress={() => navigation.popTo('Landing')}>Kembali ke Beranda</Text>
+        <Text style={styles.home} onPress={openMyInvitations}>Lihat Undangan Saya</Text>
       </SafeAreaView>
     </LinearGradient>
   );
