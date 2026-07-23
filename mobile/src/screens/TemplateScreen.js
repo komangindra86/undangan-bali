@@ -102,6 +102,7 @@ function conceptFor(slug) {
     'pura-sunset': 'Sinematik senja, lilin, kutipan Weda, countdown.',
     'ubud-garden': 'Editorial terang, taman Ubud dan warna natural.',
     'royal-kamasan': 'Adat mewah, patra emas, songket gelap, countdown.',
+    'puspa-kencana': 'Ivory hangat, ukiran Bali, bunga kamboja, dan kilau emas.',
   }[slug] || 'Undangan pernikahan bernuansa Bali.';
 }
 

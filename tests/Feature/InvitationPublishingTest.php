@@ -21,11 +21,16 @@ class InvitationPublishingTest extends TestCase
 
         $this->getJson('/api/templates')
             ->assertOk()
-            ->assertJsonCount(4, 'data')
+            ->assertJsonCount(5, 'data')
             ->assertJsonFragment(['slug' => 'bali-classic'])
             ->assertJsonFragment(['slug' => 'pura-sunset'])
             ->assertJsonFragment(['slug' => 'ubud-garden'])
-            ->assertJsonFragment(['slug' => 'royal-kamasan']);
+            ->assertJsonFragment(['slug' => 'royal-kamasan'])
+            ->assertJsonFragment([
+                'name' => 'Puspa Kencana',
+                'slug' => 'puspa-kencana',
+                'blade_view' => 'invitations.templates.bali-heritage',
+            ]);
 
         $this->get('/preview/templates/bali-classic')
             ->assertOk()
@@ -49,6 +54,39 @@ class InvitationPublishingTest extends TestCase
             ->assertSee('Galeri Bahagia')
             ->assertSee('Wedding Gift')
             ->assertSee('Lihat Simulasi Pembayaran');
+
+        $this->get('/preview/templates/puspa-kencana')
+            ->assertOk()
+            ->assertSee('Preview dummy: Puspa Kencana')
+            ->assertSee('Ivory, puspa, dan kilau emas Bali')
+            ->assertSee('Momen Kami')
+            ->assertSee('Wedding Gift')
+            ->assertSee('Lihat Simulasi Pembayaran');
+    }
+
+    public function test_puspa_kencana_seed_preserves_legacy_template_relations(): void
+    {
+        $legacy = InvitationTemplate::create([
+            'name' => 'Bali Heritage',
+            'slug' => 'bali-heritage',
+            'blade_view' => 'invitations.templates.bali-heritage',
+            'is_active' => true,
+        ]);
+        $invitation = Invitation::create([
+            'template_id' => $legacy->id,
+            'status' => 'draft',
+        ]);
+
+        $this->seed();
+
+        $this->assertDatabaseHas('invitation_templates', [
+            'id' => $legacy->id,
+            'name' => 'Puspa Kencana',
+            'slug' => 'puspa-kencana',
+            'is_active' => true,
+        ]);
+        $this->assertSame($legacy->id, $invitation->fresh()->template_id);
+        $this->assertSame(5, InvitationTemplate::where('is_active', true)->count());
     }
 
     public function test_local_draft_can_be_synced_after_register_and_published(): void
@@ -224,6 +262,50 @@ class InvitationPublishingTest extends TestCase
             ->assertOk()
             ->assertSee(Storage::url($invitation->groom_photo))
             ->assertSee(Storage::url($invitation->gallery_photos[0]))
+            ->assertDontSee('templates/bali-preview/hero-couple.jpg');
+    }
+
+    public function test_puspa_kencana_uses_owner_media_and_escapes_legacy_content(): void
+    {
+        Storage::fake('public');
+        $this->seed();
+        $template = InvitationTemplate::where('slug', 'puspa-kencana')->firstOrFail();
+        Storage::disk('public')->put('invitations/photos/groom.jpg', 'groom');
+        Storage::disk('public')->put('invitations/photos/bride.jpg', 'bride');
+        Storage::disk('public')->put('invitations/gallery/moment.jpg', 'gallery');
+
+        $invitation = Invitation::create([
+            'template_id' => $template->id,
+            'slug' => 'puspa-kencana-owner-media',
+            'status' => 'published',
+            'groom_full_name' => 'I Made Wira',
+            'groom_nickname' => 'Wira',
+            'groom_father_name' => 'I Ketut Darma',
+            'groom_mother_name' => 'Ni Luh Sari',
+            'groom_photo' => 'invitations/photos/groom.jpg',
+            'bride_full_name' => 'Ni Putu Ayu',
+            'bride_nickname' => 'Ayu',
+            'bride_father_name' => 'I Wayan Sudarta',
+            'bride_mother_name' => 'Ni Made Rini',
+            'bride_photo' => 'invitations/photos/bride.jpg',
+            'gallery_photos' => ['invitations/gallery/moment.jpg'],
+            'opening_quote' => '<script>alert(1)</script>',
+            'event_type' => 'Pawiwahan',
+            'event_date' => '2026-08-18',
+            'start_time' => '10:00',
+            'end_time' => '13:00',
+            'venue_name' => 'Bale Banjar Ubud',
+            'venue_address' => 'Jalan Raya Ubud, Gianyar, Bali',
+            'published_at' => now(),
+        ]);
+
+        $this->get('/u/'.$invitation->slug)
+            ->assertOk()
+            ->assertSee(parse_url(Storage::url($invitation->groom_photo), PHP_URL_PATH), false)
+            ->assertSee(parse_url(Storage::url($invitation->bride_photo), PHP_URL_PATH), false)
+            ->assertSee(parse_url(Storage::url($invitation->gallery_photos[0]), PHP_URL_PATH), false)
+            ->assertSee('&lt;script&gt;alert(1)&lt;/script&gt;', false)
+            ->assertDontSee('<script>alert(1)</script>', false)
             ->assertDontSee('templates/bali-preview/hero-couple.jpg');
     }
 

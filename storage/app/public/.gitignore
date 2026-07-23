@@ -5,3 +5,5 @@
 !templates/
 !templates/bali-preview/
 !templates/bali-preview/*.jpg
+!templates/bali-heritage/
+!templates/bali-heritage/*.jpg

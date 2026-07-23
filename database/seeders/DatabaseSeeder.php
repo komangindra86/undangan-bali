@@ -23,6 +23,15 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
+        $currentPuspaKencana = InvitationTemplate::where('slug', 'puspa-kencana')->first();
+        $legacyBaliHeritage = InvitationTemplate::where('slug', 'bali-heritage')->first();
+
+        if ($legacyBaliHeritage && ! $currentPuspaKencana) {
+            $legacyBaliHeritage->update(['slug' => 'puspa-kencana']);
+        } elseif ($legacyBaliHeritage && $currentPuspaKencana) {
+            $legacyBaliHeritage->update(['is_active' => false]);
+        }
+
         $templates = [
             [
                 'name' => 'Bali Classic',
@@ -51,6 +60,13 @@ class DatabaseSeeder extends Seeder
                 'thumbnail' => 'templates/bali-preview/gallery-details.jpg',
                 'preview_image' => 'templates/bali-preview/gallery-details.jpg',
                 'blade_view' => 'invitations.templates.royal-kamasan',
+            ],
+            [
+                'name' => 'Puspa Kencana',
+                'slug' => 'puspa-kencana',
+                'thumbnail' => 'templates/bali-heritage/bali-heritage-frame.jpg',
+                'preview_image' => 'templates/bali-heritage/bali-heritage-frame.jpg',
+                'blade_view' => 'invitations.templates.bali-heritage',
             ],
         ];
 
