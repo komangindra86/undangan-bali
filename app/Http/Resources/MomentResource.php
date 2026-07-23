@@ -41,9 +41,9 @@ class MomentResource extends JsonResource
             ? $this->moments->pluck('photo_path')
             : collect();
 
-        return collect([$this->groom_photo, $this->bride_photo])
-            ->merge($this->gallery_photos ?? [])
+        return collect($this->gallery_photos ?? [])
             ->merge($momentPhotos)
+            ->merge([$this->groom_photo, $this->bride_photo])
             ->filter()
             ->unique()
             ->map(fn (string $path) => url(Storage::disk('public')->url($path)))

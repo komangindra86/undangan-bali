@@ -104,7 +104,7 @@ class SocialMomentTest extends TestCase
             ->assertJsonMissing(['slug' => 'demo-social-feed']);
     }
 
-    public function test_feed_returns_every_uploaded_photo_without_duplicates(): void
+    public function test_feed_prioritizes_gallery_and_returns_every_photo_without_duplicates(): void
     {
         $invitation = $this->publishedInvitation();
         $invitation->update([
@@ -124,8 +124,25 @@ class SocialMomentTest extends TestCase
         $this->getJson('/api/moments')
             ->assertOk()
             ->assertJsonCount(5, 'data.0.photo_urls')
+            ->assertJsonPath('data.0.cover_photo_url', url('/storage/invitations/gallery/one.jpg'))
+            ->assertJsonPath('data.0.photo_urls.1', url('/storage/invitations/gallery/two.jpg'))
+            ->assertJsonPath('data.0.photo_urls.3', url('/storage/invitations/moments/prewedding.jpg'))
+            ->assertJsonPath('data.0.photo_urls.4', url('/storage/invitations/photos/bride.jpg'));
+    }
+
+    public function test_feed_uses_couple_photo_when_gallery_and_moments_are_empty(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $invitation->update([
+            'groom_photo' => 'invitations/photos/groom.jpg',
+            'bride_photo' => 'invitations/photos/bride.jpg',
+            'gallery_photos' => [],
+        ]);
+
+        $this->getJson('/api/moments')
+            ->assertOk()
             ->assertJsonPath('data.0.cover_photo_url', url('/storage/invitations/photos/groom.jpg'))
-            ->assertJsonPath('data.0.photo_urls.4', url('/storage/invitations/moments/prewedding.jpg'));
+            ->assertJsonCount(2, 'data.0.photo_urls');
     }
 
     public function test_feed_is_paginated_ten_moments_per_page(): void
