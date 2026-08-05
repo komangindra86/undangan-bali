@@ -14,7 +14,13 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response
+            ->assertStatus(200)
+            ->assertSee('Cerita cinta Bali')
+            ->assertSee('Coba tanpa login')
+            ->assertSee('Wedding Gift')
+            ->assertSee('Download di Google Play')
+            ->assertSee('https://play.google.com/store/apps/details?id=com.balisantih.undanganbali', false);
     }
 
     public function test_privacy_policy_page_is_available(): void
