@@ -123,7 +123,7 @@ export const api = {
   siteUrl: API_URL.replace(/\/api$/, ''),
   register: (values) => request('/register', { method: 'POST', body: JSON.stringify(values) }),
   login: (values) => request('/login', { method: 'POST', body: JSON.stringify(values) }),
-  googleLogin: (idToken) => request('/auth/google', { method: 'POST', body: JSON.stringify({ id_token: idToken }) }),
+  googleExchange: (code) => request('/auth/google/exchange', { method: 'POST', body: JSON.stringify({ code }) }),
   logout: (token) => request('/logout', { method: 'POST' }, token),
   me: (token) => request('/me', {}, token),
   templates: () => request('/templates'),

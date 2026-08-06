@@ -59,9 +59,9 @@ export default function LoginScreen({ navigation, route }) {
   }
 
   const submitGoogle = useCallback(
-    async (idToken) => {
+    async (exchangeCode) => {
       try {
-        const session = await googleLogin(idToken);
+        const session = await googleLogin(exchangeCode);
         await continueAfterAuth(session);
       } catch (error) {
         Alert.alert('Login Google gagal', error.message);
@@ -84,7 +84,7 @@ export default function LoginScreen({ navigation, route }) {
         <FormField label="Password" secureTextEntry value={password} onChangeText={setPassword} placeholder="Minimal 8 karakter" />
         <PrimaryButton title={publishAfterAuth ? 'Masuk & Publish' : 'Masuk'} onPress={submit} loading={loading} style={styles.submit} />
         <Text style={styles.divider}>atau</Text>
-        <GoogleAuthButton title="Masuk dengan Google" onToken={submitGoogle} disabled={loading} style={styles.google} />
+        <GoogleAuthButton title="Masuk dengan Google" onCode={submitGoogle} disabled={loading} style={styles.google} />
         <SecondaryButton
           title="Belum punya akun? Daftar"
           onPress={() => navigation.replace('Register', { publishAfterAuth, returnTab, returnTo, returnParams: route.params?.returnParams })}

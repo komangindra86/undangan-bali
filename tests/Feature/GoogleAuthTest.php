@@ -100,7 +100,10 @@ class GoogleAuthTest extends TestCase
 
     public function test_google_login_requires_configured_client_ids(): void
     {
-        config(['services.google.client_ids' => []]);
+        config([
+            'services.google.client_ids' => [],
+            'services.google.web_client_id' => null,
+        ]);
 
         $this->postJson('/api/auth/google', ['id_token' => 'valid-google-token'])
             ->assertUnprocessable()

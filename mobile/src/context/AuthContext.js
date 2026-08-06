@@ -64,8 +64,8 @@ export function AuthProvider({ children }) {
     return response;
   }
 
-  async function googleLogin(idToken) {
-    const response = await api.googleLogin(idToken);
+  async function googleLogin(exchangeCode) {
+    const response = await api.googleExchange(exchangeCode);
     await persistSession(response);
     return response;
   }

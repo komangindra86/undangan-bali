@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminPasswordController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GiftPayoutController;
+use App\Http\Controllers\GoogleMobileOAuthController;
 use App\Http\Controllers\PublicInvitationController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +13,13 @@ Route::get('/', function () {
 });
 
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
+
+Route::get('/auth/google/mobile', [GoogleMobileOAuthController::class, 'redirect'])
+    ->middleware('throttle:10,1')
+    ->name('auth.google.mobile.redirect');
+Route::get('/auth/google/mobile/callback', [GoogleMobileOAuthController::class, 'callback'])
+    ->middleware('throttle:30,1')
+    ->name('auth.google.mobile.callback');
 
 Route::get('/u/{slug}', [PublicInvitationController::class, 'show'])
     ->name('invitations.public');

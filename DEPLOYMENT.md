@@ -227,7 +227,27 @@ Push perangkat memakai Expo Push Service dan FCM V1. Konfigurasi sekali sebelum 
 
 Jangan commit `google-services.json`, Firebase service account, atau Expo access token.
 
-## 6. Webhook Midtrans
+## 6. Google Login Mobile
+
+Google Login versi baru menggunakan OAuth Web melalui backend. Di Google Cloud, buat Web Client dengan redirect URI berikut:
+
+```text
+https://undangan.balisantih.com/auth/google/mobile/callback
+```
+
+Tambahkan ke `.env` VPS:
+
+```text
+GOOGLE_CLIENT_IDS=android-client-versi-lama.apps.googleusercontent.com,web-client-baru.apps.googleusercontent.com
+GOOGLE_WEB_CLIENT_ID=web-client-baru.apps.googleusercontent.com
+GOOGLE_WEB_CLIENT_SECRET=rahasia-dari-google-cloud
+GOOGLE_WEB_REDIRECT_URI=https://undangan.balisantih.com/auth/google/mobile/callback
+GOOGLE_MOBILE_REDIRECT_URI=undanganbali://auth/google
+```
+
+Client Secret hanya disimpan di VPS. Sesudah mengubah `.env`, jalankan `php8.2 artisan optimize:clear` dan `php8.2 artisan optimize`.
+
+## 7. Webhook Midtrans
 
 Set Notification URL di dashboard Midtrans:
 

@@ -49,6 +49,13 @@ return [
 
     'google' => [
         'client_ids' => array_filter(array_map('trim', explode(',', (string) env('GOOGLE_CLIENT_IDS', '')))),
+        'web_client_id' => env('GOOGLE_WEB_CLIENT_ID'),
+        'web_client_secret' => env('GOOGLE_WEB_CLIENT_SECRET'),
+        'web_redirect_uri' => env(
+            'GOOGLE_WEB_REDIRECT_URI',
+            rtrim((string) env('APP_URL', 'http://localhost'), '/').'/auth/google/mobile/callback'
+        ),
+        'mobile_redirect_uri' => env('GOOGLE_MOBILE_REDIRECT_URI', 'undanganbali://auth/google'),
     ],
 
     'firebase' => [

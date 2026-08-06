@@ -14,11 +14,13 @@ use App\Http\Controllers\Api\TemplateController;
 use App\Http\Controllers\Api\WeddingGiftDashboardController;
 use App\Http\Controllers\Api\WeddingGiftSettingController;
 use App\Http\Controllers\Api\XenditWebhookController;
+use App\Http\Controllers\GoogleMobileOAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/auth/google', [AuthController::class, 'google']);
+Route::post('/auth/google/exchange', [GoogleMobileOAuthController::class, 'exchange'])->middleware('throttle:10,1');
 
 Route::get('/templates', [TemplateController::class, 'index']);
 Route::get('/templates/{template}', [TemplateController::class, 'show']);

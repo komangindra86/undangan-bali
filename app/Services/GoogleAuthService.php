@@ -64,6 +64,8 @@ class GoogleAuthService
             $ids = explode(',', $ids);
         }
 
-        return array_values(array_filter(array_map('trim', $ids)));
+        $ids[] = config('services.google.web_client_id');
+
+        return array_values(array_unique(array_filter(array_map('trim', $ids))));
     }
 }

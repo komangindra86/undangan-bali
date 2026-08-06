@@ -98,20 +98,25 @@ Perangkat fisik:   EXPO_PUBLIC_API_URL=http://ALAMAT-IP-LAN-PC:8000/api
 
 Untuk perangkat fisik, atur juga `APP_URL` backend ke alamat LAN yang sama agar link public hasil publish dapat dibuka dari ponsel.
 
-Untuk Google Login, buat OAuth Client ID di Google Cloud Console lalu isi environment mobile:
+Google Login memakai OAuth Web melalui backend agar branding Google sesuai aplikasi dan Client Secret tidak pernah masuk ke bundle mobile. Mobile hanya memerlukan `EXPO_PUBLIC_API_URL`.
+
+Buat OAuth Web Client di Google Cloud dengan redirect URI:
 
 ```text
-EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=android-client-id.apps.googleusercontent.com
-EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=web-client-id.apps.googleusercontent.com
-EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=
-EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID=
+https://undangan.balisantih.com/auth/google/mobile/callback
 ```
 
-Backend juga harus mengizinkan Client ID yang sama melalui `.env`:
+Isi hanya `.env` backend:
 
 ```text
-GOOGLE_CLIENT_IDS=android-client-id.apps.googleusercontent.com,web-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_IDS=android-client-versi-lama.apps.googleusercontent.com,web-client-baru.apps.googleusercontent.com
+GOOGLE_WEB_CLIENT_ID=web-client-baru.apps.googleusercontent.com
+GOOGLE_WEB_CLIENT_SECRET=rahasia-dari-google-cloud
+GOOGLE_WEB_REDIRECT_URI=https://undangan.balisantih.com/auth/google/mobile/callback
+GOOGLE_MOBILE_REDIRECT_URI=undanganbali://auth/google
 ```
+
+`GOOGLE_CLIENT_IDS` tetap memuat Android Client ID lama selama aplikasi versi lama masih dipakai. Jangan simpan Client Secret di `mobile/.env`, `eas.json`, atau file yang masuk Git.
 
 Jalankan backend agar dapat dijangkau perangkat pada jaringan yang sama:
 

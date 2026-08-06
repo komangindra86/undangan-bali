@@ -8,8 +8,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://undangan.balisantih.com/api",
-        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "990876078905-blv7ai7vjsacr1huc6r1ofunfi393mf2.apps.googleusercontent.com"
+        "EXPO_PUBLIC_API_URL": "https://undangan.balisantih.com/api"
       }
     },
     "production": {
@@ -17,8 +16,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://undangan.balisantih.com/api",
-        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "990876078905-blv7ai7vjsacr1huc6r1ofunfi393mf2.apps.googleusercontent.com"
+        "EXPO_PUBLIC_API_URL": "https://undangan.balisantih.com/api"
       }
     }
   },

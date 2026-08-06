@@ -71,9 +71,9 @@ export default function RegisterScreen({ navigation, route }) {
   }
 
   const submitGoogle = useCallback(
-    async (idToken) => {
+    async (exchangeCode) => {
       try {
-        const session = await googleLogin(idToken);
+        const session = await googleLogin(exchangeCode);
         await continueAfterAuth(session);
       } catch (error) {
         Alert.alert('Daftar dengan Google gagal', error.message);
@@ -95,7 +95,7 @@ export default function RegisterScreen({ navigation, route }) {
         <FormField label="Konfirmasi password" secureTextEntry value={form.password_confirmation} onChangeText={(value) => setForm({ ...form, password_confirmation: value })} />
         <PrimaryButton title={publishAfterAuth ? 'Daftar & Publish' : 'Daftar'} onPress={submit} loading={loading} style={styles.submit} />
         <Text style={styles.divider}>atau</Text>
-        <GoogleAuthButton title="Daftar dengan Google" onToken={submitGoogle} disabled={loading} style={styles.google} />
+        <GoogleAuthButton title="Daftar dengan Google" onCode={submitGoogle} disabled={loading} style={styles.google} />
         <SecondaryButton title="Sudah punya akun? Masuk" onPress={() => navigation.replace('Login', { publishAfterAuth, returnTab, returnTo, returnParams: route.params?.returnParams })} />
       </KeyboardAwareScrollView>
     </SafeAreaView>
