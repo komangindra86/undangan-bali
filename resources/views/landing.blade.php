@@ -6,9 +6,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Buat undangan pernikahan digital bernuansa Bali, bagikan momen, dan kelola Wedding Gift dari satu aplikasi.">
+    <meta name="description" content="Buat undangan digital bernuansa Bali untuk momen penting, bagikan cerita, dan kelola semuanya dari satu aplikasi.">
     <meta name="theme-color" content="#130f0b">
-    <title>Undangan Pernikahan Bali | Cerita Cinta Bali</title>
+    <title>Undangan Bali Santih | Undangan Digital Bernuansa Bali</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
@@ -17,9 +17,9 @@
 <body>
     <header class="nav-wrap">
         <nav class="nav shell" aria-label="Navigasi utama">
-            <a class="brand" href="#beranda" aria-label="Undangan Pernikahan Bali">
+            <a class="brand" href="#beranda" aria-label="Undangan Bali Santih">
                 <span class="brand-mark" aria-hidden="true"><span>B</span></span>
-                <span class="brand-text">Undangan Bali</span>
+                <span class="brand-text">Undangan Bali Santih</span>
             </a>
             <div class="nav-links">
                 <a href="#template">Template</a>
@@ -179,7 +179,7 @@
                 <p class="eyebrow">Mulai dari ponselmu</p>
                 <h2 class="display">Buat undangan yang terasa seperti kalian.</h2>
                 <p>Coba pilih template dan isi draft tanpa login. Akun baru dibutuhkan ketika kalian siap publish dan membagikan undangan.</p>
-                <a class="play-badge" href="{{ $playStoreUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Download Undangan Pernikahan Bali di Google Play">
+                <a class="play-badge" href="{{ $playStoreUrl }}" target="_blank" rel="noopener noreferrer" aria-label="Download Undangan Bali Santih di Google Play">
                     <span class="play-icon" aria-hidden="true">▶</span>
                     <span><small>Download di</small><strong>Google Play</strong></span>
                 </a>
@@ -189,9 +189,10 @@
 
     <footer>
         <div class="footer-grid shell">
-            <span>&copy; {{ date('Y') }} Undangan Pernikahan Bali. Dibuat dengan hangat di Bali.</span>
+            <span>&copy; {{ date('Y') }} Undangan Bali Santih. Dibuat dengan hangat di Bali.</span>
             <div class="footer-links">
                 <a href="{{ route('privacy-policy') }}">Kebijakan Privasi</a>
+                <a href="{{ route('terms-of-service') }}">Syarat dan Ketentuan</a>
                 <a href="{{ $playStoreUrl }}" target="_blank" rel="noopener noreferrer">Google Play</a>
             </div>
         </div>

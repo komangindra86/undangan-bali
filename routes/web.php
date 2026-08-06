@@ -13,6 +13,7 @@ Route::get('/', function () {
 });
 
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
+Route::view('/terms-of-service', 'terms-of-service')->name('terms-of-service');
 
 Route::get('/auth/google/mobile', [GoogleMobileOAuthController::class, 'redirect'])
     ->middleware('throttle:10,1')

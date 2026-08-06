@@ -1,4 +1,4 @@
-# Undangan Pernikahan Bali - Backend MVP
+# Undangan Bali Santih - Backend MVP
 
 Backend Laravel untuk aplikasi pembuat undangan pernikahan Bali. Tahap ini menyediakan API mobile, autentikasi token, sinkronisasi draft setelah login, publish dengan slug unik, dan halaman undangan publik.
 

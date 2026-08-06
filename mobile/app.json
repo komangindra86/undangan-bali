@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Undangan Pernikahan Bali",
+    "name": "Undangan Bali Santih",
     "slug": "undangan-pernikahan-bali",
     "scheme": "undanganbali",
     "version": "1.0.13",
@@ -11,7 +11,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Izinkan Undangan Pernikahan Bali memilih foto mempelai dan galeri undangan Anda.",
+          "photosPermission": "Izinkan Undangan Bali Santih memilih foto dan galeri undangan Anda.",
           "cameraPermission": false,
           "microphonePermission": false
         }

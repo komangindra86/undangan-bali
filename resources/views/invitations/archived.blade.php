@@ -67,7 +67,7 @@
             Undangan ini sudah melewati masa aktif dan media foto/musiknya telah dibersihkan untuk menghemat storage.
             Data acara dan transaksi penting tetap disimpan oleh sistem.
         </p>
-        <p class="watermark">Dibuat gratis dengan aplikasi Undangan Pernikahan Bali</p>
+        <p class="watermark">Dibuat gratis dengan aplikasi Undangan Bali Santih</p>
     </main>
 </body>
 </html>

@@ -3,19 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Privacy Policy - Undangan Pernikahan Bali</title>
+    <title>Kebijakan Privasi - Undangan Bali Santih</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-stone-950 text-stone-100">
     <main class="mx-auto max-w-4xl px-6 py-12 md:py-16">
         <a href="{{ url('/') }}" class="text-sm text-amber-200 underline underline-offset-4">Kembali ke beranda</a>
         <p class="mt-8 text-xs uppercase tracking-[0.32em] text-amber-300">Privacy Policy</p>
-        <h1 class="mt-4 font-serif text-4xl leading-tight md:text-5xl">Kebijakan Privasi Undangan Pernikahan Bali</h1>
-        <p class="mt-4 text-stone-300">Terakhir diperbarui: 2 Juni 2026</p>
+        <h1 class="mt-4 font-serif text-4xl leading-tight md:text-5xl">Kebijakan Privasi Undangan Bali Santih</h1>
+        <p class="mt-4 text-stone-300">Terakhir diperbarui: 6 Agustus 2026</p>
 
         <section class="mt-10 space-y-6 text-stone-200 leading-7">
             <p>
-                Undangan Pernikahan Bali membantu pasangan membuat, menyimpan, dan membagikan undangan digital.
+                Undangan Bali Santih membantu pengguna membuat, menyimpan, dan membagikan undangan digital untuk berbagai momen penting.
                 Kebijakan ini menjelaskan data yang kami kumpulkan, cara penggunaannya, dan pilihan Anda saat memakai aplikasi mobile
                 maupun halaman web undangan di <strong>undangan.balisantih.com</strong>.
             </p>
