@@ -61,6 +61,11 @@ class SocialMomentTest extends TestCase
 
         $this->assertStringStartsWith('https://wa.me/6281234567890?text=', $response->json('whatsapp_url'));
         $this->assertStringContainsString('wira-ayu', urldecode($response->json('whatsapp_url')));
+        $this->assertSame(
+            route('invitations.public', $invitation->slug).'?to=Komang%20Tamu',
+            $response->json('personalized_url')
+        );
+        $this->assertStringContainsString('?to=Komang%20Tamu', urldecode($response->json('whatsapp_url')));
     }
 
     public function test_authenticated_user_can_react_and_comment(): void

@@ -104,6 +104,12 @@ export default function MyInvitationsScreen({ navigation }) {
             item={item}
             key={item.id}
             onOpen={() => Linking.openURL(item.public_url || `${api.siteUrl}/u/${item.slug}`)}
+            onShare={() => openStack('Share', {
+              publication: {
+                ...item,
+                public_url: item.public_url || `${api.siteUrl}/u/${item.slug}`,
+              },
+            })}
             onNavigate={(screen) => openStack(screen, { invitation: item })}
             onToggleFeed={() => toggleFeed(item)}
           />
@@ -113,7 +119,7 @@ export default function MyInvitationsScreen({ navigation }) {
   );
 }
 
-function InvitationCard({ item, onNavigate, onOpen, onToggleFeed }) {
+function InvitationCard({ item, onNavigate, onOpen, onShare, onToggleFeed }) {
   const published = item.status === 'published';
 
   return (
@@ -134,6 +140,7 @@ function InvitationCard({ item, onNavigate, onOpen, onToggleFeed }) {
       {published ? (
         <>
           <PrimaryButton title="Buka Undangan Live" onPress={onOpen} style={styles.openButton} />
+          <SecondaryButton title="Bagikan ke Tamu" onPress={onShare} style={styles.shareButton} />
           <View style={styles.actionGrid}>
             <SmallAction icon="images-outline" label="Kelola Moment" onPress={() => onNavigate('ManageMoments')} />
             <SmallAction icon="people-outline" label="Permintaan Tamu" onPress={() => onNavigate('InvitationRequests')} />
@@ -190,6 +197,7 @@ const styles = StyleSheet.create({
   statusText: { color: colors.muted, fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
   publishedText: { color: colors.success },
   openButton: { marginTop: spacing.md, minHeight: 48 },
+  shareButton: { marginTop: spacing.sm, minHeight: 46 },
   actionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.sm },
   smallAction: { alignItems: 'center', backgroundColor: colors.surfaceAlt, borderRadius: 15, flexBasis: '47%', flexDirection: 'row', gap: spacing.xs, minHeight: 46, paddingHorizontal: spacing.sm },
   smallActionText: { color: colors.text, flex: 1, fontSize: 11, fontWeight: '600' },

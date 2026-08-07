@@ -92,11 +92,15 @@ class SocialController extends Controller
         abort_unless($invitationRequest->invitation_id === $invitation->id, 404);
 
         $invitationRequest->update(['status' => 'shared', 'shared_at' => now()]);
-        $message = 'Kepada Yth. '.$invitationRequest->requester_name.', kami mengundang untuk hadir di acara pernikahan kami. Buka undangan: '.route('invitations.public', $invitation->slug);
+        $personalizedUrl = route('invitations.public', $invitation->slug).'?'.http_build_query([
+            'to' => $invitationRequest->requester_name,
+        ], '', '&', PHP_QUERY_RFC3986);
+        $message = 'Kepada Yth. '.$invitationRequest->requester_name.', kami mengundang untuk hadir di acara pernikahan kami. Buka undangan: '.$personalizedUrl;
 
         return response()->json([
             'message' => 'Permintaan ditandai sudah dibagikan.',
             'data' => $invitationRequest->fresh(),
+            'personalized_url' => $personalizedUrl,
             'whatsapp_url' => 'https://wa.me/'.$invitationRequest->requester_whatsapp.'?text='.rawurlencode($message),
         ]);
     }
