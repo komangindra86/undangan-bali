@@ -63,6 +63,12 @@
     "web": {
       "bundler": "metro",
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d7e651c4-ce68-4c30-ab60-3460685e4389"
+      }
+    },
+    "owner": "kmindra"
   }
 }
