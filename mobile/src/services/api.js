@@ -44,7 +44,7 @@ function appendValues(form, group, values = {}) {
 }
 
 async function appendImage(form, key, photo) {
-  if (!photo?.uri) {
+  if (!photo?.uri || photo.isRemote) {
     return;
   }
 
@@ -64,7 +64,7 @@ async function appendImage(form, key, photo) {
 }
 
 async function appendFile(form, key, file) {
-  if (!file?.uri) {
+  if (!file?.uri || file.isRemote) {
     return;
   }
 
@@ -101,7 +101,11 @@ async function draftFormData(draft, includeMedia, methodOverride = null) {
     await appendImage(form, 'groom_photo', draft.groom_data?.groom_photo);
     await appendImage(form, 'bride_photo', draft.bride_data?.bride_photo);
     for (const photo of draft.gallery_data?.photos || []) {
-      await appendImage(form, 'gallery_photos[]', photo);
+      if (photo.remotePath) {
+        form.append('gallery_existing_paths[]', photo.remotePath);
+      } else {
+        await appendImage(form, 'gallery_photos[]', photo);
+      }
     }
     await appendFile(form, 'music_file', draft.music_data?.music_file);
   }
@@ -139,6 +143,7 @@ export const api = {
   registerPushToken: (values, token) => request('/push-tokens', { method: 'POST', body: JSON.stringify(values) }, token),
   unregisterPushToken: (pushToken, token) => request('/push-tokens', { method: 'DELETE', body: JSON.stringify({ token: pushToken }) }, token),
   invitations: (token) => request('/invitations', {}, token),
+  invitation: (id, token) => request(`/invitations/${id}`, {}, token),
   syncDraft: async (draft, token, includeMedia = true) =>
     request('/invitations/sync-local-draft', { method: 'POST', body: await draftFormData(draft, includeMedia) }, token),
   updateDraft: async (id, draft, token, includeMedia = false) =>

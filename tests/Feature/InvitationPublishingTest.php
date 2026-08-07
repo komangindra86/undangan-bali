@@ -284,6 +284,53 @@ class InvitationPublishingTest extends TestCase
             ->assertDontSee('templates/bali-preview/hero-couple.jpg');
     }
 
+    public function test_resumed_draft_keeps_selected_gallery_photos_when_new_media_is_uploaded(): void
+    {
+        Storage::fake('public');
+        $this->seed();
+        $template = InvitationTemplate::where('slug', 'bali-classic')->firstOrFail();
+
+        $register = $this->postJson('/api/register', [
+            'name' => 'Komang',
+            'email' => 'resume-draft@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertCreated();
+
+        $keptPhoto = 'invitations/gallery/keep.jpg';
+        $removedPhoto = 'invitations/gallery/remove.jpg';
+        Storage::disk('public')->put($keptPhoto, 'keep');
+        Storage::disk('public')->put($removedPhoto, 'remove');
+
+        $invitation = Invitation::create([
+            'user_id' => $register->json('user.id'),
+            'template_id' => $template->id,
+            'status' => 'draft',
+            'groom_full_name' => 'I Made Wira',
+            'groom_nickname' => 'Wira',
+            'bride_full_name' => 'Ni Putu Ayu',
+            'bride_nickname' => 'Ayu',
+            'gallery_photos' => [$keptPhoto, $removedPhoto],
+        ]);
+
+        $this->withToken($register->json('token'))->post("/api/invitations/{$invitation->id}", [
+            '_method' => 'PUT',
+            'template_id' => $template->id,
+            'gallery_photos_changed' => true,
+            'gallery_existing_paths' => [$keptPhoto],
+            'gallery_photos' => [
+                UploadedFile::fake()->image('new-gallery.jpg', 1200, 800),
+            ],
+        ])->assertOk();
+
+        $gallery = $invitation->fresh()->gallery_photos;
+        $this->assertCount(2, $gallery);
+        $this->assertSame($keptPhoto, $gallery[0]);
+        Storage::disk('public')->assertExists($keptPhoto);
+        Storage::disk('public')->assertMissing($removedPhoto);
+        Storage::disk('public')->assertExists($gallery[1]);
+    }
+
     public function test_puspa_kencana_uses_owner_media_and_escapes_legacy_content(): void
     {
         Storage::fake('public');

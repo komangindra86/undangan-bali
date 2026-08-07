@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DEFAULT_OPENING_QUOTE } from '../constants/invitation';
 
 export const DRAFT_STORAGE_KEYS = {
   selected_template: 'selected_template',
@@ -23,7 +24,7 @@ export const emptyDraft = {
   selected_template: null,
   groom_data: {},
   bride_data: {},
-  event_data: {},
+  event_data: { opening_quote: DEFAULT_OPENING_QUOTE },
   location_data: {},
   gallery_data: { photos: [] },
   music_data: { music_type: 'none', music_id: null },

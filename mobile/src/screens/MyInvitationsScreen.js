@@ -5,13 +5,16 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { useAuth } from '../context/AuthContext';
+import { useDraft } from '../context/DraftContext';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 
 export default function MyInvitationsScreen({ navigation }) {
   const { expireSession, hasAccountOnDevice, isAuthenticated, loading: authLoading, token } = useAuth();
+  const { loadRemoteDraft } = useDraft();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [resumingId, setResumingId] = useState(null);
 
   function openStack(screen, params) {
     navigation.getParent()?.navigate(screen, params);
@@ -50,6 +53,24 @@ export default function MyInvitationsScreen({ navigation }) {
       setItems((current) => current.map((entry) => (entry.id === item.id ? response.data : entry)));
     } catch (error) {
       Alert.alert('Feed Moment', error.message);
+    }
+  }
+
+  async function resumeDraft(item) {
+    setResumingId(item.id);
+    try {
+      const response = await api.invitation(item.id, token);
+      await loadRemoteDraft(response.data);
+      openStack('GroomBrideForm', { resumedInvitationId: item.id, resumeKey: Date.now() });
+    } catch (error) {
+      if (error.status === 401) {
+        await expireSession();
+        openStack('Login', { returnTab: 'InvitationsTab', sessionExpired: true });
+        return;
+      }
+      Alert.alert('Draft belum dapat dibuka', error.message);
+    } finally {
+      setResumingId(null);
     }
   }
 
@@ -111,6 +132,8 @@ export default function MyInvitationsScreen({ navigation }) {
               },
             })}
             onNavigate={(screen) => openStack(screen, { invitation: item })}
+            onResume={() => resumeDraft(item)}
+            resuming={resumingId === item.id}
             onToggleFeed={() => toggleFeed(item)}
           />
         ))}
@@ -119,12 +142,18 @@ export default function MyInvitationsScreen({ navigation }) {
   );
 }
 
-function InvitationCard({ item, onNavigate, onOpen, onShare, onToggleFeed }) {
+function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleFeed, resuming }) {
   const published = item.status === 'published';
 
   return (
     <View style={styles.card}>
-      <View style={styles.cardTop}>
+      <Pressable
+        accessibilityLabel={published ? undefined : 'Lanjutkan draft undangan'}
+        accessibilityRole={published ? undefined : 'button'}
+        disabled={published || resuming}
+        onPress={published ? undefined : onResume}
+        style={({ pressed }) => [styles.cardTop, !published && pressed && styles.pressed]}
+      >
         <View style={styles.coupleIcon}>
           <Ionicons color={colors.goldLight} name="heart-outline" size={20} />
         </View>
@@ -135,7 +164,7 @@ function InvitationCard({ item, onNavigate, onOpen, onShare, onToggleFeed }) {
         <View style={[styles.statusPill, published && styles.publishedPill]}>
           <Text style={[styles.statusText, published && styles.publishedText]}>{published ? 'Live' : 'Draft'}</Text>
         </View>
-      </View>
+      </Pressable>
 
       {published ? (
         <>
@@ -153,7 +182,10 @@ function InvitationCard({ item, onNavigate, onOpen, onShare, onToggleFeed }) {
           </Pressable>
         </>
       ) : (
-        <Text style={styles.draftHelp}>Undangan ini belum dipublish. Lanjutkan draft lokal dari tombol Buat.</Text>
+        <>
+          <Text style={styles.draftHelp}>Data yang sudah tersimpan dapat dilanjutkan dan diedit sebelum dipublish.</Text>
+          <PrimaryButton title="Lanjutkan Draft" onPress={onResume} loading={resuming} style={styles.openButton} />
+        </>
       )}
     </View>
   );

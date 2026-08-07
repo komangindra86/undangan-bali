@@ -18,7 +18,7 @@ class InvitationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $invitations = $request->user()->invitations()
-            ->with(['template', 'music'])
+            ->with(['template', 'music', 'giftSetting'])
             ->latest()
             ->paginate(15);
 
@@ -150,7 +150,7 @@ class InvitationController extends Controller
 
     private function draftAttributes(StoreInvitationRequest $request, ?Invitation $invitation = null): array
     {
-        $data = $request->safe()->except(['groom_photo', 'bride_photo', 'gallery_photos', 'gallery_photos_changed', 'music_file', 'gift_data']);
+        $data = $request->safe()->except(['groom_photo', 'bride_photo', 'gallery_photos', 'gallery_existing_paths', 'gallery_photos_changed', 'music_file', 'gift_data']);
         $data['status'] = 'draft';
         if ($invitation && $invitation->status === 'published') {
             $data['published_at'] = null;
@@ -167,15 +167,22 @@ class InvitationController extends Controller
         }
 
         if ($request->boolean('gallery_photos_changed')) {
-            foreach ($invitation?->gallery_photos ?? [] as $file) {
+            $currentGallery = $invitation?->gallery_photos ?? [];
+            $retainedGallery = collect($request->input('gallery_existing_paths', []))
+                ->filter(fn ($path) => in_array($path, $currentGallery, true))
+                ->unique()
+                ->values();
+
+            foreach (array_diff($currentGallery, $retainedGallery->all()) as $file) {
                 Storage::disk('public')->delete($file);
             }
-            $data['gallery_photos'] = $request->hasFile('gallery_photos')
-                ? collect($request->file('gallery_photos'))
-                    ->map(fn ($file) => $file->store('invitations/gallery', 'public'))
-                    ->values()
-                    ->all()
-                : null;
+
+            $newGallery = $request->hasFile('gallery_photos')
+                ? collect($request->file('gallery_photos'))->map(fn ($file) => $file->store('invitations/gallery', 'public'))
+                : collect();
+
+            $gallery = $retainedGallery->concat($newGallery)->take(6)->values()->all();
+            $data['gallery_photos'] = $gallery ?: null;
         }
 
         if ($request->hasFile('music_file')) {

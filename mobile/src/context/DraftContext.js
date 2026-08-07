@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { DEFAULT_OPENING_QUOTE } from '../constants/invitation';
 import { api } from '../services/api';
 import { clearLocalDraft, emptyDraft, loadDraft, saveDraftSection, SESSION_KEYS } from '../services/draftStorage';
 import { useAuth } from './AuthContext';
@@ -107,6 +108,23 @@ export function DraftProvider({ children }) {
     return saveSections({ [section]: values });
   }
 
+  async function loadRemoteDraft(invitation) {
+    const nextDraft = draftFromInvitation(invitation);
+    const id = String(invitation.id);
+
+    setDraft(nextDraft);
+    setRemoteInvitationId(id);
+    setSyncMessage('Draft siap dilanjutkan');
+    lastMediaSignature.current = mediaSignature(nextDraft);
+
+    await Promise.all([
+      ...Object.entries(nextDraft).map(([section, values]) => saveDraftSection(section, values)),
+      AsyncStorage.setItem(SESSION_KEYS.remoteInvitationId, id),
+    ]);
+
+    return nextDraft;
+  }
+
   async function publishDraft(authToken = token) {
     setSyncing(true);
     try {
@@ -136,11 +154,91 @@ export function DraftProvider({ children }) {
   }
 
   const value = useMemo(
-    () => ({ draft, loading, syncing, syncMessage, saveSection, saveSections, publishDraft, discardDraft }),
+    () => ({ draft, loading, syncing, syncMessage, saveSection, saveSections, loadRemoteDraft, publishDraft, discardDraft }),
     [draft, loading, syncing, syncMessage, token, remoteInvitationId],
   );
 
   return <DraftContext.Provider value={value}>{children}</DraftContext.Provider>;
+}
+
+function draftFromInvitation(invitation) {
+  const gift = invitation.gift_setting || invitation.giftSetting;
+
+  return {
+    selected_template: invitation.template || { id: invitation.template_id },
+    groom_data: {
+      groom_full_name: invitation.groom_full_name || '',
+      groom_nickname: invitation.groom_nickname || '',
+      groom_father_name: invitation.groom_father_name || '',
+      groom_mother_name: invitation.groom_mother_name || '',
+      groom_child_order: invitation.groom_child_order || '',
+      groom_photo: remoteMedia(invitation.groom_photo, 'image/jpeg'),
+    },
+    bride_data: {
+      bride_full_name: invitation.bride_full_name || '',
+      bride_nickname: invitation.bride_nickname || '',
+      bride_father_name: invitation.bride_father_name || '',
+      bride_mother_name: invitation.bride_mother_name || '',
+      bride_child_order: invitation.bride_child_order || '',
+      bride_photo: remoteMedia(invitation.bride_photo, 'image/jpeg'),
+    },
+    event_data: {
+      event_type: invitation.event_type || null,
+      event_date: invitation.event_date?.slice(0, 10) || '',
+      start_time: invitation.start_time?.slice(0, 5) || '',
+      end_time: invitation.end_time?.slice(0, 5) || '',
+      venue_name: invitation.venue_name || '',
+      venue_address: invitation.venue_address || '',
+      opening_quote: invitation.opening_quote ?? DEFAULT_OPENING_QUOTE,
+    },
+    location_data: {
+      latitude: invitation.latitude || '',
+      longitude: invitation.longitude || '',
+      google_maps_url: invitation.google_maps_url || '',
+    },
+    gallery_data: {
+      photos: (invitation.gallery_photos || []).map((path) => remoteMedia(path, 'image/jpeg')),
+    },
+    music_data: {
+      music_type: invitation.music_type || 'none',
+      music_id: invitation.music_id || null,
+      music_file: invitation.music_type === 'upload'
+        ? remoteMedia(invitation.music_file, mimeTypeForPath(invitation.music_file))
+        : null,
+    },
+    gift_data: {
+      is_active: Boolean(gift?.is_active),
+      receiver_name: gift?.receiver_name || '',
+      receiver_note: gift?.receiver_note || '',
+      minimum_amount: String(gift?.minimum_amount || 10000),
+      show_amount_public: Boolean(gift?.show_amount_public),
+      allow_message: gift ? Boolean(gift.allow_message) : true,
+    },
+  };
+}
+
+function remoteMedia(path, mimeType) {
+  if (!path) return null;
+
+  const uri = /^https?:\/\//i.test(path)
+    ? path
+    : `${api.siteUrl}/storage/${String(path).replace(/^\/+/, '')}`;
+
+  return {
+    uri,
+    isRemote: true,
+    remotePath: /^https?:\/\//i.test(path) ? null : path,
+    fileName: String(path).split('/').pop(),
+    mimeType,
+  };
+}
+
+function mimeTypeForPath(path = '') {
+  const extension = String(path).split('.').pop()?.toLowerCase();
+  return {
+    wav: 'audio/wav',
+    m4a: 'audio/mp4',
+  }[extension] || 'audio/mpeg';
 }
 
 export function useDraft() {

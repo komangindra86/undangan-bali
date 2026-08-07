@@ -4,6 +4,7 @@ import { FooterActions } from '../components/Buttons';
 import DateTimeField from '../components/DateTimeField';
 import FormField from '../components/FormField';
 import WizardLayout from '../components/WizardLayout';
+import { DEFAULT_OPENING_QUOTE } from '../constants/invitation';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
 import { cleanText, firstError, isPastDate, todayDateString, validateRequired, validateSafeText } from '../utils/validation';
@@ -15,6 +16,7 @@ export default function EventFormScreen({ navigation }) {
   const [event, setEvent] = useState(() => ({
     ...draft.event_data,
     event_type: EVENT_TYPES.includes(draft.event_data?.event_type) ? draft.event_data.event_type : null,
+    opening_quote: draft.event_data?.opening_quote ?? DEFAULT_OPENING_QUOTE,
   }));
   const [formError, setFormError] = useState(null);
 
@@ -30,7 +32,7 @@ export default function EventFormScreen({ navigation }) {
       validateRequired(startTime, 'Jam mulai'),
       validateSafeText(event.venue_name, 'Nama tempat', { required: true, max: 120 }),
       validateSafeText(event.venue_address, 'Alamat lengkap', { required: true, max: 1000 }),
-      validateSafeText(event.opening_quote, 'Kutipan pembuka', { max: 300 }),
+      validateSafeText(event.opening_quote, 'Kata pembuka', { max: 300 }),
     ]);
 
     if (error) {
@@ -93,7 +95,14 @@ export default function EventFormScreen({ navigation }) {
       </View>
       <FormField label="Nama tempat *" maxLength={120} value={event.venue_name} onChangeText={(value) => setEvent({ ...event, venue_name: value })} />
       <FormField label="Alamat lengkap *" maxLength={1000} multiline value={event.venue_address} onChangeText={(value) => setEvent({ ...event, venue_address: value })} />
-      <FormField label="Kutipan pembuka" maxLength={300} multiline helperText="Opsional, maksimal 300 karakter." value={event.opening_quote} onChangeText={(value) => setEvent({ ...event, opening_quote: value })} />
+      <FormField
+        label="Kata pembuka"
+        maxLength={300}
+        multiline
+        helperText="Sudah kami siapkan sebagai contoh. Silakan edit agar sesuai dengan keluarga Anda."
+        value={event.opening_quote}
+        onChangeText={(value) => setEvent({ ...event, opening_quote: value })}
+      />
     </WizardLayout>
   );
 }
