@@ -291,6 +291,15 @@
     </style>
 </head>
 <body>
+    @include('invitations.partials.opening-cover', [
+        'openingTheme' => 'Puspa Kencana',
+        'openingImage' => $mediaUrl($gallery[0] ?? $groomPhoto ?? $bridePhoto ?? $frame),
+        'openingAccent' => '#d6ad5c',
+        'openingText' => '#fff8ea',
+        'openingShade' => 'rgba(35, 50, 38, .62)',
+        'openingFont' => "'Cormorant Garamond', Georgia, serif",
+        'openingHasMusic' => (bool) ($musicPath && ! $isPreview),
+    ])
 @if ($isPreview)
     <div class="preview-banner">Preview dummy: Puspa Kencana | Ivory, puspa, dan kilau emas Bali</div>
 @endif

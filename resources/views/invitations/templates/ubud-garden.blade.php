@@ -59,6 +59,14 @@
     </style>
 </head>
 <body>
+@include('invitations.partials.opening-cover', [
+    'openingTheme' => 'Ubud Garden',
+    'openingImage' => Storage::url($hero),
+    'openingAccent' => '#d7bc7d',
+    'openingText' => '#fffaf0',
+    'openingShade' => 'rgba(27, 55, 42, .58)',
+    'openingHasMusic' => (bool) ($musicPath && ! $isPreview),
+])
 @if($isPreview)<div class="banner">Preview dummy: Ubud Garden | Tema terang editorial</div>@endif
 <main class="page">
     <section class="hero">

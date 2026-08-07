@@ -61,6 +61,14 @@
     </style>
 </head>
 <body>
+@include('invitations.partials.opening-cover', [
+    'openingTheme' => 'Pura Sunset',
+    'openingImage' => Storage::url($hero),
+    'openingAccent' => '#f1a06f',
+    'openingText' => '#ffe5c9',
+    'openingShade' => 'rgba(32, 12, 25, .64)',
+    'openingHasMusic' => (bool) ($musicPath && ! $isPreview),
+])
 @if ($isPreview)<div class="banner">Preview dummy: Pura Sunset | Lihat perjalanan undangan sampai akhir</div>@endif
 <main class="page">
     <section class="cover">

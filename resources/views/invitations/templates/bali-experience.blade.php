@@ -305,6 +305,14 @@
     </style>
 </head>
 <body>
+    @include('invitations.partials.opening-cover', [
+        'openingTheme' => $theme['label'],
+        'openingImage' => Storage::url($hero),
+        'openingAccent' => $theme['accent'],
+        'openingText' => $theme['soft'],
+        'openingShade' => 'rgba(16, 10, 8, .62)',
+        'openingHasMusic' => (bool) ($musicPath && ! $isPreview),
+    ])
     @if ($isPreview)
         <div class="preview-banner">
             <strong>Preview dummy: {{ $theme['label'] }}</strong>

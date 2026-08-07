@@ -16,11 +16,24 @@
 </head>
 <body class="pattern text-stone-100">
     @php
+        $isPreview = $isPreview ?? false;
         $musicPath = $invitation->music_type === 'default' && $invitation->music
             ? $invitation->music->file_path
             : $invitation->music_file;
+        $openingPhoto = data_get($invitation->gallery_photos ?? [], 0)
+            ?? $invitation->groom_photo
+            ?? $invitation->bride_photo
+            ?? 'templates/bali-preview/hero-couple.jpg';
         $shareText = 'Kepada Yth. Bapak/Ibu/Saudara/i, kami mengundang untuk hadir di acara pernikahan kami. Buka undangan: '.url()->current();
     @endphp
+    @include('invitations.partials.opening-cover', [
+        'openingTheme' => 'Bali Classic',
+        'openingImage' => Storage::url($openingPhoto),
+        'openingAccent' => '#cf9c46',
+        'openingText' => '#f6dfad',
+        'openingShade' => 'rgba(22, 15, 12, .68)',
+        'openingHasMusic' => (bool) ($musicPath && ! $isPreview),
+    ])
     <main class="mx-auto max-w-xl min-h-screen bg-stone-900/85 shadow-2xl">
         <section class="min-h-screen flex flex-col justify-center text-center px-7 py-16 border-b border-amber-700/30">
             <p class="uppercase text-xs tracking-[0.4em] text-amber-300 mb-10">The Wedding Of</p>
@@ -86,8 +99,8 @@
         </section>
     </main>
 
-    @if ($musicPath)
-        <audio controls autoplay loop class="fixed bottom-4 right-4 w-52 opacity-80">
+    @if ($musicPath && ! $isPreview)
+        <audio data-audio controls loop preload="metadata" class="fixed bottom-4 right-4 w-52 opacity-80">
             <source src="{{ Storage::url($musicPath) }}">
         </audio>
     @endif

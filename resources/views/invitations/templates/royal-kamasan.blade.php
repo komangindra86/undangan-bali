@@ -369,6 +369,14 @@
     </style>
 </head>
 <body>
+    @include('invitations.partials.opening-cover', [
+        'openingTheme' => 'Royal Kamasan',
+        'openingImage' => Storage::url($hero),
+        'openingAccent' => '#d7aa4e',
+        'openingText' => '#fff0c4',
+        'openingShade' => 'rgba(34, 18, 8, .68)',
+        'openingHasMusic' => (bool) ($musicPath && ! $isPreview),
+    ])
 @if ($isPreview)
     <div class="preview-banner">Preview dummy: Royal Kamasan | Tema adat gelap dengan aksen emas</div>
 @endif

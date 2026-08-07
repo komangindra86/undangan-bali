@@ -64,6 +64,25 @@ class InvitationPublishingTest extends TestCase
             ->assertSee('Lihat Simulasi Pembayaran');
     }
 
+    public function test_every_template_preview_starts_behind_opening_cover(): void
+    {
+        $this->seed();
+
+        foreach (InvitationTemplate::where('is_active', true)->get() as $template) {
+            $this->get('/preview/templates/'.$template->slug.'?to=Maesa%20%26%20Pasangan')
+                ->assertOk()
+                ->assertSee('data-invitation-opening', false)
+                ->assertSee('data-open-invitation', false)
+                ->assertSee('Buka Undangan')
+                ->assertSee('Maesa &amp; Pasangan', false);
+        }
+
+        $this->get('/preview/templates/bali-classic?to=%3Cscript%3Ealert(1)%3C%2Fscript%3E')
+            ->assertOk()
+            ->assertSee('alert(1)')
+            ->assertDontSee('<script>alert(1)</script>', false);
+    }
+
     public function test_puspa_kencana_seed_preserves_legacy_template_relations(): void
     {
         $legacy = InvitationTemplate::create([
@@ -422,8 +441,11 @@ class InvitationPublishingTest extends TestCase
 
         $this->get('/u/'.$published->json('data.slug'))
             ->assertOk()
+            ->assertSee('data-invitation-opening', false)
+            ->assertSee('data-open-invitation', false)
             ->assertSee('data-audio-toggle', false)
-            ->assertSee('storage/musics/bali-romantis.wav', false);
+            ->assertSee('storage/musics/bali-romantis.wav', false)
+            ->assertDontSee('<audio controls autoplay', false);
     }
 
     public function test_uploaded_music_is_used_and_removed_when_user_selects_no_music(): void
