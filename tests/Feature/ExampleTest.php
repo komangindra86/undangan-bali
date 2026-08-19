@@ -12,6 +12,8 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
+        config()->set('services.custom_invitation.whatsapp_number', '6281234567890');
+
         $response = $this->get('/');
 
         $response
@@ -19,6 +21,9 @@ class ExampleTest extends TestCase
             ->assertSee('Cerita cinta Bali')
             ->assertSee('Coba tanpa login')
             ->assertSee('Wedding Gift')
+            ->assertSee('Mulai sendiri secara gratis')
+            ->assertSee('Konsultasi Custom via WhatsApp')
+            ->assertSee('https://wa.me/6281234567890?text=', false)
             ->assertSee('Download di Google Play')
             ->assertSee('https://play.google.com/store/apps/details?id=com.balisantih.undanganbali', false);
     }

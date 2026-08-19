@@ -65,4 +65,8 @@ return [
         'send_url' => env('FIREBASE_SEND_URL', 'https://fcm.googleapis.com/v1/projects/%s/messages:send'),
     ],
 
+    'custom_invitation' => [
+        'whatsapp_number' => env('CUSTOM_INVITATION_WHATSAPP'),
+    ],
+
 ];

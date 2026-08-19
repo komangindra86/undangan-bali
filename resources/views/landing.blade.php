@@ -1,5 +1,10 @@
 @php
     $playStoreUrl = 'https://play.google.com/store/apps/details?id=com.balisantih.undanganbali';
+    $customWhatsAppNumber = preg_replace('/\D+/', '', (string) config('services.custom_invitation.whatsapp_number'));
+    $customWhatsAppMessage = 'Halo Undangan Bali Santih, saya ingin berkonsultasi mengenai desain undangan custom. Mohon informasi proses pengerjaannya.';
+    $customWhatsAppUrl = $customWhatsAppNumber
+        ? 'https://wa.me/'.$customWhatsAppNumber.'?text='.rawurlencode($customWhatsAppMessage)
+        : null;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -25,6 +30,7 @@
                 <a href="#template">Template</a>
                 <a href="#fitur">Fitur</a>
                 <a href="#cara-kerja">Cara kerja</a>
+                <a href="#undangan-custom">Undangan custom</a>
                 <a href="#wedding-gift">Wedding Gift</a>
             </div>
             <a class="nav-cta" href="{{ $playStoreUrl }}" target="_blank" rel="noopener noreferrer">Download aplikasi</a>
@@ -47,6 +53,7 @@
                         <span>Preview sebelum publish</span>
                         <span>Mudah dibagikan</span>
                     </div>
+                    <a class="hero-custom-link" href="#undangan-custom">Punya konsep khusus? Kenali layanan undangan custom <span aria-hidden="true">↓</span></a>
                 </div>
 
                 <div class="phone-stage reveal" aria-label="Contoh tampilan undangan di ponsel">
@@ -111,6 +118,36 @@
                         <img src="{{ asset('storage/templates/bali-heritage/bali-heritage-frame.jpg') }}" alt="Preview template Puspa Kencana" loading="lazy">
                         <span class="template-meta"><span><small>Warisan &amp; berkarakter</small><h3>Puspa Kencana</h3></span><span class="template-arrow" aria-hidden="true">↗</span></span>
                     </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="custom-invitation" id="undangan-custom">
+            <div class="shell">
+                <div class="custom-panel reveal">
+                    <div class="custom-copy">
+                        <p class="eyebrow">Gratis untuk memulai</p>
+                        <h2 class="display">Mulai sendiri secara gratis. Pilih custom saat kalian membutuhkannya.</h2>
+                        <p>Undangan Bali Santih tetap dapat digunakan gratis melalui aplikasi. Pilih template, masukkan cerita kalian, lihat hasilnya, lalu bagikan saat sudah siap.</p>
+                        <p>Jika kalian memiliki konsep khusus atau belum menemukan tampilan yang terasa tepat, penyedia kami siap mendengarkan dan membantu mewujudkannya melalui konsultasi pribadi.</p>
+                        <div class="custom-actions">
+                            <a class="button button-primary" href="{{ $playStoreUrl }}" target="_blank" rel="noopener noreferrer">Buat Undangan Gratis <span aria-hidden="true">→</span></a>
+                            @if ($customWhatsAppUrl)
+                                <a class="button button-whatsapp" href="{{ $customWhatsAppUrl }}" target="_blank" rel="noopener noreferrer">Konsultasi Custom via WhatsApp <span aria-hidden="true">↗</span></a>
+                            @else
+                                <span class="button button-whatsapp button-disabled" title="Nomor WhatsApp penyedia belum dikonfigurasi">Konsultasi Custom via WhatsApp</span>
+                            @endif
+                        </div>
+                        <p class="custom-note">Coba pilihan gratis terlebih dahulu. Konsultasi custom tersedia hanya jika kalian menginginkan desain yang lebih personal.</p>
+                    </div>
+                    <div class="custom-aside" aria-label="Alur layanan undangan custom">
+                        <span class="custom-kicker">Layanan personal</span>
+                        <ol class="custom-flow">
+                            <li><span>01</span><div><strong>Ceritakan konsep</strong><small>Bagikan suasana, warna, atau referensi yang kalian sukai.</small></div></li>
+                            <li><span>02</span><div><strong>Konsultasikan kebutuhan</strong><small>Diskusikan rancangan dan ruang lingkup langsung melalui WhatsApp.</small></div></li>
+                            <li><span>03</span><div><strong>Wujudkan bersama</strong><small>Desain dikerjakan setelah kebutuhan dan kesepakatan sama-sama jelas.</small></div></li>
+                        </ol>
+                    </div>
                 </div>
             </div>
         </section>
