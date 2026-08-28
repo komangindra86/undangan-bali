@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
+import CustomInvitationCard from '../components/CustomInvitationCard';
 import { useAuth } from '../context/AuthContext';
 import { colors, commonStyles, spacing } from '../theme';
 
@@ -70,6 +71,8 @@ export default function ProfileScreen({ navigation }) {
             <ProfileMenu danger icon="log-out-outline" label="Keluar" onPress={confirmLogout} />
           </>
         ) : null}
+
+        {!loading ? <CustomInvitationCard compact /> : null}
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { FooterActions } from '../components/Buttons';
+import CustomInvitationCard from '../components/CustomInvitationCard';
 import WizardLayout from '../components/WizardLayout';
 import { useDraft } from '../context/DraftContext';
 import { api } from '../services/api';
@@ -88,6 +89,7 @@ export default function TemplateScreen({ navigation }) {
           </View>
         );
       })}
+      {!loading ? <CustomInvitationCard compact style={styles.customCard} /> : null}
     </WizardLayout>
   );
 }
@@ -194,5 +196,8 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.55,
+  },
+  customCard: {
+    marginBottom: spacing.lg,
   },
 });
