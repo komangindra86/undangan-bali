@@ -29,7 +29,7 @@ function harness(responseFor = (url) => ({ data: url.includes('/templates?') ? [
     if (modules.has(filename)) return modules.get(filename);
     const module = { exports: {} };
     const code = transformSync(readFileSync(filename, 'utf8'), {
-      babelrc: false, configFile: false, plugins: ['@babel/plugin-transform-modules-commonjs'],
+      babelrc: false, configFile: false, plugins: [require.resolve('@babel/plugin-transform-modules-commonjs')],
     }).code;
     vm.runInNewContext(code, {
       module, exports: module.exports, FormData: TestFormData, __DEV__: true,
