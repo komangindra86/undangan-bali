@@ -12,6 +12,7 @@
         <p class="mt-8 text-xs uppercase tracking-[0.32em] text-amber-300">Privacy Policy</p>
         <h1 class="mt-4 font-serif text-4xl leading-tight md:text-5xl">Kebijakan Privasi Undangan Bali Santih</h1>
         <p class="mt-4 text-stone-300">Terakhir diperbarui: 31 Agustus 2026</p>
+        <a href="#penghapusan-akun" class="mt-6 inline-block rounded-xl border border-amber-200/40 px-4 py-3 text-amber-200 underline underline-offset-4">Minta penghapusan akun atau data</a>
 
         <section class="mt-10 space-y-6 text-stone-200 leading-7">
             <p>
@@ -116,6 +117,20 @@
                     Anda dapat meminta akses, perbaikan, penghapusan data, atau penonaktifan undangan dengan menghubungi pengelola aplikasi.
                     Penghapusan data tertentu dapat dibatasi bila masih diperlukan untuk keamanan, audit transaksi, penyelesaian pencairan, atau kewajiban hukum.
                 </p>
+            </div>
+
+            <div id="penghapusan-akun" class="scroll-mt-6 rounded-2xl border border-amber-200/30 p-6">
+                <h2 class="font-serif text-2xl text-amber-100">Penghapusan Akun Dan Data Undangan Bali Santih</h2>
+                <p class="mt-3">Anda dapat meminta penghapusan akun Undangan Bali Santih beserta data terkait tanpa memasang ulang aplikasi. Permintaan diproses manual oleh pengelola, bukan penghapusan otomatis ketika tombol ditekan.</p>
+                <ol class="mt-3 list-decimal space-y-2 pl-6">
+                    <li>Kirim email dari alamat yang terdaftar pada akun Anda dengan subjek <strong>Permintaan Penghapusan Akun Undangan Bali Santih</strong>.</li>
+                    <li>Sebutkan nama akun dan apakah Anda ingin menghapus akun beserta datanya, atau hanya data tertentu seperti undangan, foto, atau komentar. Jangan kirim password, kode OTP, atau data login Google.</li>
+                    <li>Pengelola akan memverifikasi kepemilikan akun melalui balasan email sebelum memproses permintaan. Jika email lama tidak dapat diakses, hubungi alamat yang sama untuk bantuan verifikasi.</li>
+                </ol>
+                <a href="mailto:admin.balisantih@gmail.com?subject=Permintaan%20Penghapusan%20Akun%20Undangan%20Bali%20Santih" class="mt-5 inline-block rounded-xl bg-amber-200 px-5 py-3 font-semibold text-stone-950">Kirim Permintaan Penghapusan</a>
+                <p class="mt-3 break-words">Jika aplikasi email tidak terbuka, kirim secara manual ke <strong>admin.balisantih@gmail.com</strong>.</p>
+                <p class="mt-4">Penghapusan akun mencakup profil, akses login dan token notifikasi, undangan, media yang diunggah, serta interaksi yang terkait dengan akun. Link undangan yang dihapus tidak lagi tersedia. Untuk menghapus sebagian data saja, sebutkan data tersebut agar akun tetap dapat digunakan.</p>
+                <p class="mt-3">Catatan transaksi gift, pencairan, atau keamanan yang masih diperlukan untuk menyelesaikan transaksi, sengketa, audit, atau kewajiban hukum dapat dipertahankan selama keperluan tersebut berlaku. Pengelola akan menjelaskan data yang perlu dipertahankan dan masa retensinya ketika menanggapi permintaan. Salinan yang telah disimpan atau dibagikan oleh pihak lain tidak dapat kami hapus dari perangkat mereka.</p>
             </div>
 
             <div>

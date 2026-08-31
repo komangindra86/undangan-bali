@@ -41,6 +41,10 @@ class ExampleTest extends TestCase
             ->assertSee('Xendit')
             ->assertSee('Firebase Cloud Messaging')
             ->assertSee('Login Google')
+            ->assertSee('id="penghapusan-akun"', false)
+            ->assertSee('Kirim Permintaan Penghapusan')
+            ->assertSee('Permintaan diproses manual')
+            ->assertSee('mailto:admin.balisantih@gmail.com?subject=', false)
             ->assertDontSee('atau notifikasi push untuk MVP ini');
     }
 

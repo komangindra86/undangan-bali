@@ -41,7 +41,7 @@
     },
     "android": {
       "package": "com.balisantih.undanganbali",
-      "versionCode": 18,
+      "versionCode": 19,
       "googleServicesFile": "./google-services.json",
       "softwareKeyboardLayoutMode": "resize",
       "blockedPermissions": [

@@ -1,9 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import CustomInvitationCard from '../components/CustomInvitationCard';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 
 export default function ProfileScreen({ navigation }) {
@@ -11,6 +12,14 @@ export default function ProfileScreen({ navigation }) {
 
   function openStack(screen, params) {
     navigation.getParent()?.navigate(screen, params);
+  }
+
+  async function openPrivacyPolicy(section = '') {
+    try {
+      await Linking.openURL(`${api.siteUrl}/privacy-policy${section}`);
+    } catch {
+      Alert.alert('Halaman belum dapat dibuka', 'Silakan coba lagi atau hubungi admin.balisantih@gmail.com.');
+    }
   }
 
   async function confirmLogout() {
@@ -72,7 +81,14 @@ export default function ProfileScreen({ navigation }) {
           </>
         ) : null}
 
-        {!loading ? <CustomInvitationCard compact /> : null}
+        {!loading ? (
+          <>
+            <Text style={styles.sectionTitle}>Privasi dan bantuan</Text>
+            <ProfileMenu icon="shield-checkmark-outline" label="Kebijakan Privasi" onPress={() => openPrivacyPolicy()} />
+            <ProfileMenu icon="trash-outline" label="Minta Penghapusan Akun" onPress={() => openPrivacyPolicy('#penghapusan-akun')} />
+            <CustomInvitationCard compact />
+          </>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
