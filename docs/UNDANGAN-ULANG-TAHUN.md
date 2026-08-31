@@ -49,6 +49,27 @@ tetap didukung.
 
 ## Aktivasi Backend
 
+### Mencoba di Laptop
+
+Tutup jendela server lama, lalu jalankan `JALANKAN-DI-LAPTOP.bat`. Launcher
+menjalankan aplikasi web di `http://127.0.0.1:8082` dengan API dan preview dari
+Laravel lokal `http://127.0.0.1:8015`. Variabel hanya berlaku pada proses
+launcher; `mobile/.env` dan konfigurasi release tetap memakai domain production.
+Karena menggunakan database lokal, akun/data VPS tidak otomatis tampil di sini.
+Alamat loopback ini untuk browser di laptop, bukan HP fisik.
+
+Sebelum percobaan pertama pada checkout baru, jalankan migration dan seeder
+template di database lokal seperti perintah aktivasi di bawah. Jangan memakai
+seeder seluruh database karena dapat mengganti akun admin contoh.
+
+Katalog ulang tahun wajib berisi `invitation_type: birthday`. Jika backend lama
+mengabaikan parameter dan mengirim katalog pernikahan, aplikasi menampilkan
+pesan belum tersedia beserta tombol Coba Lagi, bukan preview pernikahan.
+Draft lama dengan template salah jenis harus memilih template yang sesuai;
+data form tidak dihapus. Backend VPS tetap perlu di-deploy secara terpisah.
+
+### Deploy ke VPS
+
 Backup database dan storage sebelum deploy. Jalankan dari direktori Laravel
 menggunakan PHP 8.2, deploy backend sebelum mendistribusikan aplikasi baru:
 

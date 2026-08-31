@@ -5,7 +5,9 @@ const vm = require('node:vm');
 const { test } = require('node:test');
 const { transformSync } = require('@babel/core');
 
-function harness() {
+function harness(responseFor = (url) => ({ data: url.includes('/templates?') ? [
+  { id: 1, invitation_type: 'wedding' }, { id: 6, invitation_type: 'birthday' },
+] : { id: 42 } })) {
   const storage = new Map();
   const requests = [];
   const modules = new Map();
@@ -32,7 +34,7 @@ function harness() {
     vm.runInNewContext(code, {
       module, exports: module.exports, FormData: TestFormData, __DEV__: true,
       process: { env: { EXPO_PUBLIC_API_URL: 'http://localhost:8015/api' } },
-      fetch: async (url, options) => { requests.push({ url, ...options }); return { ok: true, json: async () => ({ data: { id: 42 } }) }; },
+      fetch: async (url, options) => { requests.push({ url, ...options }); return { ok: true, json: async () => responseFor(url) }; },
       require: (id) => {
         if (mocks[id]) return mocks[id];
         return load(path.relative(path.resolve(__dirname, '..'), path.resolve(path.dirname(filename), id + '.js')));
@@ -118,12 +120,64 @@ test('multipart sync carries birthday fields, owner media and optional blank age
 test('feed consent is not silently granted and template catalogs are filtered', async () => {
   const { load, requests } = harness();
   const { api } = load('src/services/api.js');
-  await api.templates();
-  await api.templates('birthday');
+  const wedding = await api.templates();
+  const birthday = await api.templates('birthday');
+  assert.equal(wedding.data.length, 1);
+  assert.equal(wedding.data[0].id, 1);
+  assert.equal(birthday.data.length, 1);
+  assert.equal(birthday.data[0].id, 6);
   await api.setFeedVisibility(42, false, 'test-token');
   await api.setFeedVisibility(42, false, 'test-token', true);
   assert.ok(requests[0].url.endsWith('invitation_type=wedding'));
   assert.ok(requests[1].url.endsWith('invitation_type=birthday'));
   assert.equal(JSON.parse(requests[2].body).privacy_acknowledged, false);
   assert.equal(JSON.parse(requests[3].body).privacy_acknowledged, true);
+});
+
+test('legacy server ignoring the birthday filter never supplies wedding previews to that flow', async () => {
+  const legacy = ['bali-classic', 'pura-sunset', 'ubud-garden', 'royal-kamasan', 'puspa-kencana']
+    .map((slug, index) => ({ id: index + 1, slug, preview_url: `https://example.test/preview/templates/${slug}` }));
+  const { load } = harness(() => ({ data: legacy }));
+  const { api } = load('src/services/api.js');
+  await assert.rejects(api.templates('birthday'), /Template ulang tahun belum tersedia di server/);
+  assert.equal((await api.templates()).data.length, 5);
+});
+
+test('explicit birthday templates retain only their own preview links and catalog metadata', async () => {
+  const data = ['ceria-confetti', 'ruang-putih', 'bali-pradnyan'].map((slug, index) => ({
+    id: index + 6, invitation_type: 'birthday', slug, preview_url: `http://127.0.0.1:8015/preview/templates/${slug}`,
+  }));
+  const { load } = harness(() => ({ data, revision: 2 }));
+  const result = await load('src/services/api.js').api.templates('birthday');
+  assert.equal(JSON.stringify(result.data), JSON.stringify(data));
+  assert.equal(result.revision, 2);
+});
+
+test('preview and selection type guard rejects mismatched, legacy and missing birthday templates', () => {
+  const { load } = harness();
+  const { templateMatchesType } = load('src/utils/templateCatalog.js');
+  for (const template of [null, undefined, 1, {}, { id: 1 }, { id: 1, invitation_type: null }, { id: 1, invitation_type: 'wedding' }]) {
+    assert.equal(templateMatchesType(template, 'birthday'), false);
+  }
+  assert.equal(templateMatchesType({ id: 6, invitation_type: 'birthday' }, 'birthday'), true);
+  assert.equal(templateMatchesType({ id: 6, invitation_type: 'birthday' }, 'wedding'), false);
+  assert.equal(templateMatchesType({ id: 1 }), true);
+  assert.equal(templateMatchesType({ id: 1, invitation_type: 'unknown' }), false);
+  assert.equal(templateMatchesType({ id: 1, invitation_type: 'unknown' }, 'unknown'), false);
+});
+
+test('empty, invalid and wrong-type catalogs show an error instead of a wedding fallback', async () => {
+  for (const data of [null, {}, [], [{ id: 1, invitation_type: 'wedding' }], [null, { invitation_type: 'birthday' }]]) {
+    const { load } = harness(() => ({ data }));
+    await assert.rejects(load('src/services/api.js').api.templates('birthday'), /[Tt]emplate/);
+  }
+});
+
+test('local launcher overrides both API and preview origin without editing release env files', () => {
+  const batch = readFileSync(path.resolve(__dirname, '../../JALANKAN-DI-LAPTOP.bat'), 'utf8');
+  assert.match(batch, /setlocal/i);
+  assert.match(batch, /set "EXPO_PUBLIC_API_URL=http:\/\/127\.0\.0\.1:8015\/api"/);
+  assert.match(batch, /set "APP_URL=http:\/\/127\.0\.0\.1:8015"/);
+  assert.match(batch, /expo start --web --port 8082 --clear/);
+  assert.doesNotMatch(batch, /(?:Set-Content|Out-File|>).*\.env/i);
 });

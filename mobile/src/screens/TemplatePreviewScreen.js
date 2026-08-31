@@ -4,19 +4,42 @@ import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { useDraft } from '../context/DraftContext';
 import { isBirthday, personScreenFor } from '../constants/invitation';
 import { api } from '../services/api';
+import { templateMatchesType } from '../utils/templateCatalog';
 import { colors, commonStyles, spacing } from '../theme';
 
 export default function TemplatePreviewScreen({ navigation, route }) {
-  const { template } = route.params;
+  const template = route.params?.template;
   const { draft, saveSection, syncing } = useDraft();
   const birthday = isBirthday(draft);
-  const previewImage = `${api.siteUrl}/storage/${template.preview_image}`;
+  const matchingType = templateMatchesType(template, draft.invitation_type || 'wedding');
+  const previewImage = `${api.siteUrl}/storage/${template?.preview_image}`;
 
   async function useTemplate() {
+    if (!matchingType) return;
     try {
       await saveSection('selected_template', template);
       navigation.navigate(personScreenFor(draft));
     } catch (error) { Alert.alert('Template belum tersimpan', error.message); }
+  }
+
+  if (!matchingType) {
+    return (
+      <SafeAreaView style={commonStyles.screen}>
+        <View style={styles.safe}>
+          <Text style={commonStyles.title}>Pilih template yang sesuai</Text>
+          <Text style={styles.description}>
+            Template ini bukan untuk undangan {birthday ? 'ulang tahun' : 'pernikahan'}. Silakan kembali dan pilih desain yang sesuai. Data yang sudah diisi tetap tersimpan.
+          </Text>
+          <SecondaryButton title="Kembali Pilih Template" onPress={() => navigation.navigate('Template')} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  async function openPreview() {
+    if (!matchingType) return;
+    try { await Linking.openURL(template.preview_url); }
+    catch { Alert.alert('Demo belum terbuka', 'Tidak dapat membuka demo template. Silakan coba lagi.'); }
   }
 
   return (
@@ -38,7 +61,7 @@ export default function TemplatePreviewScreen({ navigation, route }) {
 
       <PrimaryButton
         title="Lihat Undangan Demo Lengkap"
-        onPress={() => Linking.openURL(template.preview_url)}
+        onPress={openPreview}
         style={styles.action}
       />
       <PrimaryButton title="Gunakan Template Ini" onPress={useTemplate} loading={syncing} style={styles.action} />

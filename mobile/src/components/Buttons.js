@@ -27,11 +27,11 @@ export function SecondaryButton({ title, onPress, style, disabled = false }) {
   );
 }
 
-export function FooterActions({ onBack, onNext, nextTitle = 'Lanjut', loading }) {
+export function FooterActions({ onBack, onNext, nextTitle = 'Lanjut', loading, disabled = false }) {
   return (
     <View style={styles.footer}>
       <SecondaryButton title="Kembali" onPress={onBack} style={styles.back} />
-      <PrimaryButton title={nextTitle} onPress={onNext} loading={loading} style={styles.next} />
+      <PrimaryButton title={nextTitle} onPress={onNext} loading={loading} disabled={disabled} style={styles.next} />
     </View>
   );
 }
