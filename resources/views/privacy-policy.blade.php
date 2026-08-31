@@ -11,7 +11,7 @@
         <a href="{{ url('/') }}" class="text-sm text-amber-200 underline underline-offset-4">Kembali ke beranda</a>
         <p class="mt-8 text-xs uppercase tracking-[0.32em] text-amber-300">Privacy Policy</p>
         <h1 class="mt-4 font-serif text-4xl leading-tight md:text-5xl">Kebijakan Privasi Undangan Bali Santih</h1>
-        <p class="mt-4 text-stone-300">Terakhir diperbarui: 6 Agustus 2026</p>
+        <p class="mt-4 text-stone-300">Terakhir diperbarui: 31 Agustus 2026</p>
 
         <section class="mt-10 space-y-6 text-stone-200 leading-7">
             <p>
@@ -23,13 +23,15 @@
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Data Yang Kami Kumpulkan</h2>
                 <ul class="mt-3 list-disc space-y-2 pl-6">
-                    <li>Data akun: nama, email, password terenkripsi, dan token sesi.</li>
-                    <li>Data undangan: nama mempelai, data keluarga, tanggal dan lokasi acara, alamat, link Google Maps, latitude, longitude, template, musik, dan status publish.</li>
-                    <li>Media yang Anda unggah: foto mempelai, foto galeri, dan file musik pilihan sendiri.</li>
-                    <li>Data Wedding Gift yang diatur pasangan: status aktif, nama penerima, catatan penerima, minimum gift, dan preferensi ucapan.</li>
-                    <li>Data Wedding Gift dari tamu pada halaman web undangan: nama tamu, nomor HP opsional, nominal gift, biaya layanan, total bayar, ucapan opsional, order ID, status transaksi, dan respons pembayaran dari Midtrans.</li>
+                    <li>Data akun: nama, email, password yang disimpan sebagai hash, dan token sesi. Jika Anda memilih Login Google, nama dan email yang terverifikasi digunakan untuk membuat atau mengakses akun; kami tidak meminta password Google Anda.</li>
+                    <li>Data undangan: jenis undangan, nama mempelai dan data keluarga untuk pernikahan; nama lengkap, nama panggilan, usia opsional, dan nama pengundang untuk ulang tahun; serta tanggal dan lokasi acara, alamat, link Google Maps, latitude, longitude, judul acara, dress code, template, musik, dan status publish. Form ulang tahun tidak meminta tanggal lahir lengkap.</li>
+                    <li>Media yang Anda unggah: foto mempelai atau orang yang berulang tahun, foto galeri, foto Moment, dan file musik pilihan sendiri.</li>
+                    <li>Data Moment dan interaksi: caption, komentar, reaksi suka/love, serta nama dan nomor WhatsApp yang Anda kirim saat meminta undangan.</li>
+                    <li>Data Wedding Gift atau Kado Digital yang diatur pemilik: status aktif, nama penerima, catatan penerima, minimum gift, dan preferensi ucapan.</li>
+                    <li>Data gift dari tamu pada halaman web undangan: nama tamu, nomor HP opsional, nominal gift, biaya layanan, total bayar, ucapan opsional, order ID, status transaksi, dan respons penyedia pembayaran Xendit atau Midtrans sesuai layanan yang digunakan.</li>
                     <li>Data pencairan: nama bank, nomor rekening, nama pemilik rekening, nominal pencairan, status, dan referensi transfer manual admin.</li>
                     <li>Data teknis: alamat IP, user agent, waktu akses, log server, dan jumlah view undangan publik.</li>
+                    <li>Data notifikasi perangkat: token Firebase Cloud Messaging (FCM), platform, nama perangkat jika tersedia, versi aplikasi, dan waktu perangkat terakhir terdaftar untuk pengiriman notifikasi.</li>
                 </ul>
             </div>
 
@@ -38,31 +40,49 @@
                 <ul class="mt-3 list-disc space-y-2 pl-6">
                     <li>Membuat draft dan undangan publik yang dapat dibuka melalui link unik.</li>
                     <li>Menyimpan draft lokal di perangkat sebelum login, lalu menyinkronkannya ke backend setelah login atau register.</li>
-                    <li>Menampilkan template, foto, musik, lokasi, tombol peta, tombol share, dan Wedding Gift pada halaman web undangan.</li>
-                    <li>Memproses QRIS Wedding Gift melalui Midtrans dari halaman web undangan, bukan dari aplikasi mobile.</li>
-                    <li>Memverifikasi status pembayaran hanya melalui webhook Midtrans atau pengecekan status backend.</li>
-                    <li>Menyediakan dashboard transaksi dan proses pencairan manual untuk pasangan dan admin.</li>
+                    <li>Menampilkan template, foto, musik, lokasi, tombol peta, tombol share, dan gift pada halaman web undangan.</li>
+                    <li>Memproses Wedding Gift atau Kado Digital melalui penyedia pembayaran dari halaman web undangan, bukan dari aplikasi mobile.</li>
+                    <li>Memverifikasi status pembayaran hanya melalui webhook penyedia yang tervalidasi atau pengecekan status backend.</li>
+                    <li>Menyediakan dashboard transaksi dan proses pencairan manual untuk pemilik undangan dan admin.</li>
+                    <li>Menampilkan Moment publik dan interaksi, meneruskan permintaan undangan kepada pemilik, serta mengirim notifikasi permintaan, komentar, reaksi, dan gift yang berhasil.</li>
                     <li>Menjaga keamanan, mencegah penyalahgunaan, memperbaiki bug, dan memenuhi kewajiban hukum.</li>
                 </ul>
             </div>
 
             <div>
-                <h2 class="font-serif text-2xl text-amber-100">Wedding Gift Dan Pembayaran</h2>
+                <h2 class="font-serif text-2xl text-amber-100">Undangan, Feed Publik, Dan Foto Anak</h2>
                 <p class="mt-3">
-                    Aplikasi mobile tidak menyediakan checkout, QRIS, pembelian template premium, atau pembelian fitur digital menggunakan Midtrans.
-                    Mobile app hanya dipakai pasangan untuk mengaktifkan Wedding Gift, mengatur penerima, dan melihat dashboard transaksi.
-                    Tamu melakukan pembayaran Wedding Gift melalui browser pada halaman web undangan publik.
+                    Undangan pernikahan yang dipublish dapat tampil pada feed Moment dengan nama panggilan, foto, caption, dan interaksi.
+                    Undangan ulang tahun tidak otomatis masuk feed; pemilik harus memberikan persetujuan eksplisit untuk menampilkannya.
+                    Feed tidak menampilkan tanggal acara, alamat, koordinat, nama lengkap, atau usia dari form undangan.
+                    Namun, foto, caption, dan komentar yang Anda kirim dapat memuat informasi pribadi; periksa konten sebelum membagikannya.
                 </p>
                 <p class="mt-3">
-                    Nominal gift, biaya layanan, dan total bayar ditampilkan transparan sebelum QRIS dibuat. Status <em>paid</em> tidak dipercaya dari callback frontend;
-                    status hanya diperbarui dari webhook Midtrans yang tervalidasi atau pengecekan status dari backend.
+                    Halaman undangan yang dipublish dapat dibuka siapa pun yang memperoleh linknya, termasuk data acara dan media di dalamnya.
+                    Menyembunyikan undangan dari feed tidak menjadikan link tersebut berpassword.
+                    Nama dan nomor WhatsApp pada permintaan undangan diteruskan kepada pemilik, bukan ditampilkan sebagai komentar publik.
+                    Pengelolaan undangan dan gift untuk anak dilakukan oleh orang tua atau wali; pastikan Anda memiliki izin untuk mengunggah foto dan data anak maupun orang lain.
+                </p>
+            </div>
+
+            <div>
+                <h2 class="font-serif text-2xl text-amber-100">Wedding Gift, Kado Digital, Dan Pembayaran</h2>
+                <p class="mt-3">
+                    Aplikasi mobile tidak menyediakan checkout gift, QRIS pembayaran, atau pembelian fitur digital menggunakan Xendit maupun Midtrans.
+                    Untuk gift, mobile app hanya digunakan pemilik untuk mengaktifkan fitur, mengatur penerima, dan melihat dashboard transaksi serta pencairan.
+                    Tamu melakukan pembayaran melalui browser pada halaman web undangan. Gift tidak membuka fitur digital dalam aplikasi.
+                </p>
+                <p class="mt-3">
+                    Nominal gift, biaya layanan, dan total bayar ditampilkan transparan sebelum pembayaran. Status <em>paid</em> tidak dipercaya dari callback frontend;
+                    status hanya diperbarui dari webhook penyedia yang tervalidasi atau pengecekan status dari backend.
                 </p>
             </div>
 
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Pihak Ketiga</h2>
                 <ul class="mt-3 list-disc space-y-2 pl-6">
-                    <li>Midtrans untuk memproses QRIS Wedding Gift dan mengirim notifikasi status transaksi.</li>
+                    <li>Xendit atau Midtrans untuk memproses gift dan mengirim status transaksi sesuai layanan yang digunakan.</li>
+                    <li>Google untuk Login Google yang Anda pilih, serta Firebase Cloud Messaging untuk pengiriman push notification ke perangkat. Token perangkat dan isi notifikasi yang diperlukan diteruskan ke Firebase.</li>
                     <li>Google Maps atau link peta yang Anda masukkan untuk membantu tamu membuka lokasi acara.</li>
                     <li>WhatsApp atau fitur share perangkat saat Anda memilih membagikan link undangan.</li>
                     <li>Penyedia hosting/server untuk menjalankan backend, database, storage, dan log keamanan.</li>
@@ -72,16 +92,21 @@
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Izin Aplikasi Mobile</h2>
                 <p class="mt-3">
-                    Aplikasi dapat meminta akses foto atau dokumen agar Anda bisa memilih foto mempelai, foto galeri, atau file musik dari perangkat.
-                    Aplikasi tidak meminta akses kamera, kontak, lokasi real-time, mikrofon, SMS, telepon, atau notifikasi push untuk MVP ini.
+                    Aplikasi dapat meminta akses foto atau dokumen agar Anda bisa memilih foto dan file musik dari perangkat.
+                    Izin notifikasi bersifat opsional dan dapat dinonaktifkan melalui pengaturan perangkat.
+                    Aplikasi tidak meminta akses kamera, kontak, lokasi real-time, mikrofon, SMS, atau telepon.
                 </p>
             </div>
 
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Penyimpanan Dan Keamanan</h2>
                 <p class="mt-3">
-                    Password disimpan dalam bentuk hash. Koneksi production menggunakan HTTPS. Midtrans Server Key hanya disimpan di backend Laravel dan tidak disematkan ke aplikasi mobile.
+                    Password disimpan dalam bentuk hash. Koneksi production menggunakan HTTPS. Midtrans Server Key hanya disimpan di backend Laravel; kunci rahasia Xendit, Google OAuth, dan Firebase juga tidak disematkan ke aplikasi mobile.
                     Data draft lokal dapat tersimpan sementara di perangkat sampai Anda login, publish, atau menghapus draft.
+                </p>
+                <p class="mt-3">
+                    Draft yang kedaluwarsa dan media undangan yang telah diarsipkan dapat dihapus otomatis sesuai jadwal retensi layanan.
+                    Data transaksi dan pencairan dapat tetap disimpan untuk rekonsiliasi, keamanan, dan penyelesaian permintaan terkait gift.
                 </p>
             </div>
 

@@ -34,7 +34,14 @@ class ExampleTest extends TestCase
             ->assertOk()
             ->assertSee('Kebijakan Privasi Undangan Bali Santih')
             ->assertSee('Midtrans Server Key hanya disimpan di backend Laravel')
-            ->assertSee('Aplikasi mobile tidak menyediakan checkout');
+            ->assertSee('Aplikasi mobile tidak menyediakan checkout')
+            ->assertSee('usia opsional')
+            ->assertSee('tidak otomatis masuk feed')
+            ->assertSee('orang tua atau wali')
+            ->assertSee('Xendit')
+            ->assertSee('Firebase Cloud Messaging')
+            ->assertSee('Login Google')
+            ->assertDontSee('atau notifikasi push untuk MVP ini');
     }
 
     public function test_terms_of_service_page_is_available(): void
