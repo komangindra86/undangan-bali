@@ -37,7 +37,7 @@ export default function MainTabNavigator() {
         listeners={({ navigation }) => ({
           tabPress: (event) => {
             event.preventDefault();
-            navigation.getParent()?.navigate('Template');
+            navigation.getParent()?.navigate('InvitationType');
           },
         })}
         options={{ tabBarLabel: 'Buat' }}

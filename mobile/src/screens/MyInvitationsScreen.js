@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
+import { giftLabelFor, invitationName, isBirthday, personScreenFor } from '../constants/invitation';
 import { useAuth } from '../context/AuthContext';
 import { useDraft } from '../context/DraftContext';
 import { api } from '../services/api';
@@ -11,10 +12,12 @@ import { colors, commonStyles, spacing } from '../theme';
 
 export default function MyInvitationsScreen({ navigation }) {
   const { expireSession, hasAccountOnDevice, isAuthenticated, loading: authLoading, token } = useAuth();
-  const { loadRemoteDraft } = useDraft();
+  const { draft, loadRemoteDraft } = useDraft();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [resumingId, setResumingId] = useState(null);
+  const [feedConsentId, setFeedConsentId] = useState(null);
+  const [feedBusyId, setFeedBusyId] = useState(null);
 
   function openStack(screen, params) {
     navigation.getParent()?.navigate(screen, params);
@@ -47,12 +50,21 @@ export default function MyInvitationsScreen({ navigation }) {
     loadInvitations();
   }, [loadInvitations]));
 
-  async function toggleFeed(item) {
+  async function toggleFeed(item, acknowledged = false) {
+    if (feedBusyId != null) return;
+    if (isBirthday(item) && item.is_hidden_from_feed && !acknowledged) {
+      setFeedConsentId(item.id);
+      return;
+    }
+    setFeedBusyId(item.id);
     try {
-      const response = await api.setFeedVisibility(item.id, !item.is_hidden_from_feed, token);
-      setItems((current) => current.map((entry) => (entry.id === item.id ? response.data : entry)));
+      const response = await api.setFeedVisibility(item.id, !item.is_hidden_from_feed, token, acknowledged);
+      setItems((current) => current.map((entry) => (entry.id === item.id ? { ...entry, ...response.data } : entry)));
+      setFeedConsentId(null);
     } catch (error) {
       Alert.alert('Feed Moment', error.message);
+    } finally {
+      setFeedBusyId(null);
     }
   }
 
@@ -61,7 +73,14 @@ export default function MyInvitationsScreen({ navigation }) {
     try {
       const response = await api.invitation(item.id, token);
       await loadRemoteDraft(response.data);
-      openStack('GroomBrideForm', { resumedInvitationId: item.id, resumeKey: Date.now() });
+      navigation.getParent()?.reset({
+        index: 2,
+        routes: [
+          { name: 'MainTabs', params: { screen: 'InvitationsTab' } },
+          { name: 'Template' },
+          { name: personScreenFor(response.data) },
+        ],
+      });
     } catch (error) {
       if (error.status === 401) {
         await expireSession();
@@ -80,15 +99,16 @@ export default function MyInvitationsScreen({ navigation }) {
         <ScrollView contentContainerStyle={styles.content}>
           <Text style={commonStyles.eyebrow}>Undangan</Text>
           <Text style={commonStyles.title}>Undangan Saya</Text>
+          {draft.selected_template ? <SecondaryButton title="Lanjutkan Draft di Perangkat Ini" onPress={() => openStack('InvitationType')} style={styles.secondaryButton} /> : null}
           <View style={styles.authCard}>
             <View style={styles.authIcon}>
               <Ionicons color={colors.goldLight} name="mail-open-outline" size={30} />
             </View>
             <Text style={styles.authTitle}>{hasAccountOnDevice ? 'Masuk untuk melanjutkan' : 'Simpan undangan di akun Anda'}</Text>
-            <Text style={styles.authBody}>Lihat undangan yang pernah dibuat, kelola Moment, permintaan tamu, dan Wedding Gift dari sini.</Text>
+            <Text style={styles.authBody}>Lihat undangan yang pernah dibuat, kelola Moment, permintaan tamu, dan gift dari sini.</Text>
             <PrimaryButton title="Masuk & Lihat Undangan" onPress={() => openStack('Login', { returnTab: 'InvitationsTab' })} style={styles.authButton} />
             <SecondaryButton title="Daftar Akun" onPress={() => openStack('Register', { returnTab: 'InvitationsTab' })} style={styles.secondaryButton} />
-            <Pressable accessibilityRole="button" onPress={() => openStack('Template')} style={styles.guestCreate}>
+            <Pressable accessibilityRole="button" onPress={() => openStack('InvitationType')} style={styles.guestCreate}>
               <Text style={styles.guestCreateText}>Atau buat undangan tanpa login</Text>
               <Ionicons color={colors.goldLight} name="chevron-forward" size={17} />
             </Pressable>
@@ -106,17 +126,19 @@ export default function MyInvitationsScreen({ navigation }) {
             <Text style={commonStyles.eyebrow}>Akun Saya</Text>
             <Text style={commonStyles.title}>Undangan Saya</Text>
           </View>
-          <Pressable accessibilityLabel="Buat undangan baru" accessibilityRole="button" onPress={() => openStack('Template')} style={styles.addButton}>
+          <Pressable accessibilityLabel="Buat undangan baru" accessibilityRole="button" onPress={() => openStack('InvitationType')} style={styles.addButton}>
             <Ionicons color={colors.background} name="add" size={25} />
           </Pressable>
         </View>
+
+        {draft.selected_template ? <SecondaryButton title="Lanjutkan Draft di Perangkat Ini" onPress={() => openStack('InvitationType')} style={styles.secondaryButton} /> : null}
 
         {loading || authLoading ? <ActivityIndicator color={colors.gold} style={styles.loading} /> : null}
         {!loading && !authLoading && items.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyTitle}>Belum ada undangan tersimpan</Text>
             <Text style={styles.empty}>Mulai dari pilihan template. Anda bisa menyusun semuanya sebelum publish.</Text>
-            <PrimaryButton title="Buat Undangan Gratis" onPress={() => openStack('Template')} style={styles.emptyButton} />
+            <PrimaryButton title="Buat Undangan Gratis" onPress={() => openStack('InvitationType')} style={styles.emptyButton} />
           </View>
         ) : null}
 
@@ -135,6 +157,10 @@ export default function MyInvitationsScreen({ navigation }) {
             onResume={() => resumeDraft(item)}
             resuming={resumingId === item.id}
             onToggleFeed={() => toggleFeed(item)}
+            feedBusy={feedBusyId === item.id}
+            needsConsent={feedConsentId === item.id}
+            onConsent={() => toggleFeed(item, true)}
+            onCancelConsent={() => setFeedConsentId(null)}
           />
         ))}
       </ScrollView>
@@ -142,7 +168,7 @@ export default function MyInvitationsScreen({ navigation }) {
   );
 }
 
-function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleFeed, resuming }) {
+function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleFeed, resuming, feedBusy, needsConsent, onConsent, onCancelConsent }) {
   const published = item.status === 'published';
 
   return (
@@ -155,10 +181,10 @@ function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleF
         style={({ pressed }) => [styles.cardTop, !published && pressed && styles.pressed]}
       >
         <View style={styles.coupleIcon}>
-          <Ionicons color={colors.goldLight} name="heart-outline" size={20} />
+          <Ionicons color={colors.goldLight} name={isBirthday(item) ? 'gift-outline' : 'heart-outline'} size={20} />
         </View>
         <View style={styles.cardIdentity}>
-          <Text style={styles.name}>{item.groom_nickname || 'Mempelai'} & {item.bride_nickname || 'Pasangan'}</Text>
+          <Text style={styles.name}>{invitationName(item)}</Text>
           <Text style={styles.meta}>{item.event_date || 'Tanggal belum diisi'}</Text>
         </View>
         <View style={[styles.statusPill, published && styles.publishedPill]}>
@@ -173,13 +199,19 @@ function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleF
           <View style={styles.actionGrid}>
             <SmallAction icon="images-outline" label="Kelola Moment" onPress={() => onNavigate('ManageMoments')} />
             <SmallAction icon="people-outline" label="Permintaan Tamu" onPress={() => onNavigate('InvitationRequests')} />
-            <SmallAction icon="gift-outline" label="Wedding Gift" onPress={() => onNavigate('WeddingGiftDashboard')} />
+            <SmallAction icon="gift-outline" label={giftLabelFor(item)} onPress={() => onNavigate('WeddingGiftDashboard')} />
             <SmallAction icon="settings-outline" label="Atur Gift" onPress={() => onNavigate('WeddingGiftSetting')} />
           </View>
-          <Pressable accessibilityRole="button" onPress={onToggleFeed} style={styles.feedToggle}>
+          <Pressable accessibilityRole="button" disabled={feedBusy} onPress={onToggleFeed} style={styles.feedToggle}>
             <Ionicons color={colors.muted} name={item.is_hidden_from_feed ? 'eye-outline' : 'eye-off-outline'} size={17} />
-            <Text style={styles.feedToggleText}>{item.is_hidden_from_feed ? 'Tampilkan kembali di Feed' : 'Sembunyikan dari Feed'}</Text>
+            <Text style={styles.feedToggleText}>{item.is_hidden_from_feed ? 'Bagikan ke Feed Publik' : 'Sembunyikan dari Feed'}</Text>
           </Pressable>
+          {needsConsent ? <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>Bagikan foto secara publik?</Text>
+            <Text style={styles.draftHelp}>Foto galeri, foto utama, nama panggilan, dan Moment dapat dilihat semua pengguna. Tanggal dan lokasi acara tidak ditampilkan, tetapi jangan unggah foto atau caption yang memuat informasi pribadi. Untuk anak, pastikan Anda orang tua/wali atau telah mendapat izin mereka.</Text>
+            <PrimaryButton title="Saya Setuju, Bagikan" onPress={onConsent} loading={feedBusy} style={styles.openButton} />
+            <SecondaryButton title="Batal, Tetap Tersembunyi" onPress={onCancelConsent} disabled={feedBusy} style={styles.secondaryButton} />
+          </View> : null}
         </>
       ) : (
         <>

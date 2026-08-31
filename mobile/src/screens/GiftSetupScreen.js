@@ -3,15 +3,15 @@ import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 import { FooterActions } from '../components/Buttons';
 import FormField from '../components/FormField';
 import WizardLayout from '../components/WizardLayout';
+import { giftLabelFor, invitationName } from '../constants/invitation';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
 import { cleanText, firstError, validateSafeText } from '../utils/validation';
 
 export default function GiftSetupScreen({ navigation }) {
   const { draft, saveSection, syncing, syncMessage } = useDraft();
-  const suggestedReceiver = [draft.groom_data?.groom_nickname, draft.bride_data?.bride_nickname]
-    .filter(Boolean)
-    .join(' & ');
+  const label = giftLabelFor(draft);
+  const suggestedReceiver = invitationName(draft);
   const [gift, setGift] = useState({
     is_active: false,
     receiver_name: '',
@@ -33,19 +33,19 @@ export default function GiftSetupScreen({ navigation }) {
   async function next() {
     const minimum = Number(gift.minimum_amount);
     if (gift.is_active && !gift.receiver_name.trim()) {
-      Alert.alert('Nama penerima diperlukan', 'Masukkan nama pasangan yang akan menerima Wedding Gift.');
+      Alert.alert('Nama penerima diperlukan', `Masukkan nama penerima ${label}.`);
       return;
     }
     const error = firstError([
-      validateSafeText(gift.receiver_name, 'Nama penerima Wedding Gift', { required: gift.is_active, max: 80 }),
-      validateSafeText(gift.receiver_note, 'Catatan Wedding Gift', { max: 300 }),
+      validateSafeText(gift.receiver_name, 'Nama penerima', { required: gift.is_active, max: 80 }),
+      validateSafeText(gift.receiver_note, 'Catatan untuk tamu', { max: 300 }),
     ]);
     if (error) {
-      Alert.alert('Periksa Wedding Gift', error);
+      Alert.alert(`Periksa ${label}`, error);
       return;
     }
     if (!Number.isInteger(minimum) || minimum < 10000) {
-      Alert.alert('Minimum gift tidak valid', 'Nominal minimum Wedding Gift paling kecil Rp10.000.');
+      Alert.alert('Minimum gift tidak valid', 'Nominal minimum paling kecil Rp10.000.');
       return;
     }
 
@@ -63,7 +63,7 @@ export default function GiftSetupScreen({ navigation }) {
   return (
     <WizardLayout
       step={7}
-      title="Wedding Gift"
+      title={label}
       subtitle="Opsional. Aktifkan bila Anda ingin tamu dapat mengirim tanda kasih melalui QRIS di halaman undangan web."
       syncMessage={syncMessage}
       footer={<FooterActions onBack={() => navigation.goBack()} onNext={next} loading={syncing} />}
@@ -71,15 +71,16 @@ export default function GiftSetupScreen({ navigation }) {
       <View style={styles.safety}>
         <Text style={styles.safetyTitle}>Pembayaran dilakukan oleh tamu di browser</Text>
         <Text style={styles.safetyBody}>
-          Aplikasi ini hanya mengatur tampilan Wedding Gift. QRIS baru tersedia pada undangan setelah dipublish.
+          Aplikasi ini hanya mengatur tampilan {label}. QRIS baru tersedia pada undangan setelah dipublish.
         </Text>
       </View>
       <View style={styles.toggle}>
         <View style={styles.toggleCopy}>
-          <Text style={styles.toggleTitle}>Aktifkan Wedding Gift</Text>
+          <Text style={styles.toggleTitle}>Aktifkan {label}</Text>
           <Text style={styles.help}>Form QRIS akan tampil pada link undangan publik.</Text>
         </View>
         <Switch
+          accessibilityLabel={`Aktifkan ${label}`}
           value={gift.is_active}
           onValueChange={toggleGift}
           trackColor={{ true: colors.gold, false: colors.border }}
@@ -90,7 +91,7 @@ export default function GiftSetupScreen({ navigation }) {
         <>
           <FormField
             label="Nama penerima *"
-            placeholder="Contoh: Made & Ayu"
+            placeholder={suggestedReceiver}
             maxLength={80}
             value={gift.receiver_name}
             onChangeText={(value) => setGift({ ...gift, receiver_name: value })}
@@ -122,7 +123,7 @@ export default function GiftSetupScreen({ navigation }) {
           />
         </>
       ) : (
-        <Text style={styles.inactive}>Tamu tidak akan melihat form Wedding Gift pada undangan Anda.</Text>
+        <Text style={styles.inactive}>Tamu tidak akan melihat form {label} pada undangan Anda.</Text>
       )}
     </WizardLayout>
   );
@@ -132,7 +133,7 @@ function ToggleRow({ title, value, onValueChange }) {
   return (
     <View style={styles.switchRow}>
       <Text style={styles.switchText}>{title}</Text>
-      <Switch value={value} onValueChange={onValueChange} trackColor={{ true: colors.gold, false: colors.border }} thumbColor={colors.text} />
+      <Switch accessibilityLabel={title} value={value} onValueChange={onValueChange} trackColor={{ true: colors.gold, false: colors.border }} thumbColor={colors.text} />
     </View>
   );
 }

@@ -9,6 +9,7 @@ class InvitationTemplate extends Model
     protected $appends = ['preview_url'];
 
     protected $fillable = [
+        'invitation_type',
         'name',
         'slug',
         'thumbnail',

@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { DEFAULT_OPENING_QUOTE } from '../constants/invitation';
+import { openingQuoteFor } from '../constants/invitation';
 import { api } from '../services/api';
-import { clearLocalDraft, emptyDraft, loadDraft, saveDraftSection, SESSION_KEYS } from '../services/draftStorage';
+import { clearLocalDraft, createEmptyDraft, emptyDraft, loadDraft, saveDraftSection, SESSION_KEYS } from '../services/draftStorage';
 import { useAuth } from './AuthContext';
 
 const DraftContext = createContext(null);
@@ -39,6 +39,8 @@ export function DraftProvider({ children }) {
 
   function payloadFromDraft(nextDraft) {
     return {
+      invitation_type: nextDraft.invitation_type || 'wedding',
+      birthday_data: nextDraft.birthday_data,
       selected_template: nextDraft.selected_template?.id || nextDraft.selected_template,
       groom_data: nextDraft.groom_data,
       bride_data: nextDraft.bride_data,
@@ -52,6 +54,7 @@ export function DraftProvider({ children }) {
 
   function mediaSignature(nextDraft) {
     return JSON.stringify([
+      nextDraft.birthday_data?.celebrant_photo?.uri || null,
       nextDraft.groom_data?.groom_photo?.uri || null,
       nextDraft.bride_data?.bride_photo?.uri || null,
       ...(nextDraft.gallery_data?.photos || []).map((photo) => photo.uri),
@@ -153,8 +156,18 @@ export function DraftProvider({ children }) {
     lastMediaSignature.current = null;
   }
 
+  async function startDraft(invitationType) {
+    const nextDraft = createEmptyDraft(invitationType);
+    await clearLocalDraft();
+    await Promise.all(Object.entries(nextDraft).map(([section, value]) => saveDraftSection(section, value)));
+    setDraft(nextDraft);
+    setRemoteInvitationId(null);
+    setSyncMessage(null);
+    lastMediaSignature.current = null;
+  }
+
   const value = useMemo(
-    () => ({ draft, loading, syncing, syncMessage, saveSection, saveSections, loadRemoteDraft, publishDraft, discardDraft }),
+    () => ({ draft, loading, syncing, syncMessage, saveSection, saveSections, loadRemoteDraft, publishDraft, discardDraft, startDraft }),
     [draft, loading, syncing, syncMessage, token, remoteInvitationId],
   );
 
@@ -165,6 +178,14 @@ function draftFromInvitation(invitation) {
   const gift = invitation.gift_setting || invitation.giftSetting;
 
   return {
+    invitation_type: invitation.invitation_type || 'wedding',
+    birthday_data: {
+      celebrant_full_name: invitation.celebrant_full_name || '',
+      celebrant_nickname: invitation.celebrant_nickname || '',
+      celebrant_age: invitation.celebrant_age == null ? '' : String(invitation.celebrant_age),
+      celebrant_photo: remoteMedia(invitation.celebrant_photo, 'image/jpeg'),
+      host_name: invitation.host_name || '',
+    },
     selected_template: invitation.template || { id: invitation.template_id },
     groom_data: {
       groom_full_name: invitation.groom_full_name || '',
@@ -189,7 +210,9 @@ function draftFromInvitation(invitation) {
       end_time: invitation.end_time?.slice(0, 5) || '',
       venue_name: invitation.venue_name || '',
       venue_address: invitation.venue_address || '',
-      opening_quote: invitation.opening_quote ?? DEFAULT_OPENING_QUOTE,
+      opening_quote: invitation.opening_quote ?? openingQuoteFor(invitation),
+      event_title: invitation.event_title || '',
+      dress_code: invitation.dress_code || '',
     },
     location_data: {
       latitude: invitation.latitude || '',

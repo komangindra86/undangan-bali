@@ -196,7 +196,7 @@ class GiftPayoutTest extends TestCase
             'bride_full_name' => 'Ni Putu Ayu',
             'bride_nickname' => 'Ayu',
             'event_type' => 'Pawiwahan',
-            'event_date' => '2026-08-18',
+            'event_date' => now()->addMonth()->toDateString(),
             'start_time' => '10:00',
             'venue_name' => 'Bale Banjar',
             'venue_address' => 'Ubud, Bali',

@@ -66,3 +66,10 @@ export function validateEmail(value, label = 'Email') {
 export function firstError(errors) {
   return errors.find(Boolean) || null;
 }
+
+export function validateBirthdayAge(value) {
+  const text = cleanText(value);
+  if (!text) return null;
+  return /^\d+$/.test(text) && Number(text) >= 1 && Number(text) <= 150
+    ? null : 'Usia yang dirayakan harus angka bulat 1 sampai 150, atau kosongkan.';
+}

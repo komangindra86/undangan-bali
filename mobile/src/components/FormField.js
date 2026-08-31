@@ -23,6 +23,7 @@ export default function FormField({
     <View ref={groupRef} style={styles.group}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
+        accessibilityLabel={label}
         value={value || ''}
         onChangeText={onChangeText}
         placeholder={placeholder}

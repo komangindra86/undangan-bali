@@ -71,11 +71,25 @@ class PublicInvitationController extends Controller
             'music_type' => 'none',
             'slug' => 'preview-'.$template->slug,
         ]);
+        if ($template->invitation_type === 'birthday') {
+            $invitation->fill([
+                'invitation_type' => 'birthday',
+                'celebrant_full_name' => 'Ni Putu Kirana',
+                'celebrant_nickname' => 'Kirana',
+                'celebrant_age' => 7,
+                'host_name' => 'Papa & Mama',
+                'event_title' => 'Hari Bahagia Kirana',
+                'dress_code' => 'Warna pastel',
+                'opening_quote' => 'Dengan penuh sukacita, kami mengundang Anda untuk merayakan hari ulang tahun Kirana. Kehadiran dan doa baik Anda akan membuat momen ini semakin berarti.',
+                'event_type' => 'Ulang Tahun',
+                'event_date' => now()->addMonth()->startOfDay(),
+            ]);
+        }
         $invitation->setRelation('template', $template);
         $invitation->setRelation('giftSetting', new WeddingGiftSetting([
             'is_active' => true,
-            'receiver_name' => 'Wira & Ayu',
-            'receiver_note' => 'Wedding Gift bersifat opsional. Tanda kasih akan diproses aman melalui QRIS.',
+            'receiver_name' => $invitation->display_name,
+            'receiver_note' => $invitation->gift_label.' bersifat opsional. Tanda kasih diproses melalui QRIS.',
             'fee_type' => config('wedding_gift.fee.type'),
             'fee_value' => config('wedding_gift.fee.value'),
             'minimum_amount' => config('wedding_gift.minimum_amount'),

@@ -23,7 +23,7 @@ class SocialNotificationService
         ]);
 
         if (PushToken::where('user_id', $invitation->user_id)->whereNull('disabled_at')->exists()) {
-            [$title, $body] = $this->pushCopy($type, $data);
+            [$title, $body] = $this->pushCopy($type, $data, $invitation->gift_label);
             SendFirebasePushNotification::dispatch(
                 $invitation->user_id,
                 $invitation->id,
@@ -34,7 +34,7 @@ class SocialNotificationService
         }
     }
 
-    private function pushCopy(string $type, array $data): array
+    private function pushCopy(string $type, array $data, string $giftLabel): array
     {
         return match ($type) {
             'invitation_request' => [
@@ -43,7 +43,7 @@ class SocialNotificationService
             ],
             'reaction' => ['Reaksi baru', $data['message'] ?? 'Ada reaksi baru pada Moment Anda.'],
             'comment' => ['Komentar baru', $data['message'] ?? 'Ada komentar baru pada Moment Anda.'],
-            'wedding_gift_paid' => ['Wedding Gift diterima', $data['message'] ?? 'Wedding Gift baru telah dikonfirmasi.'],
+            'wedding_gift_paid' => [$giftLabel.' diterima', $data['message'] ?? $giftLabel.' baru telah dikonfirmasi.'],
             default => ['Pembaruan undangan', $data['message'] ?? 'Ada pembaruan baru pada undangan Anda.'],
         };
     }

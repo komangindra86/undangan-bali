@@ -1,33 +1,38 @@
-import { ImageBackground, Linking, StyleSheet, Text, View } from 'react-native';
+import { Alert, ImageBackground, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { useDraft } from '../context/DraftContext';
+import { isBirthday, personScreenFor } from '../constants/invitation';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 
 export default function TemplatePreviewScreen({ navigation, route }) {
   const { template } = route.params;
-  const { saveSection, syncing } = useDraft();
+  const { draft, saveSection, syncing } = useDraft();
+  const birthday = isBirthday(draft);
   const previewImage = `${api.siteUrl}/storage/${template.preview_image}`;
 
   async function useTemplate() {
-    await saveSection('selected_template', template);
-    navigation.navigate('GroomBrideForm');
+    try {
+      await saveSection('selected_template', template);
+      navigation.navigate(personScreenFor(draft));
+    } catch (error) { Alert.alert('Template belum tersimpan', error.message); }
   }
 
   return (
-    <SafeAreaView style={[commonStyles.screen, styles.safe]}>
+    <SafeAreaView style={commonStyles.screen}>
+      <ScrollView contentContainerStyle={styles.safe}>
       <Text style={commonStyles.eyebrow}>Review Template</Text>
       <Text style={commonStyles.title}>{template.name}</Text>
       <Text style={styles.description}>
-        Data di bawah hanya contoh. Buka demo lengkap untuk melihat transisi, foto, galeri, dan suasana Bali.
+        Data di bawah hanya contoh. Buka demo lengkap untuk melihat desain, transisi, galeri, dan musik.
       </Text>
 
-      <ImageBackground source={{ uri: previewImage }} style={styles.hero} imageStyle={styles.heroImage}>
+      <ImageBackground source={birthday ? undefined : { uri: previewImage }} style={[styles.hero, birthday && { backgroundColor: template.slug === 'ceria-confetti' ? '#6b46a4' : template.slug === 'ruang-putih' ? '#83796f' : '#163f36', borderRadius: 22 }]} imageStyle={styles.heroImage}>
         <View style={styles.overlay}>
-          <Text style={styles.smallTitle}>PAWIWAHAN ADAT BALI</Text>
-          <Text style={styles.couple}>Wira & Ayu</Text>
-          <Text style={styles.event}>18 Agustus 2026 | Bale Banjar Ubud</Text>
+          <Text style={styles.smallTitle}>{birthday ? 'PERAYAAN ULANG TAHUN' : 'PAWIWAHAN ADAT BALI'}</Text>
+          <Text style={styles.couple}>{birthday ? 'Kirana' : 'Wira & Ayu'}</Text>
+          <Text style={styles.event}>{birthday ? 'Merayakan 7 tahun penuh cerita' : '18 Agustus 2026 | Bale Banjar Ubud'}</Text>
         </View>
       </ImageBackground>
 
@@ -38,6 +43,7 @@ export default function TemplatePreviewScreen({ navigation, route }) {
       />
       <PrimaryButton title="Gunakan Template Ini" onPress={useTemplate} loading={syncing} style={styles.action} />
       <SecondaryButton title="Kembali Pilih Template" onPress={() => navigation.goBack()} style={styles.action} />
+      </ScrollView>
     </SafeAreaView>
   );
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Undangan Diarsipkan - {{ $invitation->groom_nickname }} & {{ $invitation->bride_nickname }}</title>
+    <title>Undangan Diarsipkan - {{ $invitation->display_name }}</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -61,7 +61,7 @@
 <body>
     <main class="card">
         <p class="label">Undangan Diarsipkan</p>
-        <h1>{{ $invitation->groom_nickname ?: 'Mempelai' }} &amp; {{ $invitation->bride_nickname ?: 'Pasangan' }}</h1>
+        <h1>{{ $invitation->display_name }}</h1>
         <p class="date">{{ $invitation->event_date?->translatedFormat('l, d F Y') }}</p>
         <p class="note">
             Undangan ini sudah melewati masa aktif dan media foto/musiknya telah dibersihkan untuk menghemat storage.

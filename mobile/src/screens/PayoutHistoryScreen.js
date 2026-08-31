@@ -29,7 +29,7 @@ export default function PayoutHistoryScreen({ navigation, route }) {
   return (
     <SafeAreaView style={commonStyles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={commonStyles.eyebrow}>Wedding Gift</Text>
+        <Text style={commonStyles.eyebrow}>Gift</Text>
         <Text style={commonStyles.title}>Riwayat Pencairan</Text>
         <SecondaryButton title="Kembali ke Dashboard" onPress={() => navigation.navigate('WeddingGiftDashboard', { invitation })} style={styles.button} />
         {loading ? <ActivityIndicator color={colors.gold} style={styles.loading} /> : null}

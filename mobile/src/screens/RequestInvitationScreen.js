@@ -36,7 +36,7 @@ export default function RequestInvitationScreen({ navigation, route }) {
         <Text style={commonStyles.title}>{invitation.names}</Text>
         <Text style={styles.body}>Pasangan akan menerima nama dan nomor WhatsApp Anda, lalu dapat mengirim link undangan secara pribadi.</Text>
         <FormField label="Nama Anda" value={name} onChangeText={setName} maxLength={80} placeholder="Nama lengkap atau panggilan" />
-        <FormField label="Nomor WhatsApp" value={whatsapp} onChangeText={setWhatsapp} keyboardType="phone-pad" maxLength={24} placeholder="0812xxxxxxx" helperText="Nomor ini hanya dilihat oleh pasangan." />
+        <FormField label="Nomor WhatsApp" value={whatsapp} onChangeText={setWhatsapp} keyboardType="phone-pad" maxLength={24} placeholder="0812xxxxxxx" helperText="Nomor ini hanya dilihat oleh pemilik undangan." />
         <PrimaryButton title="Kirim Permintaan" onPress={submit} loading={loading} style={styles.submit} />
         <SecondaryButton title="Kembali" onPress={() => navigation.goBack()} style={styles.back} />
       </KeyboardAwareScrollView>

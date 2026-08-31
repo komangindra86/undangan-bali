@@ -5,6 +5,7 @@ import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import FormField from '../components/FormField';
 import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
 import { useAuth } from '../context/AuthContext';
+import { giftLabelFor, invitationName } from '../constants/invitation';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 import { cleanText, firstError, validateSafeText } from '../utils/validation';
@@ -20,6 +21,7 @@ const initialSetting = {
 
 export default function WeddingGiftSettingScreen({ navigation, route }) {
   const invitation = route.params?.invitation;
+  const label = giftLabelFor(invitation);
   const { token, expireSession } = useAuth();
   const [setting, setSetting] = useState(initialSetting);
   const [loading, setLoading] = useState(true);
@@ -41,21 +43,21 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
       navigation.replace('Login', { returnTo: 'MyInvitations', sessionExpired: true });
       return;
     }
-    Alert.alert('Wedding Gift', error.message || fallback);
+    Alert.alert(label, error.message || fallback);
   }
 
   async function save() {
     const minimum = Number(setting.minimum_amount);
     if (setting.is_active && !setting.receiver_name.trim()) {
-      Alert.alert('Nama penerima dibutuhkan', 'Masukkan nama penerima Wedding Gift.');
+      Alert.alert('Nama penerima dibutuhkan', 'Masukkan nama penerima gift.');
       return;
     }
     const error = firstError([
-      validateSafeText(setting.receiver_name, 'Nama penerima Wedding Gift', { required: setting.is_active, max: 80 }),
+      validateSafeText(setting.receiver_name, 'Nama penerima', { required: setting.is_active, max: 80 }),
       validateSafeText(setting.receiver_note, 'Catatan penerima', { max: 300 }),
     ]);
     if (error) {
-      Alert.alert('Periksa Wedding Gift', error);
+      Alert.alert(`Periksa ${label}`, error);
       return;
     }
     if (!Number.isInteger(minimum) || minimum < 10000) {
@@ -74,7 +76,7 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
         allow_message: setting.allow_message,
       }, token);
       setSetting({ ...response.data, minimum_amount: String(response.data.minimum_amount) });
-      Alert.alert('Tersimpan', 'Pengaturan Wedding Gift sudah diperbarui.');
+      Alert.alert('Tersimpan', `Pengaturan ${label} sudah diperbarui.`);
     } catch (error) {
       await handleError(error, 'Pengaturan belum berhasil disimpan.');
     } finally {
@@ -94,15 +96,15 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
     <SafeAreaView style={commonStyles.screen}>
       <KeyboardAwareScrollView contentContainerStyle={styles.content}>
         <Text style={commonStyles.eyebrow}>Pengaturan</Text>
-        <Text style={commonStyles.title}>Wedding Gift</Text>
-        <Text style={styles.subtitle}>{invitation.groom_nickname} & {invitation.bride_nickname}</Text>
+        <Text style={commonStyles.title}>{label}</Text>
+        <Text style={styles.subtitle}>{invitationName(invitation)}</Text>
         <View style={styles.notice}>
           <Text style={styles.noticeTitle}>Pembayaran hanya di halaman web</Text>
           <Text style={styles.noticeText}>Aplikasi ini hanya untuk mengatur dan memantau gift. Tamu membayar QRIS melalui link undangan publik.</Text>
         </View>
         <View style={styles.toggle}>
           <View style={styles.toggleCopy}>
-            <Text style={styles.toggleTitle}>Aktifkan Wedding Gift</Text>
+            <Text style={styles.toggleTitle}>Aktifkan {label}</Text>
             <Text style={styles.small}>Tampilkan form gift pada undangan publik.</Text>
           </View>
           <Switch
@@ -114,7 +116,7 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
         </View>
         <FormField
           label="Nama penerima"
-          placeholder="Contoh: Made & Ayu"
+          placeholder={invitationName(invitation)}
           maxLength={80}
           value={setting.receiver_name}
           onChangeText={(value) => setSetting({ ...setting, receiver_name: value })}
@@ -137,7 +139,7 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
         <View style={styles.feeCard}>
           <Text style={styles.feeLabel}>Biaya layanan ditetapkan aplikasi</Text>
           <Text style={styles.feeValue}>{feeText()}</Text>
-          <Text style={styles.small}>Fee tampil transparan pada halaman pembayaran dan tidak mengurangi nominal gift pasangan.</Text>
+          <Text style={styles.small}>Fee tampil transparan pada halaman pembayaran dan tidak mengurangi nominal gift penerima.</Text>
         </View>
         <ToggleRow
           title="Tampilkan nominal secara publik"

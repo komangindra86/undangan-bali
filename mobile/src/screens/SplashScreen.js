@@ -21,7 +21,7 @@ export default function SplashScreen({ navigation }) {
     <LinearGradient colors={['#14100c', '#261d13']} style={styles.container}>
       <View style={styles.mark} />
       <Text style={commonStyles.eyebrow}>Undangan</Text>
-      <Text style={styles.title}>Pernikahan Bali</Text>
+      <Text style={styles.title}>Bali Santih</Text>
       <Text style={styles.caption}>Cerita indah dimulai dari sini</Text>
     </LinearGradient>
   );

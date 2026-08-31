@@ -67,7 +67,7 @@ export default function ManageMomentsScreen({ navigation, route }) {
     <SafeAreaView style={commonStyles.screen}>
       <KeyboardAwareScrollView contentContainerStyle={styles.content}>
         <Text style={commonStyles.eyebrow}>Moment Saya</Text>
-        <Text style={commonStyles.title}>Timeline Pernikahan</Text>
+        <Text style={commonStyles.title}>Timeline Perayaan</Text>
         <Text style={styles.note}>Bagikan persiapan prewedding hingga hari H. Jangan masukkan alamat atau jadwal detail di sini karena Moment dapat dilihat publik.</Text>
         <FormField label="Judul Moment" value={form.title} onChangeText={(title) => setForm({ ...form, title })} maxLength={100} placeholder="Contoh: Prewedding di Ubud" />
         <FormField label="Cerita singkat" value={form.body} onChangeText={(body) => setForm({ ...form, body })} maxLength={500} multiline placeholder="Bagikan cerita hangat kami" />

@@ -60,6 +60,19 @@ class InvitationTemplateSeeder extends Seeder
             InvitationTemplate::updateOrCreate(['slug' => $template['slug']], $template + [
                 'is_active' => true,
                 'is_premium' => false,
+                'invitation_type' => 'wedding',
+            ]);
+        }
+
+        foreach (['ceria-confetti' => 'Ceria Confetti', 'ruang-putih' => 'Ruang Putih', 'bali-pradnyan' => 'Bali Pradnyan'] as $slug => $name) {
+            InvitationTemplate::updateOrCreate(['slug' => $slug], [
+                'name' => $name,
+                'invitation_type' => 'birthday',
+                'thumbnail' => null,
+                'preview_image' => null,
+                'blade_view' => 'invitations.templates.birthday.'.$slug,
+                'is_active' => true,
+                'is_premium' => false,
             ]);
         }
     }

@@ -74,13 +74,17 @@ class InvitationController extends Controller
     {
         $this->ensureOwner($request, $invitation);
 
+        $personFields = $invitation->isBirthday()
+            ? ['celebrant_full_name' => 80, 'celebrant_nickname' => 18]
+            : ['groom_full_name' => 80, 'groom_nickname' => 18, 'bride_full_name' => 80, 'bride_nickname' => 18];
+        $personRules = [];
+        foreach ($personFields as $field => $max) {
+            $personRules[$field] = ['required', 'string', 'max:'.$max, 'regex:/^[\pL\s.\'-]+$/u'];
+        }
         Validator::make($invitation->toArray(), [
-            'template_id' => ['required', 'exists:invitation_templates,id'],
-            'groom_full_name' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
-            'groom_nickname' => ['required', 'string', 'max:18', 'regex:/^[\pL\s.\'-]+$/u'],
-            'bride_full_name' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
-            'bride_nickname' => ['required', 'string', 'max:18', 'regex:/^[\pL\s.\'-]+$/u'],
-            'event_type' => ['required', Rule::in(['Pawiwahan', 'Resepsi'])],
+            ...$personRules,
+            'template_id' => ['required', Rule::exists('invitation_templates', 'id')->where('is_active', true)->where('invitation_type', $invitation->invitation_type)],
+            'event_type' => ['required', Rule::in($invitation->isBirthday() ? ['Ulang Tahun'] : ['Pawiwahan', 'Resepsi'])],
             'event_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required'],
             'venue_name' => ['required', 'string', 'max:120', 'not_regex:/[<>]/'],
@@ -90,6 +94,8 @@ class InvitationController extends Controller
             '*.not_regex' => ':attribute tidak boleh mengandung karakter < atau >.',
             'event_date.after_or_equal' => 'tanggal acara tidak boleh sebelum hari ini.',
         ], [
+            'celebrant_full_name' => 'nama lengkap yang berulang tahun',
+            'celebrant_nickname' => 'nama panggilan yang berulang tahun',
             'groom_full_name' => 'nama lengkap mempelai pria',
             'groom_nickname' => 'nama panggilan mempelai pria',
             'bride_full_name' => 'nama lengkap mempelai wanita',
@@ -121,7 +127,7 @@ class InvitationController extends Controller
             'message' => 'Undangan berhasil dipublish.',
             'data' => $invitation->load(['template', 'music', 'giftSetting']),
             'public_url' => route('invitations.public', $invitation->slug),
-            'share_text' => 'Kepada Yth. Bapak/Ibu/Saudara/i, kami mengundang untuk hadir di acara pernikahan kami. Buka undangan: '.route('invitations.public', $invitation->slug),
+            'share_text' => 'Kepada Yth. Bapak/Ibu/Saudara/i, kami mengundang untuk hadir di '.($invitation->isBirthday() ? 'perayaan ulang tahun '.$invitation->display_name : 'acara pernikahan kami').'. Buka undangan: '.route('invitations.public', $invitation->slug),
         ]);
     }
 
@@ -129,7 +135,7 @@ class InvitationController extends Controller
     {
         $this->ensureOwner($request, $invitation);
 
-        foreach (['groom_photo', 'bride_photo', 'music_file'] as $file) {
+        foreach (['groom_photo', 'bride_photo', 'celebrant_photo', 'music_file'] as $file) {
             if ($invitation->{$file}) {
                 Storage::disk('public')->delete($invitation->{$file});
             }
@@ -150,14 +156,14 @@ class InvitationController extends Controller
 
     private function draftAttributes(StoreInvitationRequest $request, ?Invitation $invitation = null): array
     {
-        $data = $request->safe()->except(['groom_photo', 'bride_photo', 'gallery_photos', 'gallery_existing_paths', 'gallery_photos_changed', 'music_file', 'gift_data']);
+        $data = $request->safe()->except(['groom_photo', 'bride_photo', 'celebrant_photo', 'gallery_photos', 'gallery_existing_paths', 'gallery_photos_changed', 'music_file', 'gift_data']);
         $data['status'] = 'draft';
         if ($invitation && $invitation->status === 'published') {
             $data['published_at'] = null;
         }
         $data['music_type'] = $data['music_type'] ?? 'none';
 
-        foreach (['groom_photo', 'bride_photo'] as $file) {
+        foreach (($data['invitation_type'] === 'birthday' ? ['celebrant_photo'] : ['groom_photo', 'bride_photo']) as $file) {
             if ($request->hasFile($file)) {
                 if ($invitation && $invitation->{$file}) {
                     Storage::disk('public')->delete($invitation->{$file});
@@ -223,7 +229,9 @@ class InvitationController extends Controller
 
     private function uniqueSlug(Invitation $invitation): string
     {
-        $base = Str::slug('undangan '.$invitation->groom_nickname.' '.$invitation->bride_nickname);
+        $base = Str::slug($invitation->isBirthday()
+            ? 'ulang tahun '.$invitation->celebrant_nickname
+            : 'undangan '.$invitation->groom_nickname.' '.$invitation->bride_nickname);
         $slug = $base;
 
         while (Invitation::where('slug', $slug)->where('id', '!=', $invitation->id)->exists()) {

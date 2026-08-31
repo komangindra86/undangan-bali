@@ -37,7 +37,7 @@
 </style>
 <section class="wg-section">
     <div class="wg-card">
-        <p class="wg-label">Wedding Gift</p>
+        <p class="wg-label">{{ $invitation->gift_label }}</p>
         <h2 class="wg-title">Kirim Tanda Kasih</h2>
         @if ($isPaymentDemo)
             <p class="wg-demo-badge">Demo pembayaran Xendit mode tes. Tidak ada uang asli yang masuk.</p>
@@ -75,7 +75,7 @@
             @if ($giftSetting->allow_message)
                 <label class="wg-field">
                     <span>Ucapan (opsional)</span>
-                    <textarea class="wg-input" name="message" maxlength="300" placeholder="Doa dan ucapan untuk mempelai"></textarea>
+                    <textarea class="wg-input" name="message" maxlength="300" placeholder="{{ $invitation->isBirthday() ? 'Doa dan ucapan ulang tahun' : 'Doa dan ucapan untuk mempelai' }}"></textarea>
                 </label>
             @endif
             <div class="wg-breakdown">
@@ -92,7 +92,7 @@
                 <div class="wg-qr" data-wg-qr-demo style="{{ $isPreview ? '' : 'display:none' }}">
                     <div style="aspect-ratio:1; background:repeating-linear-gradient(45deg,#30291f 0 8px,#fff 8px 16px); border-radius:10px; display:grid; place-items:center; color:#30291f; font:700 18px Arial,sans-serif;">DEMO<br>BAYAR</div>
                 </div>
-                <img class="wg-qr" data-wg-qr alt="QRIS Wedding Gift" style="{{ $isPreview ? 'display:none' : '' }}">
+                <img class="wg-qr" data-wg-qr alt="QRIS {{ $invitation->gift_label }}" style="{{ $isPreview ? 'display:none' : '' }}">
                 <a class="wg-pay-link" data-wg-pay-link target="_blank" rel="noopener">Buka QRIS Xendit</a>
                 <div class="wg-breakdown">
                     <div class="wg-line"><span>Nominal Gift</span><strong data-result-amount></strong></div>
@@ -101,7 +101,7 @@
                 </div>
                 <button type="button" class="wg-check" data-wg-check>Cek Status Pembayaran</button>
                 <p class="wg-status visible" data-wg-payment-status>Menunggu pembayaran.</p>
-                <p class="wg-paid" data-wg-paid>Terima kasih. Wedding Gift Anda telah berhasil diterima.</p>
+                <p class="wg-paid" data-wg-paid>Terima kasih. {{ $invitation->gift_label }} Anda telah berhasil diterima.</p>
             </div>
         </form>
     </div>

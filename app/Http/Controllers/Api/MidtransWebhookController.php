@@ -32,7 +32,7 @@ class MidtransWebhookController extends Controller
                 'gift_id' => $gift->id,
                 'guest_name' => $gift->guest_name,
                 'gift_amount' => $gift->gift_amount,
-                'message' => 'Wedding Gift dari '.$gift->guest_name.' berhasil diterima.',
+                'message' => $gift->invitation->gift_label.' dari '.$gift->guest_name.' berhasil diterima.',
             ]);
         }
 

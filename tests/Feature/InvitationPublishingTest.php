@@ -105,7 +105,7 @@ class InvitationPublishingTest extends TestCase
             'is_active' => true,
         ]);
         $this->assertSame($legacy->id, $invitation->fresh()->template_id);
-        $this->assertSame(5, InvitationTemplate::where('is_active', true)->count());
+        $this->assertSame(5, InvitationTemplate::where('is_active', true)->where('invitation_type', 'wedding')->count());
     }
 
     public function test_local_draft_can_be_synced_after_register_and_published(): void
@@ -136,7 +136,7 @@ class InvitationPublishingTest extends TestCase
             ],
             'event_data' => [
                 'event_type' => 'Pawiwahan',
-                'event_date' => '2026-08-18',
+                'event_date' => now()->addMonth()->toDateString(),
                 'start_time' => '10:00',
                 'end_time' => '13:00',
                 'venue_name' => 'Bale Banjar Ubud',
@@ -254,7 +254,7 @@ class InvitationPublishingTest extends TestCase
             'bride_full_name' => 'Ni Putu Ayu',
             'bride_nickname' => 'Ayu',
             'event_type' => 'Pawiwahan',
-            'event_date' => '2026-08-18',
+            'event_date' => now()->addMonth()->toDateString(),
             'start_time' => '10:00',
             'venue_name' => 'Bale Banjar',
             'venue_address' => 'Ubud, Bali',
@@ -357,7 +357,7 @@ class InvitationPublishingTest extends TestCase
             'gallery_photos' => ['invitations/gallery/moment.jpg'],
             'opening_quote' => '<script>alert(1)</script>',
             'event_type' => 'Pawiwahan',
-            'event_date' => '2026-08-18',
+            'event_date' => now()->addMonth()->toDateString(),
             'start_time' => '10:00',
             'end_time' => '13:00',
             'venue_name' => 'Bale Banjar Ubud',
@@ -399,7 +399,7 @@ class InvitationPublishingTest extends TestCase
             ],
             'event_data' => [
                 'event_type' => 'Pawiwahan',
-                'event_date' => '2026-08-18',
+                'event_date' => now()->addMonth()->toDateString(),
                 'start_time' => '10:00',
                 'venue_name' => 'Bale Banjar',
                 'venue_address' => 'Ubud, Bali',
@@ -437,7 +437,7 @@ class InvitationPublishingTest extends TestCase
             'bride_full_name' => 'Ni Putu Ayu',
             'bride_nickname' => 'Ayu',
             'event_type' => 'Pawiwahan',
-            'event_date' => '2026-08-18',
+            'event_date' => now()->addMonth()->toDateString(),
             'start_time' => '10:00',
             'venue_name' => 'Bale Banjar',
             'venue_address' => 'Ubud, Bali',
@@ -476,7 +476,7 @@ class InvitationPublishingTest extends TestCase
             'bride_full_name' => 'Ni Putu Ayu',
             'bride_nickname' => 'Ayu',
             'event_type' => 'Pawiwahan',
-            'event_date' => '2026-08-18',
+            'event_date' => now()->addMonth()->toDateString(),
             'start_time' => '10:00',
             'venue_name' => 'Bale Banjar',
             'venue_address' => 'Ubud, Bali',
@@ -517,7 +517,7 @@ class InvitationPublishingTest extends TestCase
             'bride_full_name' => 'Ni Putu Ayu',
             'bride_nickname' => 'Ayu',
             'event_type' => 'Pawiwahan',
-            'event_date' => '2026-08-18',
+            'event_date' => now()->addMonth()->toDateString(),
             'start_time' => '10:00',
             'venue_name' => 'Bale Banjar',
             'venue_address' => 'Ubud, Bali',

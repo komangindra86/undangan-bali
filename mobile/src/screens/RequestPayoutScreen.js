@@ -66,7 +66,7 @@ export default function RequestPayoutScreen({ navigation, route }) {
   return (
     <SafeAreaView style={commonStyles.screen}>
       <KeyboardAwareScrollView contentContainerStyle={styles.content}>
-        <Text style={commonStyles.eyebrow}>Klaim Wedding Gift</Text>
+        <Text style={commonStyles.eyebrow}>Klaim Gift</Text>
         <Text style={commonStyles.title}>Ajukan Pencairan</Text>
         <View style={styles.balance}>
           <Text style={styles.label}>Saldo tersedia</Text>

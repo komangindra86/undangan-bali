@@ -17,7 +17,7 @@ class StoreInvitationRequest extends FormRequest
         $this->replace($this->trimStrings($this->all()));
 
         $nested = [];
-        $groups = ['groom_data', 'bride_data', 'event_data', 'location_data', 'music_data'];
+        $groups = ['groom_data', 'bride_data', 'birthday_data', 'event_data', 'location_data', 'music_data'];
 
         foreach ($groups as $group) {
             if (is_array($this->input($group))) {
@@ -42,7 +42,8 @@ class StoreInvitationRequest extends FormRequest
             $this->merge(['gift_data' => $giftData]);
         }
 
-        $this->merge(array_filter($nested, fn ($value) => $value !== null));
+        $this->merge($nested);
+        $this->merge(['invitation_type' => $this->input('invitation_type', $this->route('invitation')?->invitation_type ?? 'wedding')]);
     }
 
     private function normalizeBoolean(mixed $value): mixed
@@ -76,12 +77,21 @@ class StoreInvitationRequest extends FormRequest
         $name = ['nullable', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'];
         $nickname = ['nullable', 'string', 'max:18', 'regex:/^[\pL\s.\'-]+$/u'];
         $safeText = ['nullable', 'string', 'not_regex:/[<>]/'];
+        $birthday = $this->input('invitation_type') === 'birthday';
 
         return [
+            'invitation_type' => ['required', Rule::in($this->route('invitation') ? [$this->route('invitation')->invitation_type] : ['wedding', 'birthday'])],
             'template_id' => [
                 'required',
-                Rule::exists('invitation_templates', 'id')->where('is_active', true),
+                Rule::exists('invitation_templates', 'id')->where('is_active', true)->where('invitation_type', $this->input('invitation_type')),
             ],
+            'celebrant_full_name' => ['exclude_unless:invitation_type,birthday', ...$name],
+            'celebrant_nickname' => ['exclude_unless:invitation_type,birthday', ...$nickname],
+            'celebrant_age' => ['exclude_unless:invitation_type,birthday', 'nullable', 'integer', 'between:1,150'],
+            'celebrant_photo' => ['exclude_unless:invitation_type,birthday', 'nullable', 'image', 'max:4096'],
+            'host_name' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:80'],
+            'event_title' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:120'],
+            'dress_code' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:80'],
             'music_id' => [
                 'nullable',
                 'required_if:music_type,default',
@@ -105,7 +115,7 @@ class StoreInvitationRequest extends FormRequest
             'gallery_existing_paths.*' => ['string', 'max:255'],
             'gallery_photos_changed' => ['nullable', 'boolean'],
             'opening_quote' => [...$safeText, 'max:300'],
-            'event_type' => ['nullable', Rule::in(['Pawiwahan', 'Resepsi'])],
+            'event_type' => ['nullable', Rule::in($birthday ? ['Ulang Tahun'] : ['Pawiwahan', 'Resepsi'])],
             'event_date' => ['nullable', 'date', 'after_or_equal:today'],
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
@@ -116,7 +126,7 @@ class StoreInvitationRequest extends FormRequest
             'google_maps_url' => ['nullable', 'url', 'max:2048', 'regex:/^https:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.app\.goo\.gl|maps\.google\.[a-z.]+)/i'],
             'music_type' => ['nullable', Rule::in(['none', 'default', 'upload'])],
             'music_file' => ['nullable', 'file', 'mimes:mp3,wav,m4a', 'max:10240'],
-            'is_hidden_from_feed' => ['nullable', 'boolean'],
+            'is_hidden_from_feed' => [Rule::excludeIf($birthday), 'nullable', 'boolean'],
             'moment_caption' => ['nullable', 'string', 'max:300', 'not_regex:/[<>]/'],
             'gift_data' => ['nullable', 'array'],
             'gift_data.is_active' => ['required_with:gift_data', 'boolean'],
@@ -131,6 +141,14 @@ class StoreInvitationRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'invitation_type' => 'jenis undangan',
+            'celebrant_full_name' => 'nama lengkap yang berulang tahun',
+            'celebrant_nickname' => 'nama panggilan yang berulang tahun',
+            'celebrant_age' => 'usia yang dirayakan',
+            'celebrant_photo' => 'foto utama',
+            'host_name' => 'nama pengundang',
+            'event_title' => 'judul acara',
+            'dress_code' => 'dress code',
             'template_id' => 'template',
             'groom_full_name' => 'nama lengkap mempelai pria',
             'groom_nickname' => 'nama panggilan mempelai pria',
@@ -150,9 +168,9 @@ class StoreInvitationRequest extends FormRequest
             'venue_address' => 'alamat lengkap',
             'google_maps_url' => 'link Google Maps',
             'opening_quote' => 'kata pembuka',
-            'gift_data.receiver_name' => 'nama penerima Wedding Gift',
-            'gift_data.receiver_note' => 'catatan Wedding Gift',
-            'gift_data.minimum_amount' => 'minimum nominal Wedding Gift',
+            'gift_data.receiver_name' => 'nama penerima gift',
+            'gift_data.receiver_note' => 'catatan gift',
+            'gift_data.minimum_amount' => 'minimum nominal gift',
         ];
     }
 

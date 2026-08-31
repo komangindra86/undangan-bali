@@ -41,6 +41,7 @@ class CleanupArchivedInvitationMedia extends Command
                 $updates = [
                     'groom_photo' => null,
                     'bride_photo' => null,
+                    'celebrant_photo' => null,
                     'gallery_photos' => null,
                     'music_file' => null,
                     'media_deleted_at' => now(),
@@ -66,6 +67,7 @@ class CleanupArchivedInvitationMedia extends Command
         $files = array_values(array_filter([
             $invitation->groom_photo,
             $invitation->bride_photo,
+            $invitation->celebrant_photo,
             $invitation->music_file,
             ...($invitation->gallery_photos ?? []),
         ]));

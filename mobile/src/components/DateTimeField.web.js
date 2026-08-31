@@ -2,13 +2,18 @@ import { createElement } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, spacing } from '../theme';
 
-export default function DateTimeField({ label, mode, value, onChange, optional = false }) {
+export default function DateTimeField({ label, mode, value, onChange, optional = false, minimumDate }) {
+  const minDate = minimumDate && mode === 'date'
+    ? `${minimumDate.getFullYear()}-${String(minimumDate.getMonth() + 1).padStart(2, '0')}-${String(minimumDate.getDate()).padStart(2, '0')}`
+    : undefined;
   return (
     <View style={styles.group}>
       <Text style={styles.label}>{label}</Text>
       {createElement('input', {
         type: mode,
         value: value || '',
+        min: minDate,
+        onInput: (event) => onChange(event.target.value),
         onChange: (event) => onChange(event.target.value),
         style: webInputStyle,
         'aria-label': label,

@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
+import { isBirthday } from '../constants/invitation';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 
@@ -144,7 +145,7 @@ function FeedHeader({ isAuthenticated, onNotifications }) {
   return (
     <View style={styles.header}>
       <View style={styles.headerCopy}>
-        <Text style={styles.eyebrow}>Moment Pernikahan Bali</Text>
+        <Text style={styles.eyebrow}>Moment Bali Santih</Text>
         <Text style={styles.title}>Cerita menuju hari bahagia</Text>
         <Text style={styles.subtitle}>Geser foto untuk melihat galeri, lalu ketuk kartu untuk berinteraksi.</Text>
       </View>
@@ -183,7 +184,7 @@ function MomentCard({ item, width, initialPhotoIndex, onPhotoChange, onPress }) 
         </View>
         <View style={styles.cardIdentity}>
           <Text numberOfLines={1} style={styles.cardNames}>{item.names}</Text>
-          <Text style={styles.cardMeta}>Moment pernikahan</Text>
+          <Text style={styles.cardMeta}>{isBirthday(item) ? 'Moment ulang tahun' : 'Moment pernikahan'}</Text>
         </View>
         <View style={styles.publicPill}>
           <Ionicons color={colors.success} name="earth-outline" size={12} />
@@ -286,7 +287,7 @@ function EmptyFeed({ error, onRetry }) {
         <Ionicons color={colors.goldLight} name="images-outline" size={30} />
       </View>
       <Text style={styles.emptyTitle}>{error ? 'Feed belum dapat dimuat' : 'Moment akan hadir di sini'}</Text>
-      <Text style={styles.emptyText}>{error || 'Undangan yang dipublish otomatis tampil dengan foto dan nama panggilan pasangan.'}</Text>
+      <Text style={styles.emptyText}>{error || 'Temukan cerita bahagia yang dibagikan pemilik undangan.'}</Text>
       {error ? (
         <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retryButton}>
           <Text style={styles.retryText}>Coba Lagi</Text>
@@ -307,7 +308,7 @@ function FeedFooter({ loading, hasMore, itemCount }) {
 }
 
 function initials(item) {
-  return `${item.groom_nickname?.[0] || ''}${item.bride_nickname?.[0] || ''}`.toUpperCase() || 'UB';
+  return (isBirthday(item) ? item.names?.slice(0, 2) : `${item.groom_nickname?.[0] || ''}${item.bride_nickname?.[0] || ''}`)?.toUpperCase() || 'UB';
 }
 
 const styles = StyleSheet.create({

@@ -12,7 +12,7 @@ export default function LandingScreen({ navigation }) {
     <LinearGradient colors={['#15110d', '#271e14']} style={commonStyles.screen}>
       <SafeAreaView style={styles.safe}>
         <View style={styles.header}>
-          <Text style={commonStyles.eyebrow}>Undangan Pernikahan Bali</Text>
+          <Text style={commonStyles.eyebrow}>Undangan Bali Santih</Text>
           {isAuthenticated ? (
             <Pressable onPress={logout}>
               <Text style={styles.account}>Keluar</Text>
@@ -20,14 +20,14 @@ export default function LandingScreen({ navigation }) {
           ) : null}
         </View>
         <View style={styles.hero}>
-          <Text style={styles.title}>Buat undangan pernikahan yang hangat dan berkesan.</Text>
+          <Text style={styles.title}>Buat undangan yang hangat untuk setiap perayaan.</Text>
           <Text style={styles.body}>
             Mulai tanpa login. Susun undangan hingga konfirmasi data, lalu masuk hanya ketika siap membagikannya.
           </Text>
         </View>
         <View style={styles.panel}>
           {user ? <Text style={styles.welcome}>Halo, {user.name}</Text> : null}
-          <PrimaryButton title="Buat Undangan Gratis" onPress={() => navigation.navigate('Template')} />
+          <PrimaryButton title="Buat Undangan Gratis" onPress={() => navigation.navigate('InvitationType')} />
           {isAuthenticated ? (
             <SecondaryButton
               title="Undangan Saya"

@@ -120,7 +120,7 @@
                                 <tr>
                                     <td class="py-3 pr-4">
                                         @php
-                                            $coupleName = ($invitation->groom_nickname ?: 'Mempelai').' & '.($invitation->bride_nickname ?: 'Pasangan');
+                                            $coupleName = $invitation->display_name;
                                             $canOpenLive = $invitation->status === 'published' && $invitation->public_url;
                                         @endphp
 

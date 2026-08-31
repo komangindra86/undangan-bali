@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 're
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { useAuth } from '../context/AuthContext';
+import { giftLabelFor, invitationName } from '../constants/invitation';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 
@@ -39,8 +40,8 @@ export default function WeddingGiftDashboardScreen({ navigation, route }) {
     <SafeAreaView style={commonStyles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={commonStyles.eyebrow}>Monitoring</Text>
-        <Text style={commonStyles.title}>Dashboard Gift</Text>
-        <Text style={styles.subtitle}>{invitation.groom_nickname} & {invitation.bride_nickname}</Text>
+        <Text style={commonStyles.title}>Dashboard {giftLabelFor(invitation)}</Text>
+        <Text style={styles.subtitle}>{invitationName(invitation)}</Text>
         <View style={styles.summary}>
           <Stat label="Gift diterima" value={rupiah(summary.total_gift_paid)} wide />
           <Stat label="Saldo tersedia" value={rupiah(summary.available_balance)} wide accent />
@@ -49,7 +50,7 @@ export default function WeddingGiftDashboardScreen({ navigation, route }) {
           <Stat label="Jumlah pemberi" value={String(summary.giver_count)} />
           <Stat label="Fee aplikasi" value={rupiah(summary.total_service_fee)} />
         </View>
-        <Text style={styles.security}>Nominal diterima hanya dihitung dari pembayaran berstatus paid yang dikonfirmasi backend Midtrans.</Text>
+        <Text style={styles.security}>Nominal diterima hanya dihitung dari pembayaran berstatus paid yang dikonfirmasi penyedia pembayaran melalui backend.</Text>
         <PrimaryButton title="Muat Ulang Data" onPress={load} loading={loading} style={styles.refresh} />
         <PrimaryButton
           title="Ajukan Pencairan"
@@ -59,10 +60,10 @@ export default function WeddingGiftDashboardScreen({ navigation, route }) {
         />
         <SecondaryButton title="Kelola Rekening" onPress={() => navigation.navigate('PayoutAccount', { invitation })} style={styles.setting} />
         <SecondaryButton title="Riwayat Pencairan" onPress={() => navigation.navigate('PayoutHistory', { invitation })} style={styles.setting} />
-        <SecondaryButton title="Atur Wedding Gift" onPress={() => navigation.navigate('WeddingGiftSetting', { invitation })} style={styles.setting} />
+        <SecondaryButton title={`Atur ${giftLabelFor(invitation)}`} onPress={() => navigation.navigate('WeddingGiftSetting', { invitation })} style={styles.setting} />
         <Text style={styles.listTitle}>Riwayat Gift</Text>
         {loading ? <ActivityIndicator color={colors.gold} style={styles.spinner} /> : null}
-        {!loading && gifts.length === 0 ? <Text style={styles.empty}>Belum ada transaksi Wedding Gift.</Text> : null}
+        {!loading && gifts.length === 0 ? <Text style={styles.empty}>Belum ada transaksi {giftLabelFor(invitation)}.</Text> : null}
         {gifts.map((gift) => (
           <View style={styles.card} key={gift.id}>
             <View style={styles.heading}>

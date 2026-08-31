@@ -1,0 +1,63 @@
+* { box-sizing: border-box; }
+body.birthday { --paper:#fff4dc; --ink:#46276a; --accent:#7c3ec2; --panel:#fffaf0; margin:0; background:#e8e0d2; color:var(--ink); font:16px/1.7 Arial,sans-serif; }
+.birthday-page { width:100%; max-width:780px; margin:auto; overflow:hidden; background:var(--paper); }
+.birthday .invitation-opening__center { max-width:100%; }
+.birthday .invitation-opening__names,.birthday .invitation-opening__guest { overflow-wrap:anywhere; }
+.demo-banner { background:var(--ink); color:white; text-align:center; font-size:12px; padding:12px 18px; }
+.birthday-hero { text-align:center; padding:64px 28px 40px; position:relative; }
+.eyebrow { font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; }
+.intro { margin:12px 0; font-size:18px; }
+.birthday-page h1 { font-size:clamp(44px,12vw,84px); line-height:1.05; margin:20px 0; overflow-wrap:anywhere; }
+.birthday-page h2 { font-size:clamp(26px,6vw,38px); line-height:1.25; overflow-wrap:anywhere; }
+.birthday-ornament { display:inline-block; color:var(--accent); font-size:36px; animation:birthday-turn 12s linear infinite; }
+.age strong { font-size:40px; padding-right:8px; }
+.hero-date { font-size:14px; }
+.hero-photo { margin:32px auto 0; max-width:430px; }
+.hero-photo img { width:100%; max-height:520px; object-fit:contain; border-radius:20px; background:var(--panel); }
+figcaption { font-size:12px; padding:8px; }
+.birthday-section { padding:48px 28px; text-align:center; overflow-wrap:anywhere; }
+.greeting { background:var(--panel); }
+.greeting > p { max-width:560px; margin:20px auto; }
+.host { padding-top:16px; }
+.event-card { margin:28px; border:1px solid currentColor; border-radius:24px; }
+.event-details { display:grid; gap:22px; padding:20px 0; }
+.event-details span { display:block; font-size:12px; text-transform:uppercase; letter-spacing:.08em; opacity:.8; }
+.event-details strong { display:block; font-size:18px; }
+.event-details p { margin:4px 0; }
+.birthday-button { background:var(--accent); color:white; display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:12px 22px; border:0; border-radius:24px; text-decoration:none; font:700 14px Arial,sans-serif; cursor:pointer; max-width:100%; }
+.birthday-button:focus-visible { outline:3px solid var(--ink); outline-offset:4px; }
+.birthday-gallery { display:grid; gap:16px; }
+.birthday-gallery img { width:100%; max-height:600px; object-fit:contain; border-radius:14px; background:var(--panel); }
+.birthday-gallery figure { margin:0; }
+.closing { padding-bottom:100px; }
+.birthday-music { position:fixed; bottom:18px; right:18px; z-index:30; background:var(--panel); color:var(--ink); border:1px solid var(--accent); border-radius:24px; padding:8px 14px; max-width:85vw; }
+.birthday-music button { background:none; color:inherit; border:0; min-height:36px; font-weight:700; cursor:pointer; }
+.birthday-music span { font-size:12px; }
+.birthday--ceria .birthday-hero { background:radial-gradient(circle at 10% 10%,#ffd36c 0 18px,transparent 19px),radial-gradient(circle at 90% 40%,#f690b2 0 36px,transparent 37px),radial-gradient(circle at 5% 75%,#9ddac5 0 45px,transparent 46px),#fff4dc; }
+.birthday--ceria .birthday-page h1 { font-weight:900; color:#7c3ec2; text-shadow:3px 3px #f3b3cf; }
+.birthday--ceria .hero-photo { transform:rotate(-3deg); padding:12px; background:#fff; box-shadow:9px 10px 0 #f3b3cf; border-radius:24px; }
+.birthday--ceria .event-card { background:#7c3ec2; color:white; border:0; }
+.birthday--ceria .event-card .birthday-button { background:#ffd36c; color:#46276a; }
+.birthday.birthday--minimal { --paper:#faf9f6; --ink:#28383a; --accent:#425d61; --panel:#fff; }
+.birthday--minimal .birthday-hero { text-align:left; padding-top:72px; }
+.birthday--minimal .birthday-page h1,.birthday--minimal .birthday-page h2 { font-family:Georgia,serif; font-weight:normal; }
+.birthday--minimal .birthday-ornament { display:none; }
+.birthday--minimal .hero-photo { max-width:none; margin-top:36px; }
+.birthday--minimal .hero-photo img { border-radius:3px; }
+.birthday--minimal .event-card { border-radius:0; border-width:1px 0; margin:0 28px; }
+.birthday--minimal .birthday-button { border-radius:3px; }
+.birthday--minimal .age { border-top:1px solid #ccd3d1; padding-top:20px; }
+.birthday.birthday--bali { --paper:#132f29; --ink:#f2e7c9; --accent:#b18645; --panel:#1c3e35; background:#0c221b; }
+.birthday--bali .birthday-page { border-inline:8px double #b18645; }
+.birthday--bali .demo-banner { background:var(--panel); color:var(--ink); }
+.birthday--bali .birthday-hero { background:repeating-linear-gradient(45deg,transparent 0 28px,#dac6990c 29px 30px); }
+.birthday--bali .birthday-page h1,.birthday--bali .birthday-page h2 { font-family:Georgia,serif; font-weight:normal; color:#ecd19d; }
+.birthday--bali .hero-photo { padding:10px; border:1px solid #b18645; border-radius:16px; }
+.birthday--bali .event-card { border-radius:6px; border:4px double #b18645; }
+.birthday--bali .birthday-button { color:#132f29; background:#dac699; }
+.is-revealed { animation:birthday-reveal .7s ease both; }
+@keyframes birthday-reveal { from { opacity:.45; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+@keyframes birthday-turn { to { transform:rotate(360deg); } }
+@media(min-width:650px) { .birthday--minimal .birthday-hero { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:center; } .birthday--minimal .hero-photo { margin:0; } .birthday-gallery { grid-template-columns:1fr 1fr; } .birthday-gallery > :first-child { grid-column:span 2; } }
+@media(max-width:360px) { .birthday-section,.birthday-hero { padding-inline:18px; } .event-card { margin:18px; } }
+@media(prefers-reduced-motion:reduce) { .birthday *, .birthday *::before, .birthday *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }

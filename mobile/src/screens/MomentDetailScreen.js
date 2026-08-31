@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Image, Keyboard, KeyboardAvoidingView, Linkin
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { useAuth } from '../context/AuthContext';
+import { giftLabelFor } from '../constants/invitation';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 
@@ -81,7 +82,7 @@ export default function MomentDetailScreen({ navigation, route }) {
         >
           <Text onPress={() => navigation.goBack()} style={styles.back}>Kembali ke Moment</Text>
           {moment.cover_photo_url ? <Image source={{ uri: moment.cover_photo_url }} style={styles.cover} /> : null}
-          <Text style={commonStyles.eyebrow}>Moment Pernikahan</Text>
+          <Text style={commonStyles.eyebrow}>Moment Perayaan</Text>
           <Text style={commonStyles.title}>{moment.names}</Text>
           <Text style={styles.caption}>{moment.caption || 'Membagikan cerita menuju hari bahagia.'}</Text>
           <View style={styles.reactions}>
@@ -89,7 +90,7 @@ export default function MomentDetailScreen({ navigation, route }) {
             <Reaction label={`Love ${moment.reactions?.love || 0}`} onPress={() => react('love')} />
           </View>
           <PrimaryButton title="Minta Undangan" onPress={() => navigation.navigate('RequestInvitation', { invitation: moment })} style={styles.action} />
-          {moment.gift_active ? <SecondaryButton title="Kirim Wedding Gift" onPress={() => Linking.openURL(moment.gift_url)} style={styles.gift} /> : null}
+          {moment.gift_active ? <SecondaryButton title={`Kirim ${giftLabelFor(moment)} di Browser`} onPress={() => Linking.openURL(moment.gift_url)} style={styles.gift} /> : null}
           <Text style={styles.privacy}>Jadwal, alamat, dan peta acara tidak ditampilkan di Moment. Pasangan membagikan link undangan secara pribadi.</Text>
           {moment.timeline?.length ? <Text style={styles.sectionTitle}>Perjalanan Mereka</Text> : null}
           {moment.timeline?.map((entry) => (

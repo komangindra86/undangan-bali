@@ -24,7 +24,7 @@ class WeddingGiftSettingController extends Controller
 
         if ($request->boolean('is_active') && $invitation->status !== 'published') {
             return response()->json([
-                'message' => 'Publish undangan terlebih dahulu sebelum mengaktifkan Wedding Gift.',
+                'message' => 'Publish undangan terlebih dahulu sebelum mengaktifkan '.$invitation->gift_label.'.',
             ], 422);
         }
 
@@ -35,7 +35,7 @@ class WeddingGiftSettingController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Pengaturan Wedding Gift berhasil disimpan.',
+            'message' => 'Pengaturan '.$invitation->gift_label.' berhasil disimpan.',
             'data' => $setting,
         ]);
     }

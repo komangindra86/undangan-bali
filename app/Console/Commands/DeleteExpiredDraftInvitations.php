@@ -52,6 +52,7 @@ class DeleteExpiredDraftInvitations extends Command
         $files = array_values(array_filter([
             $invitation->groom_photo,
             $invitation->bride_photo,
+            $invitation->celebrant_photo,
             $invitation->music_file,
             ...($invitation->gallery_photos ?? []),
         ]));

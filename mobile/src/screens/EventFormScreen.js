@@ -4,7 +4,7 @@ import { FooterActions } from '../components/Buttons';
 import DateTimeField from '../components/DateTimeField';
 import FormField from '../components/FormField';
 import WizardLayout from '../components/WizardLayout';
-import { DEFAULT_OPENING_QUOTE } from '../constants/invitation';
+import { isBirthday, openingQuoteFor } from '../constants/invitation';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
 import { cleanText, firstError, isPastDate, todayDateString, validateRequired, validateSafeText } from '../utils/validation';
@@ -13,10 +13,12 @@ const EVENT_TYPES = ['Pawiwahan', 'Resepsi'];
 
 export default function EventFormScreen({ navigation }) {
   const { draft, saveSection, syncing, syncMessage } = useDraft();
+  const birthday = isBirthday(draft);
+  const eventTypes = birthday ? ['Ulang Tahun'] : EVENT_TYPES;
   const [event, setEvent] = useState(() => ({
     ...draft.event_data,
-    event_type: EVENT_TYPES.includes(draft.event_data?.event_type) ? draft.event_data.event_type : null,
-    opening_quote: draft.event_data?.opening_quote ?? DEFAULT_OPENING_QUOTE,
+    event_type: eventTypes.includes(draft.event_data?.event_type) ? draft.event_data.event_type : (birthday ? 'Ulang Tahun' : null),
+    opening_quote: draft.event_data?.opening_quote ?? openingQuoteFor(draft),
   }));
   const [formError, setFormError] = useState(null);
 
@@ -33,6 +35,8 @@ export default function EventFormScreen({ navigation }) {
       validateSafeText(event.venue_name, 'Nama tempat', { required: true, max: 120 }),
       validateSafeText(event.venue_address, 'Alamat lengkap', { required: true, max: 1000 }),
       validateSafeText(event.opening_quote, 'Kata pembuka', { max: 300 }),
+      birthday && validateSafeText(event.event_title, 'Judul acara', { max: 120 }),
+      birthday && validateSafeText(event.dress_code, 'Dress code', { max: 80 }),
     ]);
 
     if (error) {
@@ -71,19 +75,20 @@ export default function EventFormScreen({ navigation }) {
     <WizardLayout
       step={3}
       title="Detail acara"
-      subtitle="Pilih jenis acara, lalu gunakan kalender dan pemilih jam agar jadwal tercatat tepat."
+      subtitle={birthday ? 'Pilih tanggal perayaan, bukan tanggal lahir. Gunakan kalender dan pemilih jam untuk jadwal acara.' : 'Pilih jenis acara, lalu gunakan kalender dan pemilih jam agar jadwal tercatat tepat.'}
       syncMessage={syncMessage}
       footer={<FooterActions onBack={() => navigation.goBack()} onNext={next} loading={syncing} />}
     >
       <Text style={styles.label}>Jenis acara *</Text>
       <View style={styles.chips}>
-        {EVENT_TYPES.map((type) => (
+        {eventTypes.map((type) => (
           <Pressable key={type} onPress={() => setEvent({ ...event, event_type: type })} style={[styles.chip, event.event_type === type && styles.selected]}>
             <Text style={[styles.chipText, event.event_type === type && styles.selectedText]}>{type}</Text>
           </Pressable>
         ))}
       </View>
       {formError ? <Text style={styles.error}>{formError}</Text> : null}
+      {birthday ? <FormField label="Judul acara (opsional)" placeholder="Contoh: Perayaan ulang tahun Kirana" maxLength={120} value={event.event_title} onChangeText={(value) => setEvent({ ...event, event_title: value })} /> : null}
       <DateTimeField label="Tanggal acara *" mode="date" minimumDate={dateFromString(todayDateString())} value={event.event_date} onChange={(value) => setEvent({ ...event, event_date: value })} />
       <View style={styles.row}>
         <View style={styles.column}>
@@ -95,6 +100,7 @@ export default function EventFormScreen({ navigation }) {
       </View>
       <FormField label="Nama tempat *" maxLength={120} value={event.venue_name} onChangeText={(value) => setEvent({ ...event, venue_name: value })} />
       <FormField label="Alamat lengkap *" maxLength={1000} multiline value={event.venue_address} onChangeText={(value) => setEvent({ ...event, venue_address: value })} />
+      {birthday ? <FormField label="Dress code (opsional)" placeholder="Contoh: Nuansa pastel" maxLength={80} value={event.dress_code} onChangeText={(value) => setEvent({ ...event, dress_code: value })} /> : null}
       <FormField
         label="Kata pembuka"
         maxLength={300}

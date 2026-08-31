@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700">
+  <rect width="600" height="700" rx="24" fill="#f5e7c5"/>
+  <circle cx="300" cy="305" r="214" fill="#e8d4a2"/>
+  <g fill="none" stroke="#947044" stroke-width="3"><path d="M45 100q110 140 255 20T555 100M65 90v65m70-5v65m75-22v65m90-46v70m90-73v70m75-100v65m70-107v65"/></g>
+  <g fill="#647f62"><path d="M80 540q-45-130 65-180-25 90-65 180M510 540q70-130-35-180 15 90 35 180"/></g>
+  <rect x="156" y="402" width="288" height="133" rx="20" fill="#ba8664"/>
+  <rect x="180" y="338" width="240" height="88" rx="18" fill="#fff9e9"/>
+  <path d="M180 363q25 45 50 0 25 45 50 0 25 45 50 0 25 45 50 0 20 40 40 0" fill="#d3aa7d"/>
+  <g fill="#486b58"><rect x="230" y="282" width="10" height="58" rx="4"/><rect x="295" y="269" width="10" height="71" rx="4"/><rect x="360" y="282" width="10" height="58" rx="4"/></g>
+  <g fill="#d4a849"><path d="M235 244q-25 38 0 35 25 3 0-35M300 231q-25 38 0 35 25 3 0-35M365 244q-25 38 0 35 25 3 0-35"/></g>
+  <path d="M125 540h350" stroke="#947044" stroke-width="8" stroke-linecap="round"/>
+  <g fill="#fffaf0"><circle cx="448" cy="457" r="19"/><circle cx="467" cy="438" r="19"/><circle cx="490" cy="457" r="19"/><circle cx="481" cy="481" r="19"/><circle cx="456" cy="480" r="19"/></g><circle cx="469" cy="461" r="12" fill="#d4a849"/>
+  <g fill="#947044"><circle cx="110" cy="263" r="5"/><circle cx="484" cy="292" r="5"/><path d="m145 305 5-14 5 14 14 5-14 5-5 14-5-14-14-5zM470 190l5-14 5 14 14 5-14 5-5 14-5-14-14-5z"/></g>
+</svg>

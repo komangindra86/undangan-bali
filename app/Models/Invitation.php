@@ -11,6 +11,15 @@ class Invitation extends Model
     protected $appends = ['public_url'];
 
     protected $fillable = [
+        'invitation_type',
+        'celebrant_full_name',
+        'celebrant_nickname',
+        'celebrant_age',
+        'celebrant_photo',
+        'host_name',
+        'event_title',
+        'dress_code',
+        'feed_consent_at',
         'user_id',
         'template_id',
         'music_id',
@@ -59,7 +68,36 @@ class Invitation extends Model
             'longitude' => 'decimal:7',
             'gallery_photos' => 'array',
             'is_hidden_from_feed' => 'boolean',
+            'celebrant_age' => 'integer',
+            'feed_consent_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Invitation $invitation) {
+            if ($invitation->isBirthday()) {
+                $invitation->is_hidden_from_feed = true;
+                $invitation->feed_consent_at = null;
+            }
+        });
+    }
+
+    public function isBirthday(): bool
+    {
+        return $this->invitation_type === 'birthday';
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->isBirthday()
+            ? ($this->celebrant_nickname ?: 'Yang berulang tahun')
+            : ($this->groom_nickname ?: 'Mempelai').' & '.($this->bride_nickname ?: 'Pasangan');
+    }
+
+    public function getGiftLabelAttribute(): string
+    {
+        return $this->isBirthday() ? 'Kado Digital' : 'Wedding Gift';
     }
 
     public function user()

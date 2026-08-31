@@ -95,7 +95,7 @@ class SocialController extends Controller
         $personalizedUrl = route('invitations.public', $invitation->slug).'?'.http_build_query([
             'to' => $invitationRequest->requester_name,
         ], '', '&', PHP_QUERY_RFC3986);
-        $message = 'Kepada Yth. '.$invitationRequest->requester_name.', kami mengundang untuk hadir di acara pernikahan kami. Buka undangan: '.$personalizedUrl;
+        $message = 'Kepada Yth. '.$invitationRequest->requester_name.', kami mengundang untuk hadir di '.($invitation->isBirthday() ? 'perayaan ulang tahun '.$invitation->display_name : 'acara pernikahan kami').'. Buka undangan: '.$personalizedUrl;
 
         return response()->json([
             'message' => 'Permintaan ditandai sudah dibagikan.',
@@ -147,6 +147,12 @@ class SocialController extends Controller
     {
         $this->owner($request, $invitation);
         $data = $request->validate(['is_hidden_from_feed' => ['required', 'boolean']]);
+        if ($invitation->isBirthday() && ! $request->boolean('is_hidden_from_feed')) {
+            $request->validate(['privacy_acknowledged' => ['required', 'accepted']], [
+                'privacy_acknowledged.accepted' => 'Setujui bahwa foto dan nama panggilan akan terlihat publik, termasuk izin wali untuk foto anak.',
+            ]);
+            $data['feed_consent_at'] = now();
+        }
         $invitation->update($data);
 
         return response()->json([
@@ -184,7 +190,8 @@ class SocialController extends Controller
             $invitation->status === 'published'
             && ! $invitation->is_hidden_from_feed
             && ! $invitation->archived_at
-            && ! $invitation->media_deleted_at,
+            && ! $invitation->media_deleted_at
+            && (! $invitation->isBirthday() || $invitation->feed_consent_at),
             404
         );
     }

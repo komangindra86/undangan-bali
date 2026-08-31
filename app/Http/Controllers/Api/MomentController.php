@@ -31,7 +31,7 @@ class MomentController extends Controller
             'title' => $moment->title,
             'body' => $moment->body,
             'photo_url' => $moment->photo_path ? url('/storage/'.$moment->photo_path) : null,
-            'occurred_at' => $moment->occurred_at?->toISOString(),
+            'occurred_at' => $invitation->isBirthday() ? null : $moment->occurred_at?->toISOString(),
         ])->values();
         $data['comments'] = $invitation->comments()
             ->whereNull('deleted_at')
@@ -75,7 +75,7 @@ class MomentController extends Controller
 
         if ($recentRequest) {
             throw ValidationException::withMessages([
-                'requester_whatsapp' => 'Permintaan untuk nomor ini sudah dikirim. Silakan tunggu pasangan membagikan undangannya.',
+                'requester_whatsapp' => 'Permintaan untuk nomor ini sudah dikirim. Silakan tunggu pemilik membagikan undangannya.',
             ]);
         }
 
@@ -90,7 +90,7 @@ class MomentController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Permintaan undangan sudah dikirim ke pasangan.',
+            'message' => 'Permintaan undangan sudah dikirim ke pemilik.',
         ], 201);
     }
 
@@ -102,8 +102,13 @@ class MomentController extends Controller
             ->whereNull('archived_at')
             ->whereNull('media_deleted_at')
             ->where('is_hidden_from_feed', false)
-            ->whereNotNull('groom_nickname')
-            ->whereNotNull('bride_nickname')
+            ->where(function ($query) {
+                $query->where(function ($wedding) {
+                    $wedding->where('invitation_type', 'wedding')->whereNotNull('groom_nickname')->whereNotNull('bride_nickname');
+                })->orWhere(function ($birthday) {
+                    $birthday->where('invitation_type', 'birthday')->whereNotNull('celebrant_nickname')->whereNotNull('feed_consent_at');
+                });
+            })
             ->with([
                 'template:id,name',
                 'giftSetting:invitation_id,is_active',

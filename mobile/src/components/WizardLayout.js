@@ -1,18 +1,22 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import KeyboardAwareScrollView from './KeyboardAwareScrollView';
+import { useDraft } from '../context/DraftContext';
+import { isBirthday } from '../constants/invitation';
 import { colors, commonStyles, spacing } from '../theme';
 
 const labels = ['Template', 'Mempelai', 'Acara', 'Lokasi', 'Galeri', 'Musik', 'Wedding Gift', 'Konfirmasi'];
 const totalSteps = labels.length;
 
 export default function WizardLayout({ step, title, subtitle, children, footer, syncMessage }) {
+  const { draft } = useDraft();
+  const stepLabels = isBirthday(draft) ? ['Template', 'Yang Berulang Tahun', 'Acara', 'Lokasi', 'Galeri', 'Musik', 'Kado Digital', 'Konfirmasi'] : labels;
   return (
     <SafeAreaView style={commonStyles.screen}>
       <KeyboardAwareScrollView contentContainerStyle={commonStyles.content}>
         <View style={styles.progressHeader}>
           <Text style={commonStyles.eyebrow}>Langkah {step} dari {totalSteps}</Text>
-          <Text style={styles.stepLabel}>{labels[step - 1]}</Text>
+          <Text style={styles.stepLabel}>{stepLabels[step - 1]}</Text>
         </View>
         <View style={styles.bar}>
           <View style={[styles.barValue, { width: `${(step / totalSteps) * 100}%` }]} />

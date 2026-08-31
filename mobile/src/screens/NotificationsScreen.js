@@ -71,7 +71,7 @@ export default function NotificationsScreen({ navigation, route }) {
               <Ionicons color={colors.goldLight} name="notifications-outline" size={30} />
             </View>
             <Text style={styles.authTitle}>Masuk untuk melihat aktivitas</Text>
-            <Text style={styles.authBody}>Permintaan undangan, komentar, reaksi, dan Wedding Gift akan tampil di sini.</Text>
+            <Text style={styles.authBody}>Permintaan undangan, komentar, reaksi, dan gift akan tampil di sini.</Text>
             <PrimaryButton title="Masuk" onPress={() => openStack('Login', { returnTab: 'NotificationsTab' })} style={styles.authButton} />
             <SecondaryButton title="Daftar Akun" onPress={() => openStack('Register', { returnTab: 'NotificationsTab' })} style={styles.secondaryButton} />
           </View>
@@ -112,7 +112,7 @@ export default function NotificationsScreen({ navigation, route }) {
 }
 
 function labelFor(type) {
-  return ({ invitation_request: 'Permintaan Undangan', reaction: 'Reaksi Baru', comment: 'Komentar Baru', wedding_gift_paid: 'Wedding Gift Diterima' })[type] || 'Pembaruan';
+  return ({ invitation_request: 'Permintaan Undangan', reaction: 'Reaksi Baru', comment: 'Komentar Baru', wedding_gift_paid: 'Gift Diterima' })[type] || 'Pembaruan';
 }
 
 function iconFor(type) {

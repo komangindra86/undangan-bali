@@ -5,13 +5,19 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\InvitationTemplate;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class TemplateController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $request->validate(['invitation_type' => ['sometimes', Rule::in(['wedding', 'birthday'])]]);
+
         return response()->json([
-            'data' => InvitationTemplate::where('is_active', true)->orderBy('id')->get(),
+            'data' => InvitationTemplate::where('is_active', true)
+                ->where('invitation_type', $request->input('invitation_type', 'wedding'))
+                ->orderBy('id')->get(),
         ]);
     }
 

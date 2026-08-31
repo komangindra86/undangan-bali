@@ -12,6 +12,7 @@ export default function KeyboardAwareScrollView({ children, contentContainerStyl
   const contentRef = useRef(null);
 
   function scrollToFocusedInput(inputRef) {
+    if (Platform.OS === 'web') return;
     setTimeout(() => {
       if (!inputRef.current || !contentRef.current || !scrollRef.current) {
         return;
@@ -36,7 +37,7 @@ export default function KeyboardAwareScrollView({ children, contentContainerStyl
         <ScrollView
           ref={scrollRef}
           keyboardShouldPersistTaps="handled"
-          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          keyboardDismissMode={Platform.OS === 'web' ? 'none' : Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={contentContainerStyle}

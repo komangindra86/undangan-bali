@@ -41,11 +41,11 @@ export default function ProfileScreen({ navigation }) {
             </View>
             <Text style={styles.guestTitle}>{hasAccountOnDevice ? 'Masuk kembali ke akun Anda' : 'Sudah pernah membuat undangan?'}</Text>
             <Text style={styles.guestBody}>
-              Masuk untuk melihat undangan yang sudah dibuat, permintaan tamu, notifikasi, dan Wedding Gift. Membuat undangan baru tetap bisa tanpa login.
+              Masuk untuk melihat undangan yang sudah dibuat, permintaan tamu, notifikasi, dan gift. Membuat undangan baru tetap bisa tanpa login.
             </Text>
             <PrimaryButton title="Masuk" onPress={() => openStack('Login', { returnTab: 'ProfileTab' })} style={styles.primary} />
             <SecondaryButton title="Daftar Akun" onPress={() => openStack('Register', { returnTab: 'ProfileTab' })} style={styles.secondary} />
-            <Pressable accessibilityRole="button" onPress={() => openStack('Template')} style={styles.tryButton}>
+            <Pressable accessibilityRole="button" onPress={() => openStack('InvitationType')} style={styles.tryButton}>
               <Text style={styles.tryText}>Buat undangan tanpa login</Text>
               <Ionicons color={colors.goldLight} name="chevron-forward" size={17} />
             </Pressable>
@@ -67,7 +67,7 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.sectionTitle}>Kelola akun dan undangan</Text>
             <ProfileMenu icon="mail-open-outline" label="Undangan Saya" onPress={() => navigation.navigate('InvitationsTab')} />
             <ProfileMenu icon="notifications-outline" label="Notifikasi" onPress={() => navigation.navigate('NotificationsTab')} />
-            <ProfileMenu icon="add-circle-outline" label="Buat Undangan Baru" onPress={() => openStack('Template')} />
+            <ProfileMenu icon="add-circle-outline" label="Buat Undangan Baru" onPress={() => openStack('InvitationType')} />
             <ProfileMenu danger icon="log-out-outline" label="Keluar" onPress={confirmLogout} />
           </>
         ) : null}

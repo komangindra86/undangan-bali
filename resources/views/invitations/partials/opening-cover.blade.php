@@ -11,7 +11,7 @@
         ? trim(strip_tags((string) $openingGuestInput))
         : 'Bapak/Ibu/Saudara/i';
     $openingGuest = $openingGuest !== '' ? Illuminate\Support\Str::limit($openingGuest, 80) : 'Bapak/Ibu/Saudara/i';
-    $openingCouple = trim(($invitation->groom_nickname ?: 'Mempelai').' & '.($invitation->bride_nickname ?: 'Pasangan'));
+    $openingCouple = $invitation->display_name;
 @endphp
 
 <style>
@@ -106,7 +106,7 @@
     <div class="invitation-opening__content">
         <p class="invitation-opening__eyebrow">{{ $openingTheme }}</p>
         <div class="invitation-opening__center">
-            <p class="invitation-opening__label">The Wedding of</p>
+            <p class="invitation-opening__label">{{ $invitation->isBirthday() ? 'Selamat datang di perayaan' : 'The Wedding of' }}</p>
             <h1 class="invitation-opening__names" id="invitation-opening-title">{{ $openingCouple }}</h1>
             <p class="invitation-opening__date">{{ $invitation->event_date?->translatedFormat('d F Y') }}</p>
         </div>

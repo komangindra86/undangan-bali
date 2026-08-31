@@ -89,6 +89,8 @@ async function draftFormData(draft, includeMedia, methodOverride = null) {
     form.append('_method', methodOverride);
   }
   form.append('selected_template', String(draft.selected_template?.id || draft.selected_template));
+  form.append('invitation_type', draft.invitation_type || 'wedding');
+  appendValues(form, 'birthday_data', draft.birthday_data);
   appendValues(form, 'groom_data', draft.groom_data);
   appendValues(form, 'bride_data', draft.bride_data);
   appendValues(form, 'event_data', draft.event_data);
@@ -98,6 +100,7 @@ async function draftFormData(draft, includeMedia, methodOverride = null) {
 
   if (includeMedia) {
     form.append('gallery_photos_changed', '1');
+    await appendImage(form, 'celebrant_photo', draft.birthday_data?.celebrant_photo);
     await appendImage(form, 'groom_photo', draft.groom_data?.groom_photo);
     await appendImage(form, 'bride_photo', draft.bride_data?.bride_photo);
     for (const photo of draft.gallery_data?.photos || []) {
@@ -130,7 +133,7 @@ export const api = {
   googleExchange: (code) => request('/auth/google/exchange', { method: 'POST', body: JSON.stringify({ code }) }),
   logout: (token) => request('/logout', { method: 'POST' }, token),
   me: (token) => request('/me', {}, token),
-  templates: () => request('/templates'),
+  templates: (type = 'wedding') => request(`/templates?invitation_type=${encodeURIComponent(type)}`),
   musics: () => request('/musics'),
   moments: (page = 1) => request(`/moments?page=${page}`),
   moment: (id) => request(`/moments/${id}`),
@@ -149,7 +152,7 @@ export const api = {
   updateDraft: async (id, draft, token, includeMedia = false) =>
     request(`/invitations/${id}`, { method: 'POST', body: await draftFormData(draft, includeMedia, 'PUT') }, token),
   publish: (id, token) => request(`/invitations/${id}/publish`, { method: 'POST' }, token),
-  setFeedVisibility: (id, isHidden, token) => request(`/invitations/${id}/feed-visibility`, { method: 'PUT', body: JSON.stringify({ is_hidden_from_feed: isHidden }) }, token),
+  setFeedVisibility: (id, isHidden, token, privacyAcknowledged = false) => request(`/invitations/${id}/feed-visibility`, { method: 'PUT', body: JSON.stringify({ is_hidden_from_feed: isHidden, privacy_acknowledged: privacyAcknowledged }) }, token),
   invitationRequests: (id, token) => request(`/invitations/${id}/invitation-requests`, {}, token),
   markInvitationRequestShared: (id, requestId, token) => request(`/invitations/${id}/invitation-requests/${requestId}/shared`, { method: 'PUT' }, token),
   invitationMoments: (id, token) => request(`/invitations/${id}/moments`, {}, token),

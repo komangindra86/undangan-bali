@@ -1,6 +1,7 @@
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { FooterActions, SecondaryButton } from '../components/Buttons';
 import WizardLayout from '../components/WizardLayout';
+import { giftLabelFor, invitationName, isBirthday, personScreenFor } from '../constants/invitation';
 import { useAuth } from '../context/AuthContext';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
@@ -8,6 +9,7 @@ import { colors, spacing } from '../theme';
 export default function PreviewScreen({ navigation }) {
   const { isAuthenticated } = useAuth();
   const { draft, publishDraft, syncing, syncMessage } = useDraft();
+  const birthday = isBirthday(draft);
   const groom = draft.groom_data;
   const bride = draft.bride_data;
   const event = draft.event_data;
@@ -53,22 +55,25 @@ export default function PreviewScreen({ navigation }) {
       <Text style={styles.sectionTitle}>Data yang akan digunakan</Text>
       <View style={styles.summary}>
         <SummaryRow label="Template" value={templateName} />
-        <SummaryRow label="Mempelai" value={`${groom.groom_nickname || '-'} & ${bride.bride_nickname || '-'}`} />
+        <SummaryRow label={birthday ? 'Yang berulang tahun' : 'Mempelai'} value={invitationName(draft)} />
+        {birthday && draft.birthday_data?.celebrant_age ? <SummaryRow label="Usia yang ditampilkan" value={`${draft.birthday_data.celebrant_age} tahun`} /> : null}
+        {birthday && event.event_title ? <SummaryRow label="Judul acara" value={event.event_title} /> : null}
         <SummaryRow label="Acara" value={`${event.event_type || '-'} | ${formatDate(event.event_date)}`} />
         <SummaryRow label="Waktu" value={`${event.start_time || '--:--'}${event.end_time ? ` - ${event.end_time}` : ''} WITA`} />
         <SummaryRow label="Lokasi" value={event.venue_name || '-'} subvalue={event.venue_address} />
         <SummaryRow label="Peta" value={location.google_maps_url ? 'Link Google Maps ditambahkan' : 'Belum ditambahkan'} optional={!location.google_maps_url} />
-        <SummaryRow label="Foto mempelai" value={`${couplePhotos} dari 2 foto ditambahkan`} optional={!couplePhotos} />
+        {birthday ? <SummaryRow label="Foto utama" value={draft.birthday_data?.celebrant_photo?.uri ? 'Foto ditambahkan' : 'Menggunakan ilustrasi template'} optional={!draft.birthday_data?.celebrant_photo?.uri} /> : <SummaryRow label="Foto mempelai" value={`${couplePhotos} dari 2 foto ditambahkan`} optional={!couplePhotos} />}
         <SummaryRow label="Galeri" value={`${galleryCount} foto ditambahkan`} optional={!galleryCount} />
         <SummaryRow label="Musik" value={musicLabel} optional={draft.music_data?.music_type === 'none'} />
-        <SummaryRow label="Wedding Gift" value={giftLabel} optional={!draft.gift_data?.is_active} last />
+        <SummaryRow label={giftLabelFor(draft)} value={giftLabel} optional={!draft.gift_data?.is_active} last />
       </View>
+      {birthday ? <Text style={styles.editHelp}>Undangan ulang tahun tidak otomatis tampil di Feed. Link dapat dibuka oleh siapa pun yang menerimanya, jadi bagikan hanya kepada tamu yang Anda undang.</Text> : null}
 
       <Text style={styles.editTitle}>Ada yang perlu diperbaiki?</Text>
       <Text style={styles.editHelp}>Pilih bagian di bawah untuk mengubah data sebelum publish.</Text>
       <View style={styles.actions}>
         <SecondaryButton title="Template" onPress={() => navigation.navigate('Template')} style={styles.action} />
-        <SecondaryButton title="Mempelai" onPress={() => navigation.navigate('GroomBrideForm')} style={styles.action} />
+        <SecondaryButton title={birthday ? 'Data diri' : 'Mempelai'} onPress={() => navigation.navigate(personScreenFor(draft))} style={styles.action} />
         <SecondaryButton title="Acara" onPress={() => navigation.navigate('EventForm')} style={styles.action} />
         <SecondaryButton title="Lokasi" onPress={() => navigation.navigate('Location')} style={styles.action} />
         <SecondaryButton title="Galeri" onPress={() => navigation.navigate('Gallery')} style={styles.action} />

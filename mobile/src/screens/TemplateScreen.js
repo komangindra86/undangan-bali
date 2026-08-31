@@ -5,21 +5,23 @@ import CustomInvitationCard from '../components/CustomInvitationCard';
 import WizardLayout from '../components/WizardLayout';
 import { useDraft } from '../context/DraftContext';
 import { api } from '../services/api';
+import { isBirthday, personScreenFor } from '../constants/invitation';
 import { colors, spacing } from '../theme';
 
 export default function TemplateScreen({ navigation }) {
   const { draft, saveSection, syncing, syncMessage } = useDraft();
+  const birthday = isBirthday(draft);
   const [templates, setTemplates] = useState([]);
   const [selected, setSelected] = useState(draft.selected_template);
   const [choosingId, setChoosingId] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.templates()
+    api.templates(draft.invitation_type || 'wedding')
       .then((response) => setTemplates(response.data))
       .catch((error) => Alert.alert('Template belum termuat', error.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [draft.invitation_type]);
 
   async function useTemplate(template = selected) {
     if (!template) {
@@ -31,7 +33,7 @@ export default function TemplateScreen({ navigation }) {
     setChoosingId(template.id);
     try {
       await saveSection('selected_template', template);
-      navigation.navigate('GroomBrideForm');
+      navigation.navigate(personScreenFor(draft));
     } catch (error) {
       Alert.alert('Template belum tersimpan', error.message);
     } finally {
@@ -42,7 +44,7 @@ export default function TemplateScreen({ navigation }) {
   return (
     <WizardLayout
       step={1}
-      title="Pilih nuansa Bali"
+      title={birthday ? 'Pilih suasana perayaan' : 'Pilih nuansa Bali'}
       subtitle="Lihat preview lengkap dengan data dummy, foto, galeri, dan animasi sebelum memutuskan desain."
       syncMessage={syncMessage}
       footer={<FooterActions onBack={() => navigation.goBack()} onNext={() => useTemplate()} loading={syncing || choosingId != null} />}
@@ -53,11 +55,19 @@ export default function TemplateScreen({ navigation }) {
         return (
           <View key={template.id} style={[styles.template, active && styles.active]}>
             <Pressable onPress={() => navigation.navigate('TemplatePreview', { template })}>
-              <Image source={{ uri: imageUrl(template.thumbnail) }} style={styles.preview} />
-              <View style={styles.overlay}>
-                <Text style={styles.ornament}>BALI WEDDING</Text>
-                <Text style={styles.names}>Wira & Ayu</Text>
-              </View>
+              {birthday ? (
+                <View style={[styles.birthdayPreview, { backgroundColor: ({ 'ceria-confetti': '#f8d6e8', 'ruang-putih': '#faf9f6', 'bali-pradnyan': '#163c31' })[template.slug] || colors.surface }]}>
+                  <Text style={[styles.ornament, { color: template.slug === 'bali-pradnyan' ? '#ecd19d' : '#5d4377' }]}>SELAMAT ULANG TAHUN</Text>
+                  <Text style={[styles.names, { color: template.slug === 'bali-pradnyan' ? '#ecd19d' : '#425d61', fontWeight: template.slug === 'ceria-confetti' ? '900' : '400' }]}>Kirana</Text>
+                  <Text style={{ color: template.slug === 'bali-pradnyan' ? '#ecd19d' : '#5d4377', marginTop: 12 }}>7 tahun penuh cerita</Text>
+                </View>
+              ) : <>
+                <Image source={{ uri: imageUrl(template.thumbnail) }} style={styles.preview} />
+                <View style={styles.overlay}>
+                  <Text style={styles.ornament}>BALI WEDDING</Text>
+                  <Text style={styles.names}>Wira & Ayu</Text>
+                </View>
+              </>}
             </Pressable>
             <View style={styles.meta}>
               <Text style={styles.name}>{template.name}</Text>
@@ -105,10 +115,14 @@ function conceptFor(slug) {
     'ubud-garden': 'Editorial terang, taman Ubud dan warna natural.',
     'royal-kamasan': 'Adat mewah, patra emas, songket gelap, countdown.',
     'puspa-kencana': 'Ivory hangat, ukiran Bali, bunga kamboja, dan kilau emas.',
+    'ceria-confetti': 'Warna ceria, kartu foto playful, dan suasana pesta.',
+    'ruang-putih': 'Minimalis, ruang lega, tipografi editorial yang tenang.',
+    'bali-pradnyan': 'Hijau dalam, ornamen emas dan kehangatan perayaan Bali.',
   }[slug] || 'Undangan pernikahan bernuansa Bali.';
 }
 
 const styles = StyleSheet.create({
+  birthdayPreview: { height: 180, alignItems: 'center', justifyContent: 'center', padding: spacing.md },
   template: {
     borderWidth: 1,
     borderColor: colors.border,

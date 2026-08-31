@@ -109,7 +109,7 @@
                                 <span class="rounded-full border px-3 py-1 text-xs uppercase tracking-wider {{ $statusClass }}">{{ $payout->status }}</span>
                             </div>
                             <p class="text-stone-400 text-sm mt-2">
-                                {{ $payout->invitation?->groom_nickname ?? 'Mempelai' }} &amp; {{ $payout->invitation?->bride_nickname ?? 'Pasangan' }}
+                                {{ $payout->invitation?->display_name ?? 'Undangan' }}
                                 <span class="text-stone-600 mx-2">|</span>
                                 {{ $payout->requested_at?->format('d/m/Y H:i') ?? '-' }}
                             </p>

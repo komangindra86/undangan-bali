@@ -16,7 +16,7 @@ class XenditService
             ->post($this->baseUrl().'/v2/invoices', [
                 'external_id' => $gift->order_id,
                 'amount' => $gift->total_amount,
-                'description' => 'Wedding Gift '.$gift->invitation->groom_nickname.' & '.$gift->invitation->bride_nickname,
+                'description' => $gift->invitation->gift_label.' '.$gift->invitation->display_name,
                 'currency' => 'IDR',
                 'payment_methods' => ['QRIS'],
                 'customer' => array_filter([
