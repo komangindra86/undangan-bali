@@ -400,7 +400,7 @@
         <div class="player">
             <button type="button" data-audio-toggle>Play</button>
             <small>Musik Undangan</small>
-            <audio data-audio loop preload="metadata" src="{{ Storage::url($musicPath) }}"></audio>
+            <audio data-audio loop preload="none" src="{{ Storage::url($musicPath) }}"></audio>
         </div>
     @endif
     <script>

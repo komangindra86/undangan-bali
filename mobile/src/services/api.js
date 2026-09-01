@@ -138,7 +138,7 @@ export const api = {
     const response = await request(`/templates?invitation_type=${encodeURIComponent(type)}`);
     return { ...response, data: templatesForType(response.data, type) };
   },
-  musics: () => request('/musics'),
+  musics: () => request('/musics?catalog_version=2'),
   moments: (page = 1) => request(`/moments?page=${page}`),
   moment: (id) => request(`/moments/${id}`),
   requestInvitation: (id, values) => request(`/moments/${id}/request-invitation`, { method: 'POST', body: JSON.stringify(values) }),

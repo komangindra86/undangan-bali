@@ -408,7 +408,7 @@
     <div class="heritage-player">
         <button type="button" data-audio-toggle aria-label="Putar musik">Play</button>
         <small>Musik Undangan</small>
-        <audio data-audio loop preload="metadata" src="{{ $mediaUrl($musicPath) }}"></audio>
+        <audio data-audio loop preload="none" src="{{ $mediaUrl($musicPath) }}"></audio>
     </div>
 @endif
 

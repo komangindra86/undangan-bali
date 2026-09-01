@@ -2,6 +2,10 @@
 !.gitignore
 !musics/
 !musics/*.wav
+!musics/pixabay/
+!musics/pixabay/*.mp3
+!musics/pixabay/previews/
+!musics/pixabay/previews/*.mp3
 !templates/
 !templates/bali-preview/
 !templates/bali-preview/*.jpg

@@ -459,7 +459,7 @@ class InvitationPublishingTest extends TestCase
     {
         $this->seed();
         $template = InvitationTemplate::where('slug', 'pura-sunset')->firstOrFail();
-        $music = Music::where('title', 'Bali Romantis')->firstOrFail();
+        $music = Music::where('catalog_key', 'pixabay/162472')->firstOrFail();
         $register = $this->postJson('/api/register', [
             'name' => 'Audio',
             'email' => 'audio@example.com',
@@ -491,7 +491,7 @@ class InvitationPublishingTest extends TestCase
             ->assertSee('data-invitation-opening', false)
             ->assertSee('data-open-invitation', false)
             ->assertSee('data-audio-toggle', false)
-            ->assertSee('storage/musics/bali-romantis.wav', false)
+            ->assertSee('storage/musics/pixabay/162472.mp3', false)
             ->assertDontSee('<audio controls autoplay', false);
     }
 

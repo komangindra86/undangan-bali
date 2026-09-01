@@ -100,7 +100,7 @@
     </main>
 
     @if ($musicPath && ! $isPreview)
-        <audio data-audio controls loop preload="metadata" class="fixed bottom-4 right-4 w-52 opacity-80">
+        <audio data-audio controls loop preload="none" class="fixed bottom-4 right-4 w-52 opacity-80">
             <source src="{{ Storage::url($musicPath) }}">
         </audio>
     @endif

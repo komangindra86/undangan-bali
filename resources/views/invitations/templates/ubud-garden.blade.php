@@ -98,7 +98,7 @@
     @endif
     <section class="closing float-in"><h2>Matur Suksma</h2><p>Dengan penuh kasih, kami menantikan kehadiran dan doa restu Anda.</p>@unless($isPreview)<button id="share" class="share">Bagikan Undangan</button>@endunless<p class="mark">@include('invitations.partials.app-credit')</p></section>
 </main>
-@if($musicPath && !$isPreview)<div class="player"><button data-audio-toggle>Play</button><small>Musik Undangan</small><audio data-audio loop preload="metadata" src="{{ Storage::url($musicPath) }}"></audio></div>@endif
+@if($musicPath && !$isPreview)<div class="player"><button data-audio-toggle>Play</button><small>Musik Undangan</small><audio data-audio loop preload="none" src="{{ Storage::url($musicPath) }}"></audio></div>@endif
 <script>
     const seen = new IntersectionObserver((entries) => entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add('seen')), {threshold:.15});
     document.querySelectorAll('.float-in').forEach((item) => seen.observe(item));

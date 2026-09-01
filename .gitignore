@@ -4,6 +4,7 @@
 .env.backup
 .env.production
 /mobile/.env
+/musik pixbay/
 .phpactor.json
 .phpunit.result.cache
 /.fleet

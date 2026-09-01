@@ -54,6 +54,10 @@ class ExampleTest extends TestCase
             ->assertOk()
             ->assertSee('Syarat dan Ketentuan Undangan Bali Santih')
             ->assertSee('Konten Pengguna')
+            ->assertSee('Musik Bawaan')
+            ->assertSee('katalog Pixabay')
+            ->assertSee('pengguna menyatakan memiliki hak atau izin')
+            ->assertSee('tidak boleh mengunduh, menjual, mendaftarkan ke Content ID')
             ->assertSee('Gift dan Pembayaran');
     }
 }

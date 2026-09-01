@@ -124,7 +124,7 @@
     </section>
 </main>
 @if ($musicPath && ! $isPreview)
-    <div class="player"><button type="button" data-audio-toggle>Play</button><small>Musik Undangan</small><audio data-audio loop preload="metadata" src="{{ Storage::url($musicPath) }}"></audio></div>
+    <div class="player"><button type="button" data-audio-toggle>Play</button><small>Musik Undangan</small><audio data-audio loop preload="none" src="{{ Storage::url($musicPath) }}"></audio></div>
 @endif
 <script>
     document.querySelectorAll('.reveal').forEach((node) => new IntersectionObserver((items) => items.forEach((item) => item.isIntersecting && item.target.classList.add('visible')), {threshold:.14}).observe(node));

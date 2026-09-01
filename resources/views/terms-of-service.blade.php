@@ -11,7 +11,7 @@
         <a href="{{ url('/') }}" class="text-sm text-amber-200 underline underline-offset-4">Kembali ke beranda</a>
         <p class="mt-8 text-xs uppercase tracking-[0.32em] text-amber-300">Terms of Service</p>
         <h1 class="mt-4 font-serif text-4xl leading-tight md:text-5xl">Syarat dan Ketentuan Undangan Bali Santih</h1>
-        <p class="mt-4 text-stone-300">Terakhir diperbarui: 6 Agustus 2026</p>
+        <p class="mt-4 text-stone-300">Terakhir diperbarui: 1 September 2026</p>
 
         <section class="mt-10 space-y-7 text-stone-200 leading-7">
             <div>
@@ -29,6 +29,11 @@
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Konten Pengguna</h2>
                 <p class="mt-3">Anda tetap memiliki hak atas foto, teks, musik, dan konten yang diunggah. Anda hanya boleh mengunggah konten yang berhak Anda gunakan. Anda memberi kami izin terbatas untuk menyimpan, memproses, dan menampilkan konten sejauh diperlukan untuk menjalankan layanan.</p>
+            </div>
+            <div>
+                <h2 class="font-serif text-2xl text-amber-100">Musik Bawaan</h2>
+                <p class="mt-3">Musik bawaan dari katalog Pixabay digunakan untuk mengiringi undangan berdasarkan Pixabay Content License. Pengguna tidak memperoleh kepemilikan atas rekaman dan tidak boleh mengunduh, menjual, mendaftarkan ke Content ID, mendistribusikan ulang, atau menggunakannya sebagai katalog musik terpisah. Judul, pencipta, Content ID, sumber, dan lisensi tetap ditampilkan bersama undangan.</p>
+                <p class="mt-3">Untuk musik yang diunggah sendiri, pengguna menyatakan memiliki hak atau izin yang diperlukan untuk penggunaan dan pembagian pada undangan publik. Tautan YouTube, Spotify, atau layanan streaming tidak otomatis memberikan izin untuk menyalin audionya.</p>
             </div>
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Penggunaan yang Dilarang</h2>

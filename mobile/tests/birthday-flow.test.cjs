@@ -54,6 +54,13 @@ test('old local drafts default to wedding and retain their data', async () => {
   assert.equal(draft.groom_data.groom_nickname, 'Wira');
 });
 
+test('music catalog opts into credit-capable API without authentication', async () => {
+  const { load, requests } = harness();
+  await load('src/services/api.js').api.musics();
+  assert.ok(requests[0].url.endsWith('/musics?catalog_version=2'));
+  assert.equal(requests[0].headers.Authorization, undefined);
+});
+
 test('birthday local draft survives restore and clearing leaves the login token intact', async () => {
   const { load, storage } = harness();
   const store = load('src/services/draftStorage.js');
