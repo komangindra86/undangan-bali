@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Invitation;
 use App\Models\Music;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
@@ -19,10 +20,30 @@ class PixabayMusicSeeder extends Seeder
         $manifest = json_decode(file_get_contents($manifestPath), true, 512, JSON_THROW_ON_ERROR);
         $catalogKeys = array_map(fn (array $entry) => 'pixabay/'.$entry['asset_id'], $manifest);
 
-        // Existing tracks remain stored for already-published invitations, but disappear from the picker.
-        Music::query()
+        $obsolete = Music::query()
             ->where(fn ($query) => $query->whereNull('catalog_key')->orWhereNotIn('catalog_key', $catalogKeys))
-            ->update(['is_active' => false]);
+            ->get();
+
+        if ($obsolete->isNotEmpty()) {
+            Invitation::whereIn('music_id', $obsolete->modelKeys())->update([
+                'music_id' => null,
+                'music_type' => 'none',
+            ]);
+
+            foreach ($obsolete as $music) {
+                foreach (array_unique(array_filter([$music->file_path, $music->preview_file_path])) as $path) {
+                    if (str_starts_with($path, 'musics/') && ! str_contains($path, '..')) {
+                        Storage::disk('public')->delete($path);
+                    }
+                }
+                if ($music->license_evidence_path
+                    && str_starts_with($music->license_evidence_path, 'music-licenses/')
+                    && ! str_contains($music->license_evidence_path, '..')) {
+                    Storage::disk('local')->deleteDirectory(dirname($music->license_evidence_path));
+                }
+                $music->delete();
+            }
+        }
 
         foreach ($manifest as $entry) {
             $this->seedTrack($entry, $manifestPath);

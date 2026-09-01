@@ -33,7 +33,7 @@
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Musik Bawaan</h2>
                 <p class="mt-3">Musik bawaan dari katalog Pixabay digunakan untuk mengiringi undangan berdasarkan Pixabay Content License. Pengguna tidak memperoleh kepemilikan atas rekaman dan tidak boleh mengunduh, menjual, mendaftarkan ke Content ID, mendistribusikan ulang, atau menggunakannya sebagai katalog musik terpisah. Judul, pencipta, Content ID, sumber, dan lisensi tetap ditampilkan bersama undangan.</p>
-                <p class="mt-3">Untuk musik yang diunggah sendiri, pengguna menyatakan memiliki hak atau izin yang diperlukan untuk penggunaan dan pembagian pada undangan publik. Tautan YouTube, Spotify, atau layanan streaming tidak otomatis memberikan izin untuk menyalin audionya.</p>
+                <p class="mt-3">Ketentuan mengenai katalog resmi, unggah mandiri, tanggung jawab pengguna, penurunan konten, dan risiko Content ID dijelaskan pada <a class="text-amber-200 underline underline-offset-4" href="{{ route('audio-copyright-terms') }}">Ketentuan Penggunaan Audio dan Musik Latar</a>.</p>
             </div>
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Penggunaan yang Dilarang</h2>

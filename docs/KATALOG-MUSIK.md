@@ -7,8 +7,8 @@
 - API hanya mengirim metadata. Preview 30 detik baru dimuat saat pengguna menekan Putar.
 - File musik tidak dimasukkan ke AAB dan tidak disalin ke setiap undangan.
 - Undangan publik memakai lagu penuh dari backend dengan `preload="none"`, sehingga browser tidak mengunduh audio sebelum undangan dibuka.
-- Musik katalog lama dinonaktifkan dari pemilih, tetapi baris dan filenya tidak dihapus agar undangan live lama tetap dapat diputar.
-- Upload musik sendiri tetap tersedia. Pengguna wajib mengonfirmasi bahwa ia memiliki hak atau izin sebelum melanjutkan.
+- Record dan file katalog lama dihapus karena belum digunakan oleh undangan resmi. Draft yang masih menunjuk katalog lama otomatis diubah menjadi tanpa musik.
+- Upload musik sendiri tetap tersedia. Pengguna wajib membuka tautan ketentuan dan mencentang persetujuan; backend menolak upload tanpa persetujuan serta mencatat waktu dan versi ketentuan yang diterima.
 
 ## Sumber dan lisensi
 

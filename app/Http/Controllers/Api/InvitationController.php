@@ -156,12 +156,16 @@ class InvitationController extends Controller
 
     private function draftAttributes(StoreInvitationRequest $request, ?Invitation $invitation = null): array
     {
-        $data = $request->safe()->except(['groom_photo', 'bride_photo', 'celebrant_photo', 'gallery_photos', 'gallery_existing_paths', 'gallery_photos_changed', 'music_file', 'gift_data']);
+        $data = $request->safe()->except(['groom_photo', 'bride_photo', 'celebrant_photo', 'gallery_photos', 'gallery_existing_paths', 'gallery_photos_changed', 'music_file', 'music_rights_confirmed', 'gift_data']);
         $data['status'] = 'draft';
         if ($invitation && $invitation->status === 'published') {
             $data['published_at'] = null;
         }
         $data['music_type'] = $data['music_type'] ?? 'none';
+        if ($data['music_type'] === 'upload' && $request->boolean('music_rights_confirmed')) {
+            $data['music_rights_accepted_at'] = now();
+            $data['music_rights_terms_version'] = Invitation::MUSIC_RIGHTS_TERMS_VERSION;
+        }
 
         foreach (($data['invitation_type'] === 'birthday' ? ['celebrant_photo'] : ['groom_photo', 'bride_photo']) as $file) {
             if ($request->hasFile($file)) {

@@ -57,13 +57,14 @@ function harness(options = {}) {
     'react-native': {
       StyleSheet: { create: (x) => x }, Alert: { alert: (...args) => calls.push(['alert', ...args]) },
       AppState: { addEventListener: (event, cb) => { onBackground = cb; return { remove() {} }; } },
-      ActivityIndicator: 'Spinner', Pressable: 'Pressable', Text: 'Text', View: 'View', Linking: {},
+      ActivityIndicator: 'Spinner', Pressable: 'Pressable', Text: 'Text', View: 'View',
+      Linking: { openURL: async (url) => calls.push(['link', url]) },
     },
     '../components/Buttons': { FooterActions: 'Footer', SecondaryButton: 'Button' },
     '../components/FormField': { default: 'Field', __esModule: true },
     '../components/WizardLayout': { default: 'Wizard', __esModule: true },
     '../context/DraftContext': { useDraft: () => ({ draft: { invitation_type: options.invitationType || 'wedding', music_data: options.music || { music_type: 'none', music_id: null } }, saveSection: options.save || (async (...args) => saved.push(args)) }) },
-    '../services/api': { api: { musics: options.fetch || (async () => ({ data: songs })) } },
+    '../services/api': { api: { siteUrl: 'https://local.test', musics: options.fetch || (async () => ({ data: songs })) } },
     '../services/localMedia': {},
     '../theme': { colors: {}, spacing: {} },
   };
@@ -203,6 +204,27 @@ test('birthday invitations open the birthday catalog first and search input is a
   const tree = h.render();
   assert.ok(h.find(tree, (x) => x.props.title === 'Happy Birthday'));
   assert.equal(h.find(tree, (x) => x.props.label === 'Cari musik'), undefined);
+  h.cleanup();
+});
+
+test('custom upload opens copyright terms and cannot continue until checkbox is accepted', async () => {
+  const h = harness({ music: { music_type: 'upload', music_id: null, music_file: { uri: 'file://music.mp3', fileName: 'music.mp3' } } });
+  h.render();
+  await new Promise(setImmediate);
+  let tree = h.render();
+  const terms = h.find(tree, (x) => x.props.accessibilityLabel === 'Buka Ketentuan Penggunaan Audio dan Musik Latar');
+  await terms.props.onPress();
+  assert.ok(h.calls.some(([action, url]) => action === 'link' && url === 'https://local.test/audio-copyright-terms'));
+
+  await tree.props.footer.props.onNext();
+  assert.equal(h.saved.length, 0);
+  assert.ok(h.calls.some(([action, title]) => action === 'alert' && title === 'Konfirmasi izin musik'));
+
+  tree = h.render();
+  h.find(tree, (x) => x.props.accessibilityRole === 'checkbox').props.onPress();
+  await h.render().props.footer.props.onNext();
+  assert.equal(h.saved[0][1].music_rights_confirmed, true);
+  assert.equal(h.navigated[0], 'GiftSetup');
   h.cleanup();
 });
 

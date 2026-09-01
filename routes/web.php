@@ -14,6 +14,7 @@ Route::get('/', function () {
 
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
 Route::view('/terms-of-service', 'terms-of-service')->name('terms-of-service');
+Route::view('/audio-copyright-terms', 'audio-copyright-terms')->name('audio-copyright-terms');
 
 Route::get('/auth/google/mobile', [GoogleMobileOAuthController::class, 'redirect'])
     ->middleware('throttle:10,1')

@@ -150,6 +150,7 @@ class BirthdayInvitationTest extends TestCase
             'celebrant_photo' => UploadedFile::fake()->image('birthday.jpg'),
             'gallery_photos_changed' => 1,
             'gallery_photos' => [UploadedFile::fake()->image('party.jpg')],
+            'music_rights_confirmed' => true,
             'music_file' => UploadedFile::fake()->create('song.mp3', 50, 'audio/mpeg'),
         ])->assertCreated();
         $id = $response->json('data.id');
@@ -160,7 +161,7 @@ class BirthdayInvitationTest extends TestCase
             Storage::disk('public')->assertExists($file);
         }
         $this->putJson('/api/invitations/'.$id, [
-            'template_id' => $this->templateId(), 'music_type' => 'upload',
+            'template_id' => $this->templateId(), 'music_type' => 'upload', 'music_rights_confirmed' => true,
         ])->assertOk()->assertJsonPath('data.celebrant_photo', $photo)->assertJsonPath('data.gallery_photos', $gallery);
         $slug = $this->postJson('/api/invitations/'.$id.'/publish')->assertOk()->json('data.slug');
         $this->get('/u/'.$slug)->assertOk()->assertSee($photo, false)->assertSee($gallery[0], false)
@@ -168,6 +169,7 @@ class BirthdayInvitationTest extends TestCase
 
         $this->post('/api/invitations/'.$id, [
             '_method' => 'PUT', 'template_id' => $this->templateId(), 'music_type' => 'upload',
+            'music_rights_confirmed' => true,
             'celebrant_photo' => UploadedFile::fake()->image('replacement.jpg'),
         ])->assertOk();
         Storage::disk('public')->assertMissing($photo);

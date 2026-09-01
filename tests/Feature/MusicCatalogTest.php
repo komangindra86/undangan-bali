@@ -17,12 +17,15 @@ class MusicCatalogTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_pixabay_seeder_replaces_picker_catalog_without_deleting_old_records(): void
+    public function test_pixabay_seeder_deletes_obsolete_catalog_files_and_records(): void
     {
+        Storage::fake('public');
+        Storage::disk('public')->put('musics/old.wav', 'old audio');
         $old = Music::create(['title' => 'Musik lama', 'file_path' => 'musics/old.wav', 'is_active' => true]);
         $this->seed(PixabayMusicSeeder::class);
 
-        $this->assertFalse($old->fresh()->is_active);
+        $this->assertNull($old->fresh());
+        Storage::disk('public')->assertMissing('musics/old.wav');
         $this->assertSame(20, Music::where('is_active', true)->count());
         $this->assertSame(20, Music::where('catalog_key', 'like', 'pixabay/%')->count());
 
@@ -30,7 +33,7 @@ class MusicCatalogTest extends TestCase
         $track->update(['is_active' => false]);
         $this->seed(PixabayMusicSeeder::class);
         $this->assertFalse($track->fresh()->is_active);
-        $this->assertDatabaseCount('musics', 21);
+        $this->assertDatabaseCount('musics', 20);
     }
 
     public function test_api_returns_only_reviewed_active_tracks_and_never_exposes_evidence_hashes(): void

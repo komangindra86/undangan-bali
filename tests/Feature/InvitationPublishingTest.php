@@ -6,9 +6,11 @@ use App\Models\Invitation;
 use App\Models\InvitationTemplate;
 use App\Models\InvitationView;
 use App\Models\Music;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class InvitationPublishingTest extends TestCase
@@ -511,6 +513,7 @@ class InvitationPublishingTest extends TestCase
         $draft = $this->withToken($token)->post('/api/invitations', [
             'template_id' => $template->id,
             'music_type' => 'upload',
+            'music_rights_confirmed' => true,
             'music_file' => UploadedFile::fake()->create('lagu-kami.mp3', 500, 'audio/mpeg'),
             'groom_full_name' => 'I Made Wira',
             'groom_nickname' => 'Wira',
@@ -542,5 +545,29 @@ class InvitationPublishingTest extends TestCase
         ])->assertOk()->assertJsonPath('data.music_file', null);
 
         Storage::disk('public')->assertMissing($oldMusicPath);
+    }
+
+    public function test_custom_music_upload_requires_explicit_copyright_consent(): void
+    {
+        Storage::fake('public');
+        $this->seed();
+        Sanctum::actingAs(User::factory()->create());
+        $template = InvitationTemplate::firstOrFail();
+
+        $this->withHeader('Accept', 'application/json')->post('/api/invitations', [
+            'template_id' => $template->id,
+            'music_file' => UploadedFile::fake()->create('tanpa-persetujuan.mp3', 100, 'audio/mpeg'),
+        ])->assertUnprocessable()->assertJsonValidationErrors('music_rights_confirmed');
+
+        $this->withHeader('Accept', 'application/json')->post('/api/invitations', [
+            'template_id' => $template->id,
+            'music_rights_confirmed' => true,
+            'music_file' => UploadedFile::fake()->create('dengan-persetujuan.mp3', 100, 'audio/mpeg'),
+        ])->assertCreated()
+            ->assertJsonPath('data.music_type', 'upload')
+            ->assertJsonPath('data.music_rights_terms_version', Invitation::MUSIC_RIGHTS_TERMS_VERSION);
+
+        $invitation = Invitation::latest('id')->firstOrFail();
+        $this->assertNotNull($invitation->music_rights_accepted_at);
     }
 }

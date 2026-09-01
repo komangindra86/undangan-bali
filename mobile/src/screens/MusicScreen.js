@@ -163,6 +163,11 @@ export default function MusicScreen({ navigation }) {
     });
   }
 
+  function openAudioTerms() {
+    Linking.openURL(`${api.siteUrl}/audio-copyright-terms`)
+      .catch(() => Alert.alert('Ketentuan belum terbuka', 'Periksa koneksi internet lalu coba lagi.'));
+  }
+
   async function next() {
     stopPreview();
     const validation = musicSelectionError(music, rightsConfirmed);
@@ -171,7 +176,9 @@ export default function MusicScreen({ navigation }) {
       return;
     }
     try {
-      await saveSection('music_data', music);
+      await saveSection('music_data', music.music_type === 'upload'
+        ? { ...music, music_rights_confirmed: true }
+        : music);
       navigation.navigate('GiftSetup');
     } catch {
       Alert.alert('Pilihan belum tersimpan', 'Coba tekan Lanjut lagi. Pilihan musik Anda tetap ada di halaman ini.');
@@ -230,10 +237,9 @@ export default function MusicScreen({ navigation }) {
       <View style={[styles.upload, music.music_type === 'upload' && styles.selected]}>
         <Text style={styles.title}>Upload musik sendiri</Text>
         <Text style={styles.subtitle}>MP3, WAV, atau M4A | Maksimal 10 MB</Text>
-        <View style={styles.rightsWarning}>
-          <Text style={styles.rightsTitle}>Penting tentang izin penggunaan</Text>
-          <Text style={styles.rightsText}>Jangan mengunggah musik dari YouTube, Spotify, atau sumber lain tanpa izin. Anda bertanggung jawab memastikan musik boleh dipakai dan dibagikan pada undangan publik.</Text>
-        </View>
+        <Pressable accessibilityRole="link" accessibilityLabel="Buka Ketentuan Penggunaan Audio dan Musik Latar" onPress={openAudioTerms} style={styles.audioTermsLink}>
+          <Text style={styles.linkText}>Baca Ketentuan Penggunaan Audio dan Musik Latar</Text>
+        </Pressable>
         {music.music_file?.uri ? (
           <>
             <Text style={styles.fileName} numberOfLines={1}>{music.music_file.fileName}</Text>
@@ -260,7 +266,7 @@ export default function MusicScreen({ navigation }) {
                 <View style={[styles.checkbox, rightsConfirmed && styles.checkboxChecked]}>
                   <Text style={styles.checkboxMark}>{rightsConfirmed ? 'OK' : ''}</Text>
                 </View>
-                <Text style={styles.rightsConfirmationText}>Saya menyatakan memiliki hak atau izin untuk menggunakan musik ini pada undangan publik.</Text>
+                <Text style={styles.rightsConfirmationText}>Saya telah membaca dan menyetujui Ketentuan Penggunaan Audio dan Musik Latar serta bertanggung jawab atas audio yang saya unggah.</Text>
               </Pressable>
             ) : null}
           </>
@@ -386,16 +392,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     padding: spacing.md,
   },
-  rightsWarning: {
-    backgroundColor: colors.surfaceAlt,
-    borderColor: colors.gold,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginTop: spacing.md,
-    padding: spacing.md,
-  },
-  rightsTitle: { color: colors.goldLight, fontWeight: '700', marginBottom: spacing.xs },
-  rightsText: { color: colors.muted, fontSize: 13, lineHeight: 20 },
+  audioTermsLink: { alignSelf: 'flex-start', justifyContent: 'center', minHeight: 44, marginTop: spacing.sm },
   rightsConfirmation: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, minHeight: 48 },
   rightsConfirmationText: { color: colors.text, flex: 1, fontSize: 13, lineHeight: 20 },
   checkbox: { alignItems: 'center', borderColor: colors.border, borderRadius: 5, borderWidth: 1, height: 24, justifyContent: 'center', width: 24 },

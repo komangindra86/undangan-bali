@@ -8,6 +8,8 @@ class Invitation extends Model
 {
     public const RETENTION_EXEMPT_SLUG_PREFIXES = ['preview-', 'demo-'];
 
+    public const MUSIC_RIGHTS_TERMS_VERSION = '2026-09-01';
+
     protected $appends = ['public_url'];
 
     protected $fillable = [
@@ -50,6 +52,8 @@ class Invitation extends Model
         'google_maps_url',
         'music_type',
         'music_file',
+        'music_rights_accepted_at',
+        'music_rights_terms_version',
         'published_at',
         'archived_at',
         'media_deleted_at',
@@ -64,6 +68,7 @@ class Invitation extends Model
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
             'media_deleted_at' => 'datetime',
+            'music_rights_accepted_at' => 'datetime',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'gallery_photos' => 'array',

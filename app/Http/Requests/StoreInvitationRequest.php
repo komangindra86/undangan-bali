@@ -25,6 +25,10 @@ class StoreInvitationRequest extends FormRequest
             }
         }
 
+        if ($this->hasFile('music_file')) {
+            $nested['music_type'] = 'upload';
+        }
+
         $selectedTemplate = $this->input('selected_template');
         if (is_array($selectedTemplate)) {
             $nested['template_id'] = $selectedTemplate['id'] ?? null;
@@ -40,6 +44,10 @@ class StoreInvitationRequest extends FormRequest
                 }
             }
             $this->merge(['gift_data' => $giftData]);
+        }
+
+        if (array_key_exists('music_rights_confirmed', $nested)) {
+            $nested['music_rights_confirmed'] = $this->normalizeBoolean($nested['music_rights_confirmed']);
         }
 
         $this->merge($nested);
@@ -126,6 +134,7 @@ class StoreInvitationRequest extends FormRequest
             'google_maps_url' => ['nullable', 'url', 'max:2048', 'regex:/^https:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.app\.goo\.gl|maps\.google\.[a-z.]+)/i'],
             'music_type' => ['nullable', Rule::in(['none', 'default', 'upload'])],
             'music_file' => ['nullable', 'file', 'mimes:mp3,wav,m4a', 'max:10240'],
+            'music_rights_confirmed' => ['exclude_unless:music_type,upload', 'required', 'accepted'],
             'is_hidden_from_feed' => [Rule::excludeIf($birthday), 'nullable', 'boolean'],
             'moment_caption' => ['nullable', 'string', 'max:300', 'not_regex:/[<>]/'],
             'gift_data' => ['nullable', 'array'],
@@ -161,6 +170,7 @@ class StoreInvitationRequest extends FormRequest
             'bride_mother_name' => 'nama ibu mempelai wanita',
             'bride_child_order' => 'anak ke mempelai wanita',
             'event_type' => 'jenis acara',
+            'music_rights_confirmed' => 'persetujuan hak cipta audio',
             'event_date' => 'tanggal acara',
             'start_time' => 'jam mulai',
             'end_time' => 'jam selesai',

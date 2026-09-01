@@ -56,8 +56,22 @@ class ExampleTest extends TestCase
             ->assertSee('Konten Pengguna')
             ->assertSee('Musik Bawaan')
             ->assertSee('katalog Pixabay')
-            ->assertSee('pengguna menyatakan memiliki hak atau izin')
+            ->assertSee('Ketentuan Penggunaan Audio dan Musik Latar')
             ->assertSee('tidak boleh mengunduh, menjual, mendaftarkan ke Content ID')
             ->assertSee('Gift dan Pembayaran');
+    }
+
+    public function test_audio_copyright_terms_page_is_available(): void
+    {
+        $this->get('/audio-copyright-terms')
+            ->assertOk()
+            ->assertSee('KETENTUAN PENGGUNAAN AUDIO DAN MUSIK LATAR')
+            ->assertSee('Fasilitas Musik Bawaan')
+            ->assertSee('Fitur Unggah Mandiri')
+            ->assertSee('Pernyataan Jaminan Pengguna')
+            ->assertSee('Pelepasan Tuntutan Hukum')
+            ->assertSee('Kebijakan Penurunan Konten')
+            ->assertSee('Risiko Pembatasan Media Sosial Pihak Ketiga')
+            ->assertSee('Pixabay Content License');
     }
 }
