@@ -240,6 +240,21 @@ export default function MusicScreen({ navigation }) {
         <Pressable accessibilityRole="link" accessibilityLabel="Buka Ketentuan Penggunaan Audio dan Musik Latar" onPress={openAudioTerms} style={styles.audioTermsLink}>
           <Text style={styles.linkText}>Baca Ketentuan Penggunaan Audio dan Musik Latar</Text>
         </Pressable>
+        <Pressable
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: rightsConfirmed, disabled: !music.music_file?.uri }}
+          disabled={!music.music_file?.uri}
+          onPress={() => setRightsConfirmed((value) => !value)}
+          style={[styles.rightsConfirmation, !music.music_file?.uri && styles.rightsConfirmationDisabled]}
+        >
+          <View style={[styles.checkbox, rightsConfirmed && styles.checkboxChecked]}>
+            <Text style={styles.checkboxMark}>{rightsConfirmed ? 'OK' : ''}</Text>
+          </View>
+          <View style={styles.rightsConfirmationCopy}>
+            <Text style={styles.rightsConfirmationText}>Saya telah membaca dan menyetujui Ketentuan Penggunaan Audio dan Musik Latar serta bertanggung jawab atas audio yang saya unggah.</Text>
+            {!music.music_file?.uri ? <Text style={styles.rightsConfirmationHint}>Pilih file musik terlebih dahulu untuk memberikan persetujuan.</Text> : null}
+          </View>
+        </Pressable>
         {music.music_file?.uri ? (
           <>
             <Text style={styles.fileName} numberOfLines={1}>{music.music_file.fileName}</Text>
@@ -256,19 +271,6 @@ export default function MusicScreen({ navigation }) {
                 <Text style={styles.useFile}>Gunakan file ini</Text>
               </Pressable>
             ) : <Text style={styles.checked}>Dipilih</Text>}
-            {music.music_type === 'upload' ? (
-              <Pressable
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: rightsConfirmed }}
-                onPress={() => setRightsConfirmed((value) => !value)}
-                style={styles.rightsConfirmation}
-              >
-                <View style={[styles.checkbox, rightsConfirmed && styles.checkboxChecked]}>
-                  <Text style={styles.checkboxMark}>{rightsConfirmed ? 'OK' : ''}</Text>
-                </View>
-                <Text style={styles.rightsConfirmationText}>Saya telah membaca dan menyetujui Ketentuan Penggunaan Audio dan Musik Latar serta bertanggung jawab atas audio yang saya unggah.</Text>
-              </Pressable>
-            ) : null}
           </>
         ) : (
           <SecondaryButton title="Pilih File Musik" onPress={pickCustomMusic} style={styles.selectFile} />
@@ -393,7 +395,10 @@ const styles = StyleSheet.create({
   },
   audioTermsLink: { alignSelf: 'flex-start', justifyContent: 'center', minHeight: 44, marginTop: spacing.sm },
   rightsConfirmation: { alignItems: 'flex-start', flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, minHeight: 48 },
+  rightsConfirmationDisabled: { opacity: 0.55 },
+  rightsConfirmationCopy: { flex: 1 },
   rightsConfirmationText: { color: colors.text, flex: 1, fontSize: 13, lineHeight: 20 },
+  rightsConfirmationHint: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: spacing.xs },
   checkbox: { alignItems: 'center', borderColor: colors.border, borderRadius: 5, borderWidth: 1, height: 24, justifyContent: 'center', width: 24 },
   checkboxChecked: { backgroundColor: colors.gold, borderColor: colors.gold },
   checkboxMark: { color: colors.background, fontWeight: '900' },

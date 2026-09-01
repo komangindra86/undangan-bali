@@ -207,6 +207,17 @@ test('birthday invitations open the birthday catalog first and search input is a
   h.cleanup();
 });
 
+test('custom music consent remains visible and disabled until a file is selected', async () => {
+  const h = harness();
+  h.render();
+  await new Promise(setImmediate);
+  const checkbox = h.find(h.render(), (x) => x.props.accessibilityRole === 'checkbox');
+  assert.ok(checkbox);
+  assert.equal(checkbox.props.disabled, true);
+  assert.equal(checkbox.props.accessibilityState.disabled, true);
+  h.cleanup();
+});
+
 test('custom upload opens copyright terms and cannot continue until checkbox is accepted', async () => {
   const h = harness({ music: { music_type: 'upload', music_id: null, music_file: { uri: 'file://music.mp3', fileName: 'music.mp3' } } });
   h.render();
