@@ -94,6 +94,7 @@ class MusicCatalogTest extends TestCase
                 ->assertSee($track->attribution)
                 ->assertSee($track->source_url, false)
                 ->assertSee($track->license_url, false)
+                ->assertDontSee($track->modifications)
                 ->assertSee('storage/'.$track->file_path, false)
                 ->assertSee('preload="none"', false)
                 ->assertDontSee('storage/'.$track->preview_file_path, false);

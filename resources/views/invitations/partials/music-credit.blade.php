@@ -4,6 +4,5 @@
         <a href="{{ $invitation->music->source_url }}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">Sumber musik</a>
         &middot;
         <a href="{{ $invitation->music->license_url }}" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: underline;">{{ $invitation->music->license_code }}</a>
-        @if($invitation->music->modifications)<span style="display: block;">{{ $invitation->music->modifications }}</span>@endif
     </span>
 @endif

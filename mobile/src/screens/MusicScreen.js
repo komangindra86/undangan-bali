@@ -308,7 +308,6 @@ function Choice({ title, subtitle, selected, onSelect, onPreview, playing, buffe
             <CreditLink url={credit.source_url} label="Sumber musik" />
             <CreditLink url={credit.license_url} label={credit.license_code || 'Lisensi'} />
           </View>
-          {credit.modifications ? <Text style={styles.creditText}>{credit.modifications}</Text> : null}
         </View>
       ) : null}
     </View>
