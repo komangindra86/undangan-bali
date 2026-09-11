@@ -151,16 +151,18 @@ class SocialMomentTest extends TestCase
         $this->assertDatabaseCount('social_notifications', 0);
     }
 
-    public function test_observed_play_crawler_ip_is_blocked_only_for_android_http_clients(): void
+    public function test_observed_play_crawler_ips_are_blocked_for_android_http_clients(): void
     {
         $invitation = $this->publishedInvitation();
         $guest = User::factory()->create(['role' => 'user']);
 
-        $this->withServerVariables(['REMOTE_ADDR' => '74.125.209.135'])
-            ->withHeader('User-Agent', 'okhttp/4.12.0')
-            ->actingAs($guest, 'sanctum')
-            ->postJson('/api/moments/'.$invitation->id.'/comments', ['body' => 'Crawler'])
-            ->assertOk()->assertJsonPath('test_lab', true);
+        foreach (['66.102.8.231', '66.249.80.103', '74.125.209.135', '74.125.213.10'] as $index => $ip) {
+            $this->withServerVariables(['REMOTE_ADDR' => $ip])
+                ->withHeader('User-Agent', 'okhttp/4.12.0')
+                ->actingAs($guest, 'sanctum')
+                ->postJson('/api/moments/'.$invitation->id.'/comments', ['body' => 'Crawler '.$index])
+                ->assertOk()->assertJsonPath('test_lab', true);
+        }
 
         $this->assertDatabaseCount('invitation_comments', 0);
         $this->assertDatabaseCount('social_notifications', 0);
