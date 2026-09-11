@@ -74,7 +74,7 @@
                     Tamu melakukan pembayaran melalui browser pada halaman web undangan. Gift tidak membuka fitur digital dalam aplikasi.
                 </p>
                 <p class="mt-3">
-                    Nominal gift, biaya layanan, dan total bayar ditampilkan transparan sebelum pembayaran. Status <em>paid</em> tidak dipercaya dari callback frontend;
+                    Tamu membayar sesuai nominal gift tanpa biaya layanan tambahan. Biaya platform sebesar 1% dipotong dari nominal yang diajukan pemilik undangan ketika melakukan pencairan. Status <em>paid</em> tidak dipercaya dari callback frontend;
                     status hanya diperbarui dari webhook penyedia yang tervalidasi atau pengecekan status dari backend.
                 </p>
             </div>

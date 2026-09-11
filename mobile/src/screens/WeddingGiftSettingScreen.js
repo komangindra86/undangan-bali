@@ -5,7 +5,7 @@ import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import FormField from '../components/FormField';
 import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
 import { useAuth } from '../context/AuthContext';
-import { giftLabelFor, invitationName } from '../constants/invitation';
+import { GIFT_PAYOUT_FEE_PERCENT, giftLabelFor, invitationName } from '../constants/invitation';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 import { cleanText, firstError, validateSafeText } from '../utils/validation';
@@ -137,9 +137,9 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
           onChangeText={(value) => setSetting({ ...setting, minimum_amount: value.replace(/\D/g, '') })}
         />
         <View style={styles.feeCard}>
-          <Text style={styles.feeLabel}>Biaya layanan ditetapkan aplikasi</Text>
-          <Text style={styles.feeValue}>{feeText()}</Text>
-          <Text style={styles.small}>Fee tampil transparan pada halaman pembayaran dan tidak mengurangi nominal gift penerima.</Text>
+          <Text style={styles.feeLabel}>Biaya pencairan platform</Text>
+          <Text style={styles.feeValue}>{feeText(setting.fee_value)}</Text>
+          <Text style={styles.small}>Tamu membayar sesuai nominal gift tanpa biaya tambahan. Fee dipotong dari nominal yang Anda ajukan saat melakukan pencairan.</Text>
         </View>
         <ToggleRow
           title="Tampilkan nominal secara publik"
@@ -168,8 +168,10 @@ function ToggleRow({ title, value, onValueChange }) {
   );
 }
 
-function feeText() {
-  return 'Rp2.000 untuk gift di bawah Rp100.000, lalu 2% untuk Rp100.000 ke atas';
+function feeText(value) {
+  const percentage = Number(value || GIFT_PAYOUT_FEE_PERCENT);
+
+  return `${percentage}% saat pencairan`;
 }
 
 const styles = StyleSheet.create({

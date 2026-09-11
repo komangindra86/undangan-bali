@@ -192,9 +192,9 @@
                         <h2 class="display">Hadiah digital dengan alur yang transparan.</h2>
                         <p>Pasangan mengatur dan memantau gift dari aplikasi. Tamu melakukan pembayaran melalui halaman undangan di browser, bukan melalui checkout di aplikasi.</p>
                         <div class="gift-list">
-                            <span>Nominal gift dan biaya layanan ditampilkan terpisah sebelum pembayaran.</span>
+                            <span>Tamu membayar sesuai nominal gift tanpa biaya layanan tambahan.</span>
+                            <span>Biaya platform 1% dipotong saat pasangan mengajukan pencairan.</span>
                             <span>Status pembayaran diverifikasi oleh backend melalui penyedia pembayaran.</span>
-                            <span>Dashboard membantu pasangan melihat gift yang berhasil diterima.</span>
                         </div>
                     </div>
                     <div class="receipt-wrap">
@@ -202,9 +202,11 @@
                             <span class="receipt-label">Contoh rincian</span>
                             <h3>Wedding Gift</h3>
                             <div class="receipt-row"><span>Nominal gift</span><strong>Rp100.000</strong></div>
-                            <div class="receipt-row"><span>Biaya layanan</span><strong>Rp2.000</strong></div>
-                            <div class="receipt-row total"><span>Total bayar</span><strong>Rp102.000</strong></div>
-                            <p class="receipt-note">Rincian final selalu ditampilkan kepada tamu sebelum melanjutkan pembayaran.</p>
+                            <div class="receipt-row"><span>Biaya untuk tamu</span><strong>Rp0</strong></div>
+                            <div class="receipt-row total"><span>Total bayar tamu</span><strong>Rp100.000</strong></div>
+                            <div class="receipt-row"><span>Fee pencairan 1%</span><strong>Rp1.000</strong></div>
+                            <div class="receipt-row"><span>Diterima pasangan</span><strong>Rp99.000</strong></div>
+                            <p class="receipt-note">Fee platform baru dipotong ketika pasangan mengajukan pencairan.</p>
                         </div>
                     </div>
                 </div>

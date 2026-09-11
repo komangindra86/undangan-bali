@@ -2,6 +2,8 @@ export const DEFAULT_OPENING_QUOTE = 'Atas Asung Kertha Wara Nugraha Ida Sang Hy
 
 export const BIRTHDAY_OPENING_QUOTE = 'Dengan penuh sukacita, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan merayakan hari ulang tahun ini. Kehadiran dan doa baik Anda akan membuat momen ini semakin berarti.';
 
+export const GIFT_PAYOUT_FEE_PERCENT = 1;
+
 export const isBirthday = (invitation) => invitation?.invitation_type === 'birthday';
 export const giftLabelFor = (invitation) => isBirthday(invitation) ? 'Kado Digital' : 'Wedding Gift';
 export const personScreenFor = (invitation) => isBirthday(invitation) ? 'BirthdayForm' : 'GroomBrideForm';

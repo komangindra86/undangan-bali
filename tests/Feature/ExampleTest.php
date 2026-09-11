@@ -21,6 +21,11 @@ class ExampleTest extends TestCase
             ->assertSee('Cerita cinta Bali')
             ->assertSee('Coba tanpa login')
             ->assertSee('Wedding Gift')
+            ->assertSee('Biaya platform 1% dipotong saat pasangan mengajukan pencairan.')
+            ->assertSee('Total bayar tamu')
+            ->assertSee('Rp100.000')
+            ->assertSee('Rp99.000')
+            ->assertDontSee('Rp102.000')
             ->assertSee('Mulai sendiri secara gratis')
             ->assertSee('Konsultasi Custom via WhatsApp')
             ->assertSee('https://wa.me/6281234567890?text=', false)
@@ -58,7 +63,9 @@ class ExampleTest extends TestCase
             ->assertSee('katalog Pixabay')
             ->assertSee('Ketentuan Penggunaan Audio dan Musik Latar')
             ->assertSee('tidak boleh mengunduh, menjual, mendaftarkan ke Content ID')
-            ->assertSee('Gift dan Pembayaran');
+            ->assertSee('Gift dan Pembayaran')
+            ->assertSee('Biaya platform sebesar 1% dipotong')
+            ->assertDontSee('Nominal gift, biaya layanan, dan total pembayaran');
     }
 
     public function test_audio_copyright_terms_page_is_available(): void

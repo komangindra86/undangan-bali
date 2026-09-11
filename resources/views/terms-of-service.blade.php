@@ -41,7 +41,7 @@
             </div>
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Gift dan Pembayaran</h2>
-                <p class="mt-3">Fitur Wedding Gift dijalankan melalui halaman web undangan. Nominal gift, biaya layanan, dan total pembayaran ditampilkan sebelum transaksi. Status pembayaran ditentukan oleh penyedia pembayaran dan verifikasi backend. Aplikasi mobile tidak menjual fitur digital melalui alur Wedding Gift.</p>
+                <p class="mt-3">Fitur Wedding Gift dijalankan melalui halaman web undangan. Tamu membayar sesuai nominal gift tanpa biaya layanan tambahan. Biaya platform sebesar 1% dipotong dari nominal yang diajukan pemilik undangan ketika melakukan pencairan. Status pembayaran ditentukan oleh penyedia pembayaran dan verifikasi backend. Aplikasi mobile tidak menjual fitur digital melalui alur Wedding Gift.</p>
             </div>
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Ketersediaan dan Perubahan</h2>

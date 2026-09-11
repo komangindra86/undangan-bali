@@ -3,7 +3,7 @@ import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 import { FooterActions } from '../components/Buttons';
 import FormField from '../components/FormField';
 import WizardLayout from '../components/WizardLayout';
-import { giftLabelFor, invitationName } from '../constants/invitation';
+import { GIFT_PAYOUT_FEE_PERCENT, giftLabelFor, invitationName } from '../constants/invitation';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
 import { cleanText, firstError, validateSafeText } from '../utils/validation';
@@ -112,9 +112,9 @@ export default function GiftSetupScreen({ navigation }) {
             onChangeText={(value) => setGift({ ...gift, minimum_amount: value.replace(/\D/g, '') })}
           />
           <View style={styles.fee}>
-            <Text style={styles.feeTitle}>Biaya layanan aplikasi</Text>
-            <Text style={styles.feeAmount}>Rp2.000 atau 2%</Text>
-            <Text style={styles.help}>Di bawah Rp100.000 dikenakan Rp2.000. Mulai Rp100.000 ke atas dikenakan 2%. Fee ditampilkan transparan di halaman web.</Text>
+            <Text style={styles.feeTitle}>Biaya pencairan platform</Text>
+            <Text style={styles.feeAmount}>{GIFT_PAYOUT_FEE_PERCENT}% saat pencairan</Text>
+            <Text style={styles.help}>Tamu membayar sesuai nominal gift tanpa biaya tambahan. Fee {GIFT_PAYOUT_FEE_PERCENT}% dipotong dari nominal yang diajukan pasangan saat melakukan pencairan.</Text>
           </View>
           <ToggleRow
             title="Izinkan tamu menulis ucapan"
