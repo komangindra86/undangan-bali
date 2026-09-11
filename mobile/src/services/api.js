@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { ensureLocalFileExists } from './localMedia';
 import { templatesForType } from '../utils/templateCatalog';
+import { testEnvironmentHeaders } from '../utils/testEnvironment';
 
 const DEFAULT_API_URL = __DEV__ ? 'http://10.0.2.2:8000/api' : 'https://undangan.balisantih.com/api';
 const API_URL = (process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL).replace(/\/$/, '');
@@ -10,12 +11,14 @@ async function request(path, options = {}, token = null) {
   let response;
 
   try {
+    const environmentHeaders = await testEnvironmentHeaders();
     response = await fetch(`${API_URL}${path}`, {
       ...options,
       headers: {
         Accept: 'application/json',
         ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...environmentHeaders,
         ...(options.headers || {}),
       },
     });

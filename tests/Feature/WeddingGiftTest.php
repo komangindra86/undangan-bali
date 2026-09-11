@@ -103,6 +103,26 @@ class WeddingGiftTest extends TestCase
             && $request['custom_field3'] === '0');
     }
 
+    public function test_firebase_test_lab_cannot_create_a_payment_transaction(): void
+    {
+        [$invitation] = $this->publishedInvitation();
+        $invitation->giftSetting()->create([
+            'is_active' => true,
+            'receiver_name' => 'Wira dan Ayu',
+            'minimum_amount' => 10000,
+        ]);
+        Http::fake();
+
+        $this->withHeader('X-Firebase-Test-Lab', 'true')
+            ->postJson("/api/public/invitations/{$invitation->slug}/wedding-gift/create", [
+                'guest_name' => 'Google Test Lab',
+                'gift_amount' => 100000,
+            ])->assertOk()->assertJsonPath('test_lab', true);
+
+        $this->assertDatabaseCount('wedding_gifts', 0);
+        Http::assertNothingSent();
+    }
+
     public function test_gift_selected_in_mobile_draft_is_available_after_publish(): void
     {
         $this->seed();

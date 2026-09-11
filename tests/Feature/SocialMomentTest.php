@@ -101,6 +101,71 @@ class SocialMomentTest extends TestCase
         $this->assertDatabaseCount('social_notifications', 2);
     }
 
+    public function test_firebase_test_lab_cannot_persist_social_activity(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $guest = User::factory()->create(['role' => 'user']);
+        $headers = ['X-Firebase-Test-Lab' => 'true'];
+
+        $this->actingAs($guest, 'sanctum')->withHeaders($headers)
+            ->postJson('/api/moments/'.$invitation->id.'/reaction', ['type' => 'love'])
+            ->assertOk()->assertJsonPath('test_lab', true);
+        $this->actingAs($guest, 'sanctum')->withHeaders($headers)
+            ->postJson('/api/moments/'.$invitation->id.'/comments', [
+                'body' => 'Komentar otomatis pengujian',
+                'client_request_id' => 'test-lab-comment-0001',
+            ])->assertOk()->assertJsonPath('test_lab', true);
+        $this->withHeaders($headers)->postJson('/api/moments/'.$invitation->id.'/request-invitation', [
+            'requester_name' => 'Google Test Lab',
+            'requester_whatsapp' => '081234567890',
+        ])->assertOk()->assertJsonPath('test_lab', true);
+
+        $this->assertDatabaseCount('invitation_reactions', 0);
+        $this->assertDatabaseCount('invitation_comments', 0);
+        $this->assertDatabaseCount('invitation_requests', 0);
+        $this->assertDatabaseCount('social_notifications', 0);
+    }
+
+    public function test_test_account_activity_is_ignored_and_its_invitations_are_hidden(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $testUser = User::factory()->create(['role' => 'user', 'is_test_account' => true]);
+        $testInvitation = $invitation->replicate();
+        $testInvitation->user_id = $testUser->id;
+        $testInvitation->slug = 'play-review-only';
+        $testInvitation->save();
+
+        $this->actingAs($testUser, 'sanctum')
+            ->postJson('/api/moments/'.$invitation->id.'/reaction', ['type' => 'love'])
+            ->assertOk()->assertJsonPath('test_lab', true);
+        $this->actingAs($testUser, 'sanctum')
+            ->postJson('/api/moments/'.$invitation->id.'/comments', ['body' => 'Crawler'])
+            ->assertOk()->assertJsonPath('test_lab', true);
+
+        $this->getJson('/api/moments')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonMissing(['slug' => 'play-review-only']);
+        $this->assertDatabaseCount('invitation_reactions', 0);
+        $this->assertDatabaseCount('invitation_comments', 0);
+        $this->assertDatabaseCount('social_notifications', 0);
+    }
+
+    public function test_observed_play_crawler_ip_is_blocked_only_for_android_http_clients(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $guest = User::factory()->create(['role' => 'user']);
+
+        $this->withServerVariables(['REMOTE_ADDR' => '74.125.209.135'])
+            ->withHeader('User-Agent', 'okhttp/4.12.0')
+            ->actingAs($guest, 'sanctum')
+            ->postJson('/api/moments/'.$invitation->id.'/comments', ['body' => 'Crawler'])
+            ->assertOk()->assertJsonPath('test_lab', true);
+
+        $this->assertDatabaseCount('invitation_comments', 0);
+        $this->assertDatabaseCount('social_notifications', 0);
+    }
+
     public function test_legacy_mobile_comment_retry_is_deduplicated(): void
     {
         $invitation = $this->publishedInvitation();

@@ -3,7 +3,7 @@
     "name": "Undangan Bali Santih",
     "slug": "undangan-pernikahan-bali",
     "scheme": "undanganbali",
-    "version": "1.0.19",
+    "version": "1.0.20",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -28,7 +28,8 @@
           "defaultChannel": "social"
         }
       ],
-      "expo-font"
+      "expo-font",
+      "./plugins/with-test-lab-detector"
     ],
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -41,7 +42,7 @@
     },
     "android": {
       "package": "com.balisantih.undanganbali",
-      "versionCode": 21,
+      "versionCode": 22,
       "googleServicesFile": "./google-services.json",
       "softwareKeyboardLayoutMode": "resize",
       "blockedPermissions": [

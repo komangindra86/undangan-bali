@@ -10,6 +10,7 @@ use App\Models\InvitationReaction;
 use App\Models\InvitationRequest;
 use App\Models\SocialNotification;
 use App\Services\SocialNotificationService;
+use App\Services\TestLabRequestDetector;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,10 +20,17 @@ use Illuminate\Validation\ValidationException;
 
 class SocialController extends Controller
 {
-    public function react(Request $request, Invitation $invitation, SocialNotificationService $notifications): JsonResponse
+    public function react(Request $request, Invitation $invitation, SocialNotificationService $notifications, TestLabRequestDetector $testLab): JsonResponse
     {
         $this->published($invitation);
         $data = $request->validate(['type' => ['required', Rule::in(['like', 'love'])]]);
+        if ($testLab->matches($request)) {
+            return response()->json([
+                'message' => 'Reaksi simulasi pengujian tidak disimpan.',
+                'data' => ['type' => $data['type']],
+                'test_lab' => true,
+            ]);
+        }
         $reaction = InvitationReaction::firstOrNew([
             'invitation_id' => $invitation->id,
             'user_id' => $request->user()->id,
@@ -43,8 +51,12 @@ class SocialController extends Controller
         return response()->json(['message' => 'Reaksi disimpan.', 'data' => ['type' => $reaction->type]]);
     }
 
-    public function removeReaction(Request $request, Invitation $invitation): JsonResponse
+    public function removeReaction(Request $request, Invitation $invitation, TestLabRequestDetector $testLab): JsonResponse
     {
+        if ($testLab->matches($request)) {
+            return response()->json(['message' => 'Reaksi simulasi pengujian tidak disimpan.', 'test_lab' => true]);
+        }
+
         InvitationReaction::where('invitation_id', $invitation->id)
             ->where('user_id', $request->user()->id)
             ->delete();
@@ -52,7 +64,7 @@ class SocialController extends Controller
         return response()->json(['message' => 'Reaksi dihapus.']);
     }
 
-    public function comment(Request $request, Invitation $invitation, SocialNotificationService $notifications): JsonResponse
+    public function comment(Request $request, Invitation $invitation, SocialNotificationService $notifications, TestLabRequestDetector $testLab): JsonResponse
     {
         $this->published($invitation);
         $data = $request->validate([
@@ -61,6 +73,18 @@ class SocialController extends Controller
         ], ['body.not_regex' => 'Komentar tidak boleh mengandung karakter < atau >.']);
 
         $body = trim(preg_replace('/\s+/', ' ', $data['body']));
+        if ($testLab->matches($request)) {
+            return response()->json([
+                'message' => 'Komentar simulasi pengujian tidak disimpan.',
+                'test_lab' => true,
+                'data' => [
+                    'id' => null,
+                    'body' => $body,
+                    'created_at' => now()->toISOString(),
+                    'user' => ['id' => $request->user()->id, 'name' => $request->user()->name],
+                ],
+            ]);
+        }
         $recentDuplicate = $invitation->comments()
             ->where('user_id', $request->user()->id)
             ->where('body', $body)

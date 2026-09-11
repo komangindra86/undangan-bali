@@ -54,6 +54,22 @@ class PushNotificationTest extends TestCase
         ])->assertUnprocessable()->assertJsonValidationErrors('token');
     }
 
+    public function test_firebase_test_lab_device_token_is_not_stored(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'sanctum')
+            ->withHeader('X-Firebase-Test-Lab', 'true')
+            ->postJson('/api/push-tokens', [
+                'token' => 'fcm_test_lab_token:Automated-device_123',
+                'platform' => 'android',
+                'device_name' => 'Firebase Test Lab',
+                'app_version' => '1.0.20',
+            ])->assertOk()->assertJsonPath('test_lab', true);
+
+        $this->assertDatabaseCount('push_tokens', 0);
+    }
+
     public function test_invitation_request_queues_push_for_the_owner(): void
     {
         Queue::fake();

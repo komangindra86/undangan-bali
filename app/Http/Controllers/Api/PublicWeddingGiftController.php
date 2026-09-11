@@ -8,6 +8,7 @@ use App\Models\Invitation;
 use App\Models\WeddingGift;
 use App\Services\MidtransService;
 use App\Services\SocialNotificationService;
+use App\Services\TestLabRequestDetector;
 use App\Services\XenditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -17,8 +18,13 @@ use Throwable;
 
 class PublicWeddingGiftController extends Controller
 {
-    public function store(StoreWeddingGiftRequest $request, string $slug, MidtransService $midtrans, XenditService $xendit): JsonResponse
-    {
+    public function store(
+        StoreWeddingGiftRequest $request,
+        string $slug,
+        MidtransService $midtrans,
+        XenditService $xendit,
+        TestLabRequestDetector $testLab
+    ): JsonResponse {
         $invitation = Invitation::with('giftSetting')
             ->where('slug', $slug)
             ->where('status', 'published')
@@ -26,6 +32,13 @@ class PublicWeddingGiftController extends Controller
         $setting = $invitation->giftSetting;
 
         abort_unless($setting?->is_active, 404);
+
+        if ($testLab->matches($request)) {
+            return response()->json([
+                'message' => 'Transaksi simulasi pengujian tidak dibuat.',
+                'test_lab' => true,
+            ]);
+        }
 
         if ($request->integer('gift_amount') < $setting->minimum_amount) {
             throw ValidationException::withMessages([

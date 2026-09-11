@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\MomentResource;
 use App\Models\Invitation;
 use App\Services\SocialNotificationService;
+use App\Services\TestLabRequestDetector;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -50,7 +51,7 @@ class MomentController extends Controller
         return response()->json(['data' => $data]);
     }
 
-    public function requestInvitation(Request $request, int $invitation, SocialNotificationService $notifications): JsonResponse
+    public function requestInvitation(Request $request, int $invitation, SocialNotificationService $notifications, TestLabRequestDetector $testLab): JsonResponse
     {
         $request->merge([
             'requester_name' => $this->normalizeName($request->input('requester_name')),
@@ -68,6 +69,12 @@ class MomentController extends Controller
         ]);
 
         $invitation = $this->feedQuery()->findOrFail($invitation);
+        if ($testLab->matches($request)) {
+            return response()->json([
+                'message' => 'Permintaan simulasi pengujian tidak disimpan.',
+                'test_lab' => true,
+            ]);
+        }
         $recentRequest = $invitation->invitationRequests()
             ->where('requester_whatsapp', $data['requester_whatsapp'])
             ->where('created_at', '>=', now()->subDay())
@@ -102,6 +109,7 @@ class MomentController extends Controller
             ->whereNull('archived_at')
             ->whereNull('media_deleted_at')
             ->where('is_hidden_from_feed', false)
+            ->whereHas('user', fn ($query) => $query->where('is_test_account', false))
             ->where(function ($query) {
                 $query->where(function ($wedding) {
                     $wedding->where('invitation_type', 'wedding')->whereNotNull('groom_nickname')->whereNotNull('bride_nickname');
