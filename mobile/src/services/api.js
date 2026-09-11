@@ -144,7 +144,10 @@ export const api = {
   requestInvitation: (id, values) => request(`/moments/${id}/request-invitation`, { method: 'POST', body: JSON.stringify(values) }),
   reactToMoment: (id, type, token) => request(`/moments/${id}/reaction`, { method: 'POST', body: JSON.stringify({ type }) }, token),
   removeMomentReaction: (id, token) => request(`/moments/${id}/reaction`, { method: 'DELETE' }, token),
-  commentOnMoment: (id, body, token) => request(`/moments/${id}/comments`, { method: 'POST', body: JSON.stringify({ body }) }, token),
+  commentOnMoment: (id, body, clientRequestId, token) => request(`/moments/${id}/comments`, {
+    method: 'POST',
+    body: JSON.stringify({ body, client_request_id: clientRequestId }),
+  }, token),
   notifications: (token) => request('/social/notifications', {}, token),
   readNotification: (id, token) => request(`/social/notifications/${id}/read`, { method: 'PUT' }, token),
   registerPushToken: (values, token) => request('/push-tokens', { method: 'POST', body: JSON.stringify(values) }, token),

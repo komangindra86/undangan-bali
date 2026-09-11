@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class InvitationComment extends Model
 {
-    protected $fillable = ['invitation_id', 'user_id', 'body', 'deleted_at'];
+    protected $fillable = ['invitation_id', 'user_id', 'body', 'client_request_id', 'deleted_at'];
 
     protected function casts(): array
     {

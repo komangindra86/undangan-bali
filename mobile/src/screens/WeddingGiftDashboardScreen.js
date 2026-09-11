@@ -10,7 +10,7 @@ import { colors, commonStyles, spacing } from '../theme';
 export default function WeddingGiftDashboardScreen({ navigation, route }) {
   const invitation = route.params?.invitation;
   const { token, expireSession } = useAuth();
-  const [summary, setSummary] = useState({ total_gift_paid: 0, total_service_fee: 0, giver_count: 0, available_balance: 0, payout_pending: 0, paid_out: 0 });
+  const [summary, setSummary] = useState({ total_gift_paid: 0, giver_count: 0, available_balance: 0, payout_pending: 0, paid_out: 0, platform_fee_paid: 0, payout_fee_percent: 1 });
   const [gifts, setGifts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,9 +48,9 @@ export default function WeddingGiftDashboardScreen({ navigation, route }) {
           <Stat label="Sedang diproses" value={rupiah(summary.payout_pending)} />
           <Stat label="Sudah dicairkan" value={rupiah(summary.paid_out)} />
           <Stat label="Jumlah pemberi" value={String(summary.giver_count)} />
-          <Stat label="Fee aplikasi" value={rupiah(summary.total_service_fee)} />
+          <Stat label="Fee pencairan terpakai" value={rupiah(summary.platform_fee_paid)} />
         </View>
-        <Text style={styles.security}>Nominal diterima hanya dihitung dari pembayaran berstatus paid yang dikonfirmasi penyedia pembayaran melalui backend.</Text>
+        <Text style={styles.security}>Tamu tidak dikenakan biaya. Fee platform {summary.payout_fee_percent || 1}% baru dipotong saat Anda mengajukan pencairan. Pembayaran hanya dihitung setelah dikonfirmasi penyedia pembayaran melalui backend.</Text>
         <PrimaryButton title="Muat Ulang Data" onPress={load} loading={loading} style={styles.refresh} />
         <PrimaryButton
           title="Ajukan Pencairan"
@@ -71,7 +71,7 @@ export default function WeddingGiftDashboardScreen({ navigation, route }) {
               <Text style={[styles.badge, gift.transaction_status === 'paid' && styles.paid]}>{gift.transaction_status}</Text>
             </View>
             <Text style={styles.amount}>{rupiah(gift.gift_amount)}</Text>
-            <Text style={styles.detail}>Fee {rupiah(gift.service_fee)} | Total dibayar {rupiah(gift.total_amount)}</Text>
+            <Text style={styles.detail}>Total dibayar tamu {rupiah(gift.total_amount)}</Text>
             {gift.message ? <Text style={styles.message}>"{gift.message}"</Text> : null}
             {gift.paid_at ? <Text style={styles.date}>Dibayar: {new Date(gift.paid_at).toLocaleString('id-ID')}</Text> : null}
           </View>

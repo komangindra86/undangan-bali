@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
+use App\Models\InvitationComment;
 use App\Models\InvitationMoment;
 use App\Models\InvitationReaction;
 use App\Models\InvitationRequest;
@@ -11,8 +12,10 @@ use App\Models\SocialNotification;
 use App\Services\SocialNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class SocialController extends Controller
 {
@@ -25,10 +28,11 @@ class SocialController extends Controller
             'user_id' => $request->user()->id,
         ]);
         $isNew = ! $reaction->exists;
+        $hasChanged = $isNew || $reaction->type !== $data['type'];
         $reaction->type = $data['type'];
         $reaction->save();
 
-        if ($isNew && $invitation->user_id !== $request->user()->id) {
+        if ($hasChanged && $invitation->user_id !== $request->user()->id) {
             $notifications->send($invitation, 'reaction', [
                 'actor_name' => $request->user()->name,
                 'reaction' => $reaction->type,
@@ -53,13 +57,50 @@ class SocialController extends Controller
         $this->published($invitation);
         $data = $request->validate([
             'body' => ['required', 'string', 'min:2', 'max:500', 'not_regex:/[<>]/'],
+            'client_request_id' => ['nullable', 'string', 'min:16', 'max:80', 'regex:/^[A-Za-z0-9_-]+$/'],
         ], ['body.not_regex' => 'Komentar tidak boleh mengandung karakter < atau >.']);
-        $comment = $invitation->comments()->create([
-            'user_id' => $request->user()->id,
-            'body' => trim(preg_replace('/\s+/', ' ', $data['body'])),
-        ]);
 
-        if ($invitation->user_id !== $request->user()->id) {
+        $body = trim(preg_replace('/\s+/', ' ', $data['body']));
+        $recentDuplicate = $invitation->comments()
+            ->where('user_id', $request->user()->id)
+            ->where('body', $body)
+            ->whereNull('deleted_at')
+            ->where('created_at', '>=', now()->subMinute())
+            ->latest()
+            ->first();
+
+        if ($recentDuplicate) {
+            return $this->commentResponse($recentDuplicate, $request, true);
+        }
+
+        $clientRequestId = $data['client_request_id'] ?? 'legacy-'.hash('sha256', implode('|', [
+            $invitation->id,
+            $request->user()->id,
+            $body,
+            intdiv(now()->timestamp, 60),
+        ]));
+        $now = now();
+        $created = DB::table('invitation_comments')->insertOrIgnore([
+            'invitation_id' => $invitation->id,
+            'user_id' => $request->user()->id,
+            'body' => $body,
+            'client_request_id' => $clientRequestId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]) === 1;
+        $comment = $invitation->comments()
+            ->where('user_id', $request->user()->id)
+            ->where('client_request_id', $clientRequestId)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (! $comment) {
+            throw ValidationException::withMessages([
+                'client_request_id' => 'Identitas pengiriman komentar tidak valid. Silakan kirim ulang.',
+            ]);
+        }
+
+        if ($created && $invitation->user_id !== $request->user()->id) {
             $notifications->send($invitation, 'comment', [
                 'comment_id' => $comment->id,
                 'actor_name' => $request->user()->name,
@@ -67,15 +108,21 @@ class SocialController extends Controller
             ]);
         }
 
+        return $this->commentResponse($comment, $request, ! $created);
+    }
+
+    private function commentResponse(InvitationComment $comment, Request $request, bool $duplicate): JsonResponse
+    {
         return response()->json([
-            'message' => 'Komentar terkirim.',
+            'message' => $duplicate ? 'Komentar sudah terkirim.' : 'Komentar terkirim.',
+            'duplicate' => $duplicate,
             'data' => [
                 'id' => $comment->id,
                 'body' => $comment->body,
                 'created_at' => $comment->created_at->toISOString(),
                 'user' => ['id' => $request->user()->id, 'name' => $request->user()->name],
             ],
-        ], 201);
+        ], $duplicate ? 200 : 201);
     }
 
     public function requests(Request $request, Invitation $invitation): JsonResponse

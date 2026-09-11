@@ -23,6 +23,7 @@ class WeddingGift extends Model
         'transaction_status',
         'fraud_status',
         'paid_at',
+        'paid_notification_sent_at',
         'expired_at',
         'raw_response',
     ];
@@ -34,6 +35,7 @@ class WeddingGift extends Model
             'service_fee' => 'integer',
             'total_amount' => 'integer',
             'paid_at' => 'datetime',
+            'paid_notification_sent_at' => 'datetime',
             'expired_at' => 'datetime',
             'raw_response' => 'array',
         ];

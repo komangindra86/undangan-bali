@@ -25,11 +25,21 @@ class GiftPayoutService
             'available_balance' => max($totalPaid - $reserved, 0),
             'payout_pending' => (int) $invitation->payoutRequests()
                 ->whereIn('status', ['pending', 'approved', 'processing'])
+                ->sum('net_amount'),
+            'payout_pending_gross' => (int) $invitation->payoutRequests()
+                ->whereIn('status', ['pending', 'approved', 'processing'])
                 ->sum('amount'),
             'paid_out' => (int) $invitation->payoutRequests()
                 ->where('status', 'paid')
-                ->sum('amount'),
+                ->sum('net_amount'),
+            'platform_fee_pending' => (int) $invitation->payoutRequests()
+                ->whereIn('status', ['pending', 'approved', 'processing'])
+                ->sum('platform_fee'),
+            'platform_fee_paid' => (int) $invitation->payoutRequests()
+                ->where('status', 'paid')
+                ->sum('platform_fee'),
             'payout_minimum_amount' => (int) config('wedding_gift.payout_minimum_amount'),
+            'payout_fee_percent' => (float) config('wedding_gift.payout_fee_percent'),
         ];
     }
 
@@ -57,6 +67,7 @@ class GiftPayoutService
                 ]);
             }
 
+            $platformFee = $this->feeFor($amount);
             $payout = GiftPayoutRequest::create([
                 'user_id' => $user->id,
                 'invitation_id' => $invitation->id,
@@ -66,6 +77,8 @@ class GiftPayoutService
                 'account_number' => $account->account_number,
                 'account_holder_name' => $account->account_holder_name,
                 'amount' => $amount,
+                'platform_fee' => $platformFee,
+                'net_amount' => $amount - $platformFee,
                 'status' => 'pending',
                 'requested_at' => now(),
             ]);
@@ -88,5 +101,13 @@ class GiftPayoutService
 
             return $payout->load('payoutAccount');
         });
+    }
+
+    public function feeFor(int $amount): int
+    {
+        return min(
+            (int) ceil($amount * (float) config('wedding_gift.payout_fee_percent') / 100),
+            $amount
+        );
     }
 }

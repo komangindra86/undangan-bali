@@ -31,12 +31,12 @@ class GiftPayoutController extends Controller
             'payouts' => $payouts,
             'activeStatus' => $status,
             'summary' => [
-                'pending_amount' => GiftPayoutRequest::whereIn('status', ['pending', 'approved', 'processing'])->sum('amount'),
+                'pending_amount' => GiftPayoutRequest::whereIn('status', ['pending', 'approved', 'processing'])->sum('net_amount'),
                 'pending_count' => GiftPayoutRequest::whereIn('status', ['pending', 'approved', 'processing'])->count(),
                 'paid_count' => GiftPayoutRequest::where('status', 'paid')->count(),
-                'paid' => GiftPayoutRequest::where('status', 'paid')->sum('amount'),
+                'paid' => GiftPayoutRequest::where('status', 'paid')->sum('net_amount'),
                 'requests' => GiftPayoutRequest::count(),
-                'today_amount' => GiftPayoutRequest::whereDate('requested_at', today())->sum('amount'),
+                'today_amount' => GiftPayoutRequest::whereDate('requested_at', today())->sum('net_amount'),
                 'today_count' => GiftPayoutRequest::whereDate('requested_at', today())->count(),
             ],
         ]);

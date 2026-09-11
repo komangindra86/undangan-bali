@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Invitation;
 use App\Models\InvitationTemplate;
 use App\Models\WeddingGift;
-use App\Models\WeddingGiftSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -22,12 +21,11 @@ class WeddingGiftTest extends TestCase
             'services.midtrans.server_key' => 'SB-Mid-server-sandbox-key',
             'services.midtrans.is_production' => false,
             'services.xendit.payment_provider' => 'midtrans',
-            'wedding_gift.fee.type' => 'flat',
-            'wedding_gift.fee.value' => 2000,
+            'wedding_gift.payout_fee_percent' => 1,
         ]);
     }
 
-    public function test_owner_can_enable_gift_and_guest_can_create_qris_with_transparent_fee(): void
+    public function test_owner_can_enable_gift_and_guest_pays_only_the_gift_amount(): void
     {
         [$invitation, $token] = $this->publishedInvitation();
 
@@ -41,14 +39,14 @@ class WeddingGiftTest extends TestCase
             'fee_type' => 'percent',
             'fee_value' => 99,
         ])->assertOk()
-            ->assertJsonPath('data.fee_type', 'flat')
-            ->assertJsonPath('data.fee_value', '2000.00');
+            ->assertJsonPath('data.fee_type', 'percent')
+            ->assertJsonPath('data.fee_value', '1.00');
 
         $this->get("/u/{$invitation->slug}")
             ->assertOk()
             ->assertSee('Wedding Gift')
             ->assertSee('Buat QRIS untuk Bayar')
-            ->assertSee('Biaya Layanan');
+            ->assertSee('Tamu tidak dikenakan biaya layanan');
 
         Http::fake([
             'https://api.sandbox.midtrans.com/v2/charge' => Http::response([
@@ -68,8 +66,8 @@ class WeddingGiftTest extends TestCase
             'message' => 'Selamat berbahagia.',
         ])->assertCreated()
             ->assertJsonPath('data.gift_amount', 100000)
-            ->assertJsonPath('data.service_fee', 2000)
-            ->assertJsonPath('data.total_amount', 102000)
+            ->assertJsonPath('data.service_fee', 0)
+            ->assertJsonPath('data.total_amount', 100000)
             ->assertJsonPath('data.transaction_status', 'pending');
 
         $orderId = $response->json('data.order_id');
@@ -77,17 +75,17 @@ class WeddingGiftTest extends TestCase
         $this->assertDatabaseHas('wedding_gifts', [
             'order_id' => $orderId,
             'gift_amount' => 100000,
-            'service_fee' => 2000,
-            'total_amount' => 102000,
+            'service_fee' => 0,
+            'total_amount' => 100000,
             'transaction_status' => 'pending',
         ]);
-        $this->assertDatabaseHas('wedding_gift_fees', ['amount' => 2000, 'status' => 'pending']);
+        $this->assertDatabaseCount('wedding_gift_fees', 0);
 
         Http::assertSent(fn ($request) => $request->url() === 'https://api.sandbox.midtrans.com/v2/charge'
-            && $request['transaction_details']['gross_amount'] === 102000
+            && $request['transaction_details']['gross_amount'] === 100000
             && $request['custom_field1'] === (string) $invitation->id
             && $request['custom_field2'] === '100000'
-            && $request['custom_field3'] === '2000');
+            && $request['custom_field3'] === '0');
 
         $this->postJson("/api/public/invitations/{$invitation->slug}/wedding-gift/create", [
             'guest_name' => 'Kadek',
@@ -96,22 +94,13 @@ class WeddingGiftTest extends TestCase
             'message' => 'Rahajeng.',
         ])->assertCreated()
             ->assertJsonPath('data.gift_amount', 150000)
-            ->assertJsonPath('data.service_fee', 3000)
-            ->assertJsonPath('data.total_amount', 153000);
+            ->assertJsonPath('data.service_fee', 0)
+            ->assertJsonPath('data.total_amount', 150000);
 
         Http::assertSent(fn ($request) => $request->url() === 'https://api.sandbox.midtrans.com/v2/charge'
-            && $request['transaction_details']['gross_amount'] === 153000
+            && $request['transaction_details']['gross_amount'] === 150000
             && $request['custom_field2'] === '150000'
-            && $request['custom_field3'] === '3000');
-    }
-
-    public function test_service_fee_uses_flat_then_percent_tier(): void
-    {
-        $setting = new WeddingGiftSetting;
-
-        $this->assertSame(2000, $setting->serviceFeeFor(50000));
-        $this->assertSame(2000, $setting->serviceFeeFor(100000));
-        $this->assertSame(3000, $setting->serviceFeeFor(150000));
+            && $request['custom_field3'] === '0');
     }
 
     public function test_gift_selected_in_mobile_draft_is_available_after_publish(): void
@@ -149,8 +138,8 @@ class WeddingGiftTest extends TestCase
             ],
         ])->assertCreated()
             ->assertJsonPath('data.gift_setting.is_active', true)
-            ->assertJsonPath('data.gift_setting.fee_type', 'flat')
-            ->assertJsonPath('data.gift_setting.fee_value', '2000.00');
+            ->assertJsonPath('data.gift_setting.fee_type', 'percent')
+            ->assertJsonPath('data.gift_setting.fee_value', '1.00');
 
         $invitationId = $draft->json('data.id');
         $published = $this->withToken($token)->postJson("/api/invitations/{$invitationId}/publish")
@@ -169,7 +158,7 @@ class WeddingGiftTest extends TestCase
         $payload = [
             'order_id' => $gift->order_id,
             'status_code' => '200',
-            'gross_amount' => '102000.00',
+            'gross_amount' => '100000.00',
             'transaction_id' => 'transaction-paid',
             'payment_type' => 'qris',
             'transaction_status' => 'settlement',
@@ -189,12 +178,13 @@ class WeddingGiftTest extends TestCase
             ->assertJsonPath('transaction_status', 'paid');
 
         $this->assertDatabaseHas('wedding_gifts', ['id' => $gift->id, 'transaction_status' => 'paid']);
-        $this->assertDatabaseHas('wedding_gift_fees', ['wedding_gift_id' => $gift->id, 'status' => 'earned']);
-        $this->assertDatabaseCount('wedding_gift_fees', 1);
+        $this->assertDatabaseCount('wedding_gift_fees', 0);
+        $this->assertNotNull($gift->fresh()->paid_notification_sent_at);
+        $this->assertSame(1, $invitation->socialNotifications()->where('type', 'wedding_gift_paid')->count());
         $this->withToken($token)->getJson("/api/invitations/{$invitation->id}/gifts")
             ->assertOk()
             ->assertJsonPath('summary.total_gift_paid', 100000)
-            ->assertJsonPath('summary.total_service_fee', 2000)
+            ->assertJsonPath('summary.total_service_fee', 0)
             ->assertJsonPath('summary.giver_count', 1);
     }
 
@@ -206,7 +196,7 @@ class WeddingGiftTest extends TestCase
         Http::fake([
             "https://api.sandbox.midtrans.com/v2/{$gift->order_id}/status" => Http::response([
                 'order_id' => $gift->order_id,
-                'gross_amount' => '102000.00',
+                'gross_amount' => '100000.00',
                 'transaction_id' => 'status-paid',
                 'transaction_status' => 'settlement',
                 'payment_type' => 'qris',
@@ -219,7 +209,8 @@ class WeddingGiftTest extends TestCase
             ->assertJsonPath('data.transaction_status', 'paid');
 
         $this->assertDatabaseHas('wedding_gifts', ['id' => $gift->id, 'transaction_status' => 'paid']);
-        $this->assertDatabaseHas('wedding_gift_fees', ['wedding_gift_id' => $gift->id, 'status' => 'earned']);
+        $this->assertDatabaseCount('wedding_gift_fees', 0);
+        $this->assertSame(1, $invitation->socialNotifications()->where('type', 'wedding_gift_paid')->count());
     }
 
     public function test_xendit_provider_creates_qris_only_invoice(): void
@@ -249,7 +240,7 @@ class WeddingGiftTest extends TestCase
                 'id' => 'xendit-invoice-1',
                 'external_id' => "WGIFT-{$invitation->id}-20260613120000-ABC123",
                 'status' => 'PENDING',
-                'amount' => 102000,
+                'amount' => 100000,
                 'invoice_url' => 'https://checkout.xendit.co/web/xendit-invoice-1',
             ]),
         ]);
@@ -274,7 +265,7 @@ class WeddingGiftTest extends TestCase
 
         Http::assertSent(fn ($request) => $request->url() === 'https://api.xendit.co/v2/invoices'
             && $request['external_id'] === $orderId
-            && $request['amount'] === 102000
+            && $request['amount'] === 100000
             && $request['payment_methods'] === ['QRIS']
             && $request['metadata']['invitation_id'] === $invitation->id
             && $request->hasHeader('Authorization'));
@@ -330,7 +321,7 @@ class WeddingGiftTest extends TestCase
         $payload = [
             'id' => 'xendit-invoice-1',
             'external_id' => $gift->order_id,
-            'amount' => 102000,
+            'amount' => 100000,
             'status' => 'PAID',
             'paid_at' => '2026-06-13T12:15:00.000Z',
         ];
@@ -344,7 +335,8 @@ class WeddingGiftTest extends TestCase
             ->assertJsonPath('transaction_status', 'paid');
 
         $this->assertDatabaseHas('wedding_gifts', ['id' => $gift->id, 'transaction_status' => 'paid']);
-        $this->assertDatabaseHas('wedding_gift_fees', ['wedding_gift_id' => $gift->id, 'status' => 'earned']);
+        $this->assertDatabaseCount('wedding_gift_fees', 0);
+        $this->assertSame(1, $invitation->socialNotifications()->where('type', 'wedding_gift_paid')->count());
     }
 
     public function test_xendit_webhook_test_payload_with_unknown_external_id_is_accepted(): void
@@ -397,12 +389,11 @@ class WeddingGiftTest extends TestCase
         $gift = $invitation->weddingGifts()->create([
             'guest_name' => 'Komang',
             'gift_amount' => 100000,
-            'service_fee' => 2000,
-            'total_amount' => 102000,
+            'service_fee' => 0,
+            'total_amount' => 100000,
             'order_id' => "WGIFT-{$invitation->id}-TEST-ABC123",
             'transaction_status' => 'pending',
         ]);
-        $gift->fee()->create(['amount' => 2000, 'status' => 'pending']);
 
         return $gift;
     }

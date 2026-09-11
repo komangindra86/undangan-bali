@@ -7,6 +7,7 @@ use App\Models\Invitation;
 use App\Models\InvitationTemplate;
 use App\Models\PushToken;
 use App\Models\User;
+use App\Models\WeddingGift;
 use App\Services\FirebasePushService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -72,6 +73,64 @@ class PushNotificationTest extends TestCase
             && $job->invitationId === $invitation->id
             && $job->type === 'invitation_request'
         );
+    }
+
+    public function test_comment_love_gift_and_invitation_request_all_queue_push_notifications(): void
+    {
+        Queue::fake();
+        config(['services.midtrans.server_key' => 'push-test-server-key']);
+        $invitation = $this->publishedInvitation();
+        $guest = User::factory()->create(['role' => 'user']);
+        PushToken::create([
+            'user_id' => $invitation->user_id,
+            'token' => 'fcm_owner_token:All-events-device_123',
+            'platform' => 'android',
+        ]);
+
+        $this->actingAs($guest, 'sanctum')->postJson('/api/moments/'.$invitation->id.'/reaction', [
+            'type' => 'love',
+        ])->assertOk();
+        $this->actingAs($guest, 'sanctum')->postJson('/api/moments/'.$invitation->id.'/comments', [
+            'body' => 'Selamat berbahagia untuk kalian',
+            'client_request_id' => 'comment-push-request-0001',
+        ])->assertCreated();
+        $this->postJson('/api/moments/'.$invitation->id.'/request-invitation', [
+            'requester_name' => 'Komang Tamu',
+            'requester_whatsapp' => '081234567890',
+        ])->assertCreated();
+
+        $gift = WeddingGift::create([
+            'invitation_id' => $invitation->id,
+            'guest_name' => 'Kadek Tamu',
+            'gift_amount' => 100000,
+            'service_fee' => 0,
+            'total_amount' => 100000,
+            'order_id' => 'WGIFT-PUSH-NOTIFICATION-001',
+            'payment_type' => 'qris',
+            'transaction_status' => 'pending',
+        ]);
+        $payload = [
+            'order_id' => $gift->order_id,
+            'status_code' => '200',
+            'gross_amount' => '100000.00',
+            'transaction_id' => 'push-test-transaction',
+            'payment_type' => 'qris',
+            'transaction_status' => 'settlement',
+            'fraud_status' => 'accept',
+        ];
+        $payload['signature_key'] = hash(
+            'sha512',
+            $payload['order_id'].$payload['status_code'].$payload['gross_amount'].'push-test-server-key'
+        );
+        $this->postJson('/api/midtrans/webhook', $payload)->assertOk();
+
+        foreach (['reaction', 'comment', 'invitation_request', 'wedding_gift_paid'] as $type) {
+            Queue::assertPushed(SendFirebasePushNotification::class, fn ($job) => $job->userId === $invitation->user_id
+                && $job->invitationId === $invitation->id
+                && $job->type === $type
+            );
+        }
+        $this->assertDatabaseCount('social_notifications', 4);
     }
 
     public function test_fcm_message_is_sent_and_message_id_is_saved(): void

@@ -24,17 +24,8 @@ class MidtransWebhookController extends Controller
             'Nominal transaksi tidak cocok.'
         );
 
-        $wasPaid = $gift->transaction_status === 'paid';
         $gift = $midtrans->applyTrustedStatus($gift, $payload);
-
-        if (! $wasPaid && $gift->transaction_status === 'paid') {
-            $notifications->send($gift->invitation, 'wedding_gift_paid', [
-                'gift_id' => $gift->id,
-                'guest_name' => $gift->guest_name,
-                'gift_amount' => $gift->gift_amount,
-                'message' => $gift->invitation->gift_label.' dari '.$gift->guest_name.' berhasil diterima.',
-            ]);
-        }
+        $notifications->sendGiftPaidIfNeeded($gift);
 
         return response()->json([
             'message' => 'Notifikasi Midtrans diproses.',

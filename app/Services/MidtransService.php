@@ -69,33 +69,19 @@ class MidtransService
 
             if ($incoming === 'refunded') {
                 $updates['transaction_status'] = 'refunded';
-                $locked->fee()->updateOrCreate([], [
-                    'amount' => $locked->service_fee,
-                    'status' => 'refunded',
-                ]);
             } elseif ($incoming === 'paid') {
                 $updates['transaction_status'] = 'paid';
                 $updates['paid_at'] = $locked->paid_at ?: $this->paidTime($payload);
-                $locked->fee()->updateOrCreate([], [
-                    'amount' => $locked->service_fee,
-                    'status' => 'earned',
-                ]);
             } elseif ($locked->transaction_status !== 'paid' && $locked->transaction_status !== 'refunded') {
                 $updates['transaction_status'] = $incoming;
                 if ($incoming === 'expired') {
                     $updates['expired_at'] = $locked->expired_at ?: now();
                 }
-                if (in_array($incoming, ['expired', 'cancelled', 'denied', 'failure'], true)) {
-                    $locked->fee()->updateOrCreate([], [
-                        'amount' => $locked->service_fee,
-                        'status' => 'refunded',
-                    ]);
-                }
             }
 
             $locked->update($updates);
 
-            return $locked->fresh(['fee']);
+            return $locked->fresh();
         });
     }
 

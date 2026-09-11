@@ -33,13 +33,4 @@ class WeddingGiftSetting extends Model
     {
         return $this->belongsTo(Invitation::class);
     }
-
-    public function serviceFeeFor(int $giftAmount): int
-    {
-        if ($giftAmount < (int) config('wedding_gift.fee.flat_below_amount')) {
-            return (int) config('wedding_gift.fee.flat_value');
-        }
-
-        return (int) ceil($giftAmount * (float) config('wedding_gift.fee.percent_value') / 100);
-    }
 }

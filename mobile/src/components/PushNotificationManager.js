@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { navigateFromPush } from '../navigation/navigationRef';
 import { api } from '../services/api';
 import { SESSION_KEYS } from '../services/draftStorage';
+import { isAndroidDevicePushToken } from '../utils/pushNotifications';
 
 if (Platform.OS !== 'web') {
   Notifications.setNotificationHandler({
@@ -30,17 +31,22 @@ export default function PushNotificationManager() {
 
     const pushTokenSubscription = Platform.OS === 'android'
       ? Notifications.addPushTokenListener((deviceToken) => {
-        if (deviceToken.type === 'fcm' && typeof deviceToken.data === 'string') {
+        if (isAndroidDevicePushToken(deviceToken)) {
           saveDeviceToken(deviceToken.data, token).catch(() => {});
         }
       })
       : null;
 
+    let retryTimer;
     registerDevice(token).catch((error) => {
-      if (__DEV__) console.warn('Push registration skipped:', error.message);
+      if (__DEV__) console.warn('Push registration failed, retrying:', error.message);
+      retryTimer = setTimeout(() => registerDevice(token).catch(() => {}), 15000);
     });
 
-    return () => pushTokenSubscription?.remove();
+    return () => {
+      if (retryTimer) clearTimeout(retryTimer);
+      pushTokenSubscription?.remove();
+    };
   }, [loading, token]);
 
   useEffect(() => {
@@ -89,7 +95,7 @@ async function registerDevice(authToken) {
   if (permission.status !== 'granted') return;
 
   const deviceToken = await Notifications.getDevicePushTokenAsync();
-  if (deviceToken.type !== 'fcm' || typeof deviceToken.data !== 'string') {
+  if (!isAndroidDevicePushToken(deviceToken)) {
     throw new Error('Perangkat tidak mengembalikan token Firebase Cloud Messaging.');
   }
 

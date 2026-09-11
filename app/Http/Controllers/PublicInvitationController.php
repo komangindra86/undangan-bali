@@ -90,8 +90,8 @@ class PublicInvitationController extends Controller
             'is_active' => true,
             'receiver_name' => $invitation->display_name,
             'receiver_note' => $invitation->gift_label.' bersifat opsional. Tanda kasih diproses melalui QRIS.',
-            'fee_type' => config('wedding_gift.fee.type'),
-            'fee_value' => config('wedding_gift.fee.value'),
+            'fee_type' => 'percent',
+            'fee_value' => config('wedding_gift.payout_fee_percent'),
             'minimum_amount' => config('wedding_gift.minimum_amount'),
             'show_amount_public' => false,
             'allow_message' => true,
@@ -143,8 +143,8 @@ class PublicInvitationController extends Controller
             'receiver_note' => $isLiveEnvironment
                 ? 'Demo tampilan Wedding Gift. Pembayaran asli hanya tersedia pada undangan pelanggan.'
                 : 'Demo pembayaran mode tes. Tidak ada uang asli yang masuk.',
-            'fee_type' => config('wedding_gift.fee.type'),
-            'fee_value' => config('wedding_gift.fee.value'),
+            'fee_type' => 'percent',
+            'fee_value' => config('wedding_gift.payout_fee_percent'),
             'minimum_amount' => config('wedding_gift.minimum_amount'),
             'show_amount_public' => false,
             'allow_message' => true,

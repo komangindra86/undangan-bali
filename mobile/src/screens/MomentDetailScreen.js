@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Keyboard, KeyboardAvoidingView, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
@@ -14,6 +14,8 @@ export default function MomentDetailScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
   const [sending, setSending] = useState(false);
+  const sendingCommentRef = useRef(false);
+  const pendingCommentRef = useRef(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -46,20 +48,28 @@ export default function MomentDetailScreen({ navigation, route }) {
   }
 
   async function sendComment() {
+    if (sendingCommentRef.current) return;
     if (!requireLogin()) return;
-    if (comment.trim().length < 2) {
+    const body = comment.trim();
+    if (body.length < 2) {
       Alert.alert('Komentar', 'Tulis komentar minimal 2 karakter.');
       return;
     }
+    sendingCommentRef.current = true;
     setSending(true);
+    if (!pendingCommentRef.current || pendingCommentRef.current.body !== body) {
+      pendingCommentRef.current = { body, id: createCommentRequestId() };
+    }
     try {
-      await api.commentOnMoment(id, comment.trim(), token);
+      await api.commentOnMoment(id, body, pendingCommentRef.current.id, token);
       setComment('');
+      pendingCommentRef.current = null;
       Keyboard.dismiss();
       await load();
     } catch (error) {
       Alert.alert('Komentar belum terkirim', error.message);
     } finally {
+      sendingCommentRef.current = false;
       setSending(false);
     }
   }
@@ -131,6 +141,11 @@ export default function MomentDetailScreen({ navigation, route }) {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+function createCommentRequestId() {
+  const random = () => Math.random().toString(36).slice(2, 12);
+  return `comment-${Date.now().toString(36)}-${random()}-${random()}`;
 }
 
 function Reaction({ label, onPress }) {

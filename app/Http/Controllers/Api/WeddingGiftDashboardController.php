@@ -20,7 +20,7 @@ class WeddingGiftDashboardController extends Controller
         return response()->json([
             'summary' => [
                 'total_gift_paid' => (int) (clone $paid)->sum('gift_amount'),
-                'total_service_fee' => (int) (clone $paid)->sum('service_fee'),
+                'total_service_fee' => 0,
                 'giver_count' => (clone $paid)->count(),
                 ...$payouts->summary($invitation),
             ],

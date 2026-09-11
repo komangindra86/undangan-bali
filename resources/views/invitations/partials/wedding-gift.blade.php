@@ -2,9 +2,6 @@
     $giftSetting = $invitation->giftSetting;
     $isPreview = $isPreview ?? false;
     $isPaymentDemo = $isPaymentDemo ?? false;
-    $flatBelowAmount = (int) config('wedding_gift.fee.flat_below_amount');
-    $flatFee = (int) config('wedding_gift.fee.flat_value');
-    $percentFee = (float) config('wedding_gift.fee.percent_value');
     $paymentProvider = config('services.xendit.payment_provider') === 'xendit' ? 'xendit' : 'midtrans';
 @endphp
 <style>
@@ -53,9 +50,6 @@
             data-preview="{{ $isPreview ? '1' : '0' }}"
             data-create-url="{{ url('/api/public/invitations/'.$invitation->slug.'/wedding-gift/create') }}"
             data-status-url="{{ url('/api/public/wedding-gift/__ORDER_ID__/status') }}"
-            data-flat-below-amount="{{ $flatBelowAmount }}"
-            data-flat-fee="{{ $flatFee }}"
-            data-percent-fee="{{ $percentFee }}"
             data-payment-provider="{{ $paymentProvider }}"
         >
             <label class="wg-field">
@@ -80,10 +74,9 @@
             @endif
             <div class="wg-breakdown">
                 <div class="wg-line"><span>Nominal Gift</span><strong data-wg-amount>Rp0</strong></div>
-                <div class="wg-line"><span>Biaya Layanan</span><strong data-wg-fee>Rp0</strong></div>
                 <div class="wg-line wg-total"><span>Total Bayar</span><strong data-wg-total>Rp0</strong></div>
             </div>
-            <p class="wg-note">Biaya layanan: Rp{{ number_format($flatFee, 0, ',', '.') }} untuk gift di bawah Rp{{ number_format($flatBelowAmount, 0, ',', '.') }}, dan {{ rtrim(rtrim(number_format($percentFee, 2, ',', '.'), '0'), ',') }}% untuk Rp{{ number_format($flatBelowAmount, 0, ',', '.') }} ke atas.</p>
+            <p class="wg-note">Tamu tidak dikenakan biaya layanan. Total pembayaran sama dengan nominal gift.</p>
             <button type="submit" class="wg-button">{{ $isPreview ? 'Lihat Simulasi Pembayaran' : 'Buat QRIS untuk Bayar' }}</button>
             <p class="wg-status" data-wg-error></p>
             <div class="wg-result" data-wg-result>
@@ -96,7 +89,6 @@
                 <a class="wg-pay-link" data-wg-pay-link target="_blank" rel="noopener">Buka QRIS Xendit</a>
                 <div class="wg-breakdown">
                     <div class="wg-line"><span>Nominal Gift</span><strong data-result-amount></strong></div>
-                    <div class="wg-line"><span>Biaya Layanan</span><strong data-result-fee></strong></div>
                     <div class="wg-line wg-total"><span>Total Bayar</span><strong data-result-total></strong></div>
                 </div>
                 <button type="button" class="wg-check" data-wg-check>Cek Status Pembayaran</button>
@@ -112,25 +104,16 @@
         if (!form) return;
         const formatRupiah = (value) => 'Rp' + new Intl.NumberFormat('id-ID').format(Number(value || 0));
         const amountInput = form.elements.gift_amount;
-        const flatBelowAmount = Number(form.dataset.flatBelowAmount);
-        const flatFee = Number(form.dataset.flatFee);
-        const percentFee = Number(form.dataset.percentFee);
         const error = form.querySelector('[data-wg-error]');
         const result = form.querySelector('[data-wg-result]');
         const isPreview = form.dataset.preview === '1';
         const paymentProvider = form.dataset.paymentProvider;
         let orderId = null;
 
-        function feeFor(amount) {
-            return amount < flatBelowAmount ? flatFee : Math.ceil(amount * percentFee / 100);
-        }
-
         function updateBreakdown() {
             const amount = Math.max(0, Number(amountInput.value || 0));
-            const fee = amount ? feeFor(amount) : 0;
             form.querySelector('[data-wg-amount]').textContent = formatRupiah(amount);
-            form.querySelector('[data-wg-fee]').textContent = formatRupiah(fee);
-            form.querySelector('[data-wg-total]').textContent = formatRupiah(amount + fee);
+            form.querySelector('[data-wg-total]').textContent = formatRupiah(amount);
         }
 
         amountInput.addEventListener('input', updateBreakdown);
@@ -147,10 +130,8 @@
             try {
                 if (isPreview) {
                     const amount = payload.gift_amount || 100000;
-                    const fee = feeFor(amount);
                     form.querySelector('[data-result-amount]').textContent = formatRupiah(amount);
-                    form.querySelector('[data-result-fee]').textContent = formatRupiah(fee);
-                    form.querySelector('[data-result-total]').textContent = formatRupiah(amount + fee);
+                    form.querySelector('[data-result-total]').textContent = formatRupiah(amount);
                     form.querySelector('[data-wg-payment-status]').textContent = 'Ini hanya simulasi preview. Pembayaran asli dibuat setelah undangan dipublish.';
                     result.classList.add('visible');
                     result.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -185,7 +166,6 @@
                     payLink.classList.remove('visible');
                 }
                 form.querySelector('[data-result-amount]').textContent = formatRupiah(data.gift_amount);
-                form.querySelector('[data-result-fee]').textContent = formatRupiah(data.service_fee);
                 form.querySelector('[data-result-total]').textContent = formatRupiah(data.total_amount);
                 result.classList.add('visible');
                 result.scrollIntoView({ behavior: 'smooth', block: 'center' });

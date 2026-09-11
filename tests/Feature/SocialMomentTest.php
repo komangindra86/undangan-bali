@@ -78,17 +78,42 @@ class SocialMomentTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.type', 'love');
 
+        $commentPayload = [
+            'body' => 'Selamat menempuh hidup baru!',
+            'client_request_id' => 'comment-test-request-0001',
+        ];
         $this->actingAs($guest, 'sanctum')
-            ->postJson('/api/moments/'.$invitation->id.'/comments', ['body' => 'Selamat menempuh hidup baru!'])
+            ->postJson('/api/moments/'.$invitation->id.'/comments', $commentPayload)
             ->assertCreated()
+            ->assertJsonPath('duplicate', false)
             ->assertJsonPath('data.user.name', $guest->name);
+        $this->actingAs($guest, 'sanctum')
+            ->postJson('/api/moments/'.$invitation->id.'/comments', $commentPayload)
+            ->assertOk()
+            ->assertJsonPath('duplicate', true);
 
         $this->assertDatabaseHas('invitation_reactions', [
             'invitation_id' => $invitation->id,
             'user_id' => $guest->id,
             'type' => 'love',
         ]);
+        $this->assertDatabaseCount('invitation_comments', 1);
         $this->assertDatabaseCount('social_notifications', 2);
+    }
+
+    public function test_legacy_mobile_comment_retry_is_deduplicated(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $guest = User::factory()->create(['role' => 'user']);
+        $payload = ['body' => 'Rahajeng semoga selalu bahagia'];
+
+        $this->actingAs($guest, 'sanctum')->postJson('/api/moments/'.$invitation->id.'/comments', $payload)->assertCreated();
+        $this->actingAs($guest, 'sanctum')->postJson('/api/moments/'.$invitation->id.'/comments', $payload)
+            ->assertOk()
+            ->assertJsonPath('duplicate', true);
+
+        $this->assertDatabaseCount('invitation_comments', 1);
+        $this->assertDatabaseCount('social_notifications', 1);
     }
 
     public function test_feed_excludes_demo_and_sanitizes_legacy_names(): void

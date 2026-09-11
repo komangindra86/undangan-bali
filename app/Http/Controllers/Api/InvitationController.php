@@ -226,8 +226,8 @@ class InvitationController extends Controller
 
         $invitation->giftSetting()->updateOrCreate([], [
             ...$giftData,
-            'fee_type' => config('wedding_gift.fee.type'),
-            'fee_value' => config('wedding_gift.fee.value'),
+            'fee_type' => 'percent',
+            'fee_value' => config('wedding_gift.payout_fee_percent'),
         ]);
     }
 

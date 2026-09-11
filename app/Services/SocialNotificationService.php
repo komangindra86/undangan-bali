@@ -6,6 +6,8 @@ use App\Jobs\SendFirebasePushNotification;
 use App\Models\Invitation;
 use App\Models\PushToken;
 use App\Models\SocialNotification;
+use App\Models\WeddingGift;
+use Illuminate\Support\Facades\DB;
 
 class SocialNotificationService
 {
@@ -32,6 +34,31 @@ class SocialNotificationService
                 $body,
             )->afterCommit();
         }
+    }
+
+    public function sendGiftPaidIfNeeded(WeddingGift $gift): bool
+    {
+        return DB::transaction(function () use ($gift) {
+            $claimed = WeddingGift::query()
+                ->whereKey($gift->id)
+                ->where('transaction_status', 'paid')
+                ->whereNull('paid_notification_sent_at')
+                ->update(['paid_notification_sent_at' => now()]);
+
+            if ($claimed !== 1) {
+                return false;
+            }
+
+            $gift = WeddingGift::with('invitation')->findOrFail($gift->id);
+            $this->send($gift->invitation, 'wedding_gift_paid', [
+                'gift_id' => $gift->id,
+                'guest_name' => $gift->guest_name,
+                'gift_amount' => $gift->gift_amount,
+                'message' => $gift->invitation->gift_label.' dari '.$gift->guest_name.' berhasil diterima.',
+            ]);
+
+            return true;
+        });
     }
 
     private function pushCopy(string $type, array $data, string $giftLabel): array

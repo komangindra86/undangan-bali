@@ -9,7 +9,6 @@ use App\Models\InvitationTemplate;
 use App\Models\InvitationView;
 use App\Models\User;
 use App\Models\WeddingGift;
-use App\Models\WeddingGiftFee;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -21,7 +20,7 @@ class DashboardController extends Controller
 
         $published = Invitation::query()->where('status', 'published');
         $today = today();
-        $feeQuery = WeddingGiftFee::query();
+        $payoutFeeQuery = GiftPayoutRequest::query();
 
         return view('admin.dashboard', [
             'summary' => [
@@ -36,16 +35,18 @@ class DashboardController extends Controller
                 'media_deleted' => Invitation::whereNotNull('media_deleted_at')->count(),
                 'views' => InvitationView::count(),
                 'gift_paid' => WeddingGift::where('transaction_status', 'paid')->sum('gift_amount'),
-                'payout_pending' => GiftPayoutRequest::whereIn('status', ['pending', 'approved', 'processing'])->sum('amount'),
-                'platform_fee_earned' => (clone $feeQuery)->where('status', 'earned')->sum('amount'),
-                'platform_fee_pending' => (clone $feeQuery)->where('status', 'pending')->sum('amount'),
-                'platform_fee_refunded' => (clone $feeQuery)->where('status', 'refunded')->sum('amount'),
-                'platform_fee_earned_this_month' => (clone $feeQuery)
-                    ->where('status', 'earned')
-                    ->whereMonth('updated_at', now()->month)
-                    ->whereYear('updated_at', now()->year)
-                    ->sum('amount'),
-                'platform_fee_transactions' => (clone $feeQuery)->where('status', 'earned')->count(),
+                'payout_pending' => GiftPayoutRequest::whereIn('status', ['pending', 'approved', 'processing'])->sum('net_amount'),
+                'platform_fee_earned' => (clone $payoutFeeQuery)->where('status', 'paid')->sum('platform_fee'),
+                'platform_fee_pending' => (clone $payoutFeeQuery)
+                    ->whereIn('status', ['pending', 'approved', 'processing'])
+                    ->sum('platform_fee'),
+                'platform_fee_rejected' => (clone $payoutFeeQuery)->where('status', 'rejected')->sum('platform_fee'),
+                'platform_fee_earned_this_month' => (clone $payoutFeeQuery)
+                    ->where('status', 'paid')
+                    ->whereMonth('paid_at', now()->month)
+                    ->whereYear('paid_at', now()->year)
+                    ->sum('platform_fee'),
+                'platform_fee_transactions' => (clone $payoutFeeQuery)->where('status', 'paid')->count(),
             ],
             'latestInvitations' => Invitation::with(['user', 'template'])
                 ->latest()
@@ -63,9 +64,9 @@ class DashboardController extends Controller
                 ->latest('requested_at')
                 ->limit(5)
                 ->get(),
-            'recentPlatformFees' => WeddingGiftFee::with(['weddingGift.invitation.user'])
-                ->where('status', 'earned')
-                ->latest('updated_at')
+            'recentPayoutFees' => GiftPayoutRequest::with(['user', 'invitation'])
+                ->where('status', 'paid')
+                ->latest('paid_at')
                 ->limit(6)
                 ->get(),
         ]);

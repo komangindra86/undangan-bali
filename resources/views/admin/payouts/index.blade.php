@@ -116,8 +116,9 @@
                             <p class="text-stone-500 text-sm mt-1">{{ $payout->user->email }}</p>
                         </div>
                         <div class="lg:text-right">
-                            <p class="text-stone-400 text-sm">Nominal dicairkan</p>
-                            <p class="text-amber-300 font-serif text-3xl">Rp{{ number_format($payout->amount, 0, ',', '.') }}</p>
+                            <p class="text-stone-400 text-sm">Transfer ke pasangan</p>
+                            <p class="text-amber-300 font-serif text-3xl">Rp{{ number_format($payout->net_amount, 0, ',', '.') }}</p>
+                            <p class="text-stone-500 text-xs mt-1">Dari Rp{{ number_format($payout->amount, 0, ',', '.') }} - fee 1% Rp{{ number_format($payout->platform_fee, 0, ',', '.') }}</p>
                         </div>
                     </div>
 

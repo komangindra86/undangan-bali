@@ -17,6 +17,8 @@ class GiftPayoutRequest extends Model
         'account_number',
         'account_holder_name',
         'amount',
+        'platform_fee',
+        'net_amount',
         'status',
         'admin_note',
         'transfer_reference',
@@ -29,6 +31,8 @@ class GiftPayoutRequest extends Model
     {
         return [
             'amount' => 'integer',
+            'platform_fee' => 'integer',
+            'net_amount' => 'integer',
             'requested_at' => 'datetime',
             'processed_at' => 'datetime',
             'paid_at' => 'datetime',

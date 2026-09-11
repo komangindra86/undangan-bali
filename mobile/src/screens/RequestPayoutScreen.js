@@ -15,6 +15,10 @@ export default function RequestPayoutScreen({ navigation, route }) {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const numericAmount = Number(amount || 0);
+  const feePercent = Number(dashboard?.summary?.payout_fee_percent || 1);
+  const platformFee = numericAmount > 0 ? Math.ceil(numericAmount * feePercent / 100) : 0;
+  const netAmount = Math.max(numericAmount - platformFee, 0);
 
   useEffect(() => {
     api.weddingGifts(invitation.id, token)
@@ -86,11 +90,25 @@ export default function RequestPayoutScreen({ navigation, route }) {
           </View>
         )}
         <FormField label="Nominal yang dicairkan *" placeholder="50000" keyboardType="numeric" value={amount} onChangeText={(value) => setAmount(value.replace(/\D/g, ''))} />
-        <Text style={styles.disclaimer}>Admin akan memeriksa pengajuan dan mentransfer dana ke rekening tersimpan. Nominal yang diajukan tidak dapat diajukan ulang selama diproses.</Text>
+        <View style={styles.breakdown}>
+          <BreakdownRow label="Nominal pencairan" value={rupiah(numericAmount)} />
+          <BreakdownRow label={`Fee platform ${feePercent}%`} value={`- ${rupiah(platformFee)}`} />
+          <BreakdownRow label="Diterima ke rekening" value={rupiah(netAmount)} strong />
+        </View>
+        <Text style={styles.disclaimer}>Fee hanya dipotong saat pencairan. Admin akan memeriksa pengajuan dan mentransfer jumlah bersih ke rekening tersimpan. Nominal yang diajukan tidak dapat diajukan ulang selama diproses.</Text>
         <PrimaryButton title="Kirim Pengajuan" onPress={submit} loading={sending} disabled={!dashboard.payout_account || !dashboard.summary.available_balance} style={styles.button} />
         <Text onPress={() => navigation.goBack()} style={styles.back}>Kembali</Text>
       </KeyboardAwareScrollView>
     </SafeAreaView>
+  );
+}
+
+function BreakdownRow({ label, value, strong = false }) {
+  return (
+    <View style={[styles.breakdownRow, strong && styles.breakdownTotal]}>
+      <Text style={[styles.breakdownLabel, strong && styles.breakdownStrong]}>{label}</Text>
+      <Text style={[styles.breakdownValue, strong && styles.breakdownStrong]}>{value}</Text>
+    </View>
   );
 }
 
@@ -109,6 +127,12 @@ const styles = StyleSheet.create({
   accountText: { color: colors.text, fontSize: 16, fontWeight: '700', marginBottom: spacing.xs, marginTop: spacing.xs },
   warning: { marginBottom: spacing.lg },
   addAccount: { marginTop: spacing.sm },
+  breakdown: { backgroundColor: colors.surface, borderColor: colors.border, borderRadius: 16, borderWidth: 1, marginTop: spacing.md, padding: spacing.md },
+  breakdownRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.xs },
+  breakdownTotal: { borderTopColor: colors.border, borderTopWidth: 1, marginTop: spacing.xs, paddingTop: spacing.sm },
+  breakdownLabel: { color: colors.muted, fontSize: 13 },
+  breakdownValue: { color: colors.text, fontSize: 13 },
+  breakdownStrong: { color: colors.goldLight, fontSize: 15, fontWeight: '700' },
   disclaimer: { color: colors.muted, fontSize: 13, lineHeight: 20, marginTop: spacing.sm },
   button: { marginTop: spacing.lg },
   back: { color: colors.goldLight, marginTop: spacing.lg, padding: spacing.sm, textAlign: 'center' },

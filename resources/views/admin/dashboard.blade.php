@@ -63,16 +63,16 @@
                 <div>
                     <p class="text-amber-300 tracking-[0.2em] uppercase text-xs">Laporan Penghasilan Platform</p>
                     <h2 class="font-serif text-2xl mt-2">Fee Wedding Gift</h2>
-                    <p class="text-stone-400 text-sm mt-1">Pendapatan platform dihitung dari biaya layanan transaksi gift yang sudah dibayar.</p>
+                    <p class="text-stone-400 text-sm mt-1">Pendapatan platform berasal dari potongan 1% saat pasangan mencairkan saldo.</p>
                 </div>
-                <p class="text-stone-500 text-sm">Sumber: tabel wedding_gift_fees</p>
+                <p class="text-stone-500 text-sm">Tamu tidak dikenakan biaya layanan</p>
             </div>
 
             <div class="grid sm:grid-cols-2 xl:grid-cols-5 gap-4 mt-5">
                 <article class="rounded-2xl bg-stone-950/80 border border-amber-500/30 p-4">
                     <p class="text-stone-400 text-sm">Total fee earned</p>
                     <p class="text-amber-300 font-serif text-3xl mt-2">Rp{{ number_format($summary['platform_fee_earned'], 0, ',', '.') }}</p>
-                    <p class="text-stone-500 text-xs mt-2">{{ number_format($summary['platform_fee_transactions']) }} transaksi paid</p>
+                    <p class="text-stone-500 text-xs mt-2">{{ number_format($summary['platform_fee_transactions']) }} pencairan selesai</p>
                 </article>
                 <article class="rounded-2xl bg-stone-950/80 border border-stone-800 p-4">
                     <p class="text-stone-400 text-sm">Fee bulan ini</p>
@@ -86,8 +86,8 @@
                 </article>
                 <article class="rounded-2xl bg-stone-950/80 border border-red-500/30 p-4">
                     <p class="text-stone-400 text-sm">Fee refunded/gagal</p>
-                    <p class="text-red-300 font-serif text-3xl mt-2">Rp{{ number_format($summary['platform_fee_refunded'], 0, ',', '.') }}</p>
-                    <p class="text-stone-500 text-xs mt-2">Tidak dihitung pendapatan</p>
+                    <p class="text-red-300 font-serif text-3xl mt-2">Rp{{ number_format($summary['platform_fee_rejected'], 0, ',', '.') }}</p>
+                    <p class="text-stone-500 text-xs mt-2">Fee batal dari pencairan ditolak</p>
                 </article>
                 <article class="rounded-2xl bg-stone-950/80 border border-stone-800 p-4">
                     <p class="text-stone-400 text-sm">Gift paid pasangan</p>
@@ -227,22 +227,21 @@
                 <table class="w-full text-sm">
                     <thead class="text-left text-stone-500 border-b border-stone-800">
                         <tr>
-                            <th class="py-3 pr-4">Tamu</th>
-                            <th class="py-3 pr-4">Undangan</th>
                             <th class="py-3 pr-4">Pasangan</th>
-                            <th class="py-3 pr-4">Gift</th>
+                            <th class="py-3 pr-4">Undangan</th>
+                            <th class="py-3 pr-4">Dicairkan</th>
                             <th class="py-3 pr-4">Fee platform</th>
+                            <th class="py-3 pr-4">Ditransfer</th>
                             <th class="py-3 pr-4">Tanggal</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-stone-800">
-                        @forelse ($recentPlatformFees as $fee)
+                        @forelse ($recentPayoutFees as $payout)
                             @php
-                                $gift = $fee->weddingGift;
-                                $invitation = $gift?->invitation;
+                                $invitation = $payout->invitation;
                             @endphp
                             <tr>
-                                <td class="py-3 pr-4">{{ $gift?->guest_name ?? '-' }}</td>
+                                <td class="py-3 pr-4">{{ $payout->user?->name ?? '-' }}</td>
                                 <td class="py-3 pr-4">
                                     @if ($invitation?->public_url)
                                         <a href="{{ $invitation->public_url }}" target="_blank" rel="noopener" class="text-amber-200 hover:text-amber-300 underline decoration-amber-500/40 underline-offset-4">
@@ -252,13 +251,13 @@
                                         {{ $invitation?->slug ?? '-' }}
                                     @endif
                                 </td>
-                                <td class="py-3 pr-4">{{ $invitation?->user?->name ?? '-' }}</td>
-                                <td class="py-3 pr-4">Rp{{ number_format($gift?->gift_amount ?? 0, 0, ',', '.') }}</td>
-                                <td class="py-3 pr-4 text-amber-300 font-semibold">Rp{{ number_format($fee->amount, 0, ',', '.') }}</td>
-                                <td class="py-3 pr-4">{{ $fee->updated_at?->format('d/m/Y H:i') ?? '-' }}</td>
+                                <td class="py-3 pr-4">Rp{{ number_format($payout->amount, 0, ',', '.') }}</td>
+                                <td class="py-3 pr-4 text-amber-300 font-semibold">Rp{{ number_format($payout->platform_fee, 0, ',', '.') }}</td>
+                                <td class="py-3 pr-4">Rp{{ number_format($payout->net_amount, 0, ',', '.') }}</td>
+                                <td class="py-3 pr-4">{{ $payout->paid_at?->format('d/m/Y H:i') ?? '-' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="py-8 text-center text-stone-500">Belum ada fee platform yang earned.</td></tr>
+                            <tr><td colspan="6" class="py-8 text-center text-stone-500">Belum ada fee dari pencairan yang selesai.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

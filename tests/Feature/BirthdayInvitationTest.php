@@ -190,18 +190,18 @@ class BirthdayInvitationTest extends TestCase
         $this->get('/u/'.$slug)->assertOk()->assertSee('Kado Digital')->assertDontSee('Wedding Gift');
         $gift = $this->postJson('/api/public/invitations/'.$slug.'/wedding-gift/create', [
             'guest_name' => 'Komang', 'gift_amount' => 50000, 'transaction_status' => 'paid',
-        ])->assertCreated()->assertJsonPath('data.service_fee', 2000)
-            ->assertJsonPath('data.total_amount', 52000)->assertJsonPath('data.transaction_status', 'pending');
-        Http::assertSent(fn ($request) => $request['description'] === 'Kado Digital Kirana' && $request['amount'] === 52000);
+        ])->assertCreated()->assertJsonPath('data.service_fee', 0)
+            ->assertJsonPath('data.total_amount', 50000)->assertJsonPath('data.transaction_status', 'pending');
+        Http::assertSent(fn ($request) => $request['description'] === 'Kado Digital Kirana' && $request['amount'] === 50000);
         $notification = [
             'id' => 'birthday-test-invoice', 'external_id' => $gift->json('data.order_id'),
-            'status' => 'PAID', 'amount' => 52000,
+            'status' => 'PAID', 'amount' => 50000,
         ];
         $this->postJson('/api/xendit/webhook', $notification)->assertForbidden();
         $this->withHeader('x-callback-token', 'birthday-test-token')->postJson('/api/xendit/webhook', $notification)
             ->assertOk()->assertJsonPath('transaction_status', 'paid');
         $this->withHeader('x-callback-token', 'birthday-test-token')->postJson('/api/xendit/webhook', $notification)->assertOk();
-        $this->assertDatabaseCount('wedding_gift_fees', 1);
+        $this->assertDatabaseCount('wedding_gift_fees', 0);
         $this->assertSame('Kado Digital dari Komang berhasil diterima.', Invitation::findOrFail($id)->socialNotifications()->sole()->data['message']);
     }
 

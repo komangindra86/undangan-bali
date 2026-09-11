@@ -37,9 +37,10 @@ export default function PayoutHistoryScreen({ navigation, route }) {
         {requests.map((request) => (
           <View style={styles.card} key={request.id}>
             <View style={styles.row}>
-              <Text style={styles.amount}>{rupiah(request.amount)}</Text>
+              <Text style={styles.amount}>{rupiah(request.net_amount)}</Text>
               <Text style={[styles.badge, styles[request.status]]}>{statusText(request.status)}</Text>
             </View>
+            <Text style={styles.breakdown}>Diajukan {rupiah(request.amount)} - fee 1% {rupiah(request.platform_fee)}</Text>
             <Text style={styles.destination}>{request.bank_name} - {request.account_number}</Text>
             <Text style={styles.meta}>{new Date(request.requested_at).toLocaleString('id-ID')}</Text>
             {request.transfer_reference ? <Text style={styles.success}>Referensi transfer: {request.transfer_reference}</Text> : null}
@@ -80,6 +81,7 @@ const styles = StyleSheet.create({
   paid: { backgroundColor: '#204232', color: '#b5ebc7' },
   rejected: { backgroundColor: '#412522', color: '#ffd3cd' },
   destination: { color: colors.text, marginTop: spacing.sm },
+  breakdown: { color: colors.muted, fontSize: 12, marginTop: spacing.xs },
   meta: { color: colors.muted, fontSize: 12, marginTop: spacing.xs },
   success: { color: colors.success, fontSize: 13, marginTop: spacing.sm },
   note: { color: colors.muted, fontSize: 13, lineHeight: 19, marginTop: spacing.sm },

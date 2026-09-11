@@ -36,6 +36,8 @@ class GiftPayoutTest extends TestCase
             'amount' => 75000,
         ])->assertCreated()
             ->assertJsonPath('data.status', 'pending')
+            ->assertJsonPath('data.platform_fee', 750)
+            ->assertJsonPath('data.net_amount', 74250)
             ->assertJsonPath('data.account_number', '1234567890');
 
         $this->assertDatabaseHas('gift_payout_items', [
@@ -52,7 +54,9 @@ class GiftPayoutTest extends TestCase
         $this->withToken($token)->getJson("/api/invitations/{$invitation->id}/gifts")
             ->assertOk()
             ->assertJsonPath('summary.available_balance', 25000)
-            ->assertJsonPath('summary.payout_pending', 75000);
+            ->assertJsonPath('summary.payout_pending', 74250)
+            ->assertJsonPath('summary.platform_fee_pending', 750)
+            ->assertJsonPath('summary.payout_fee_percent', 1);
     }
 
     public function test_admin_can_reject_or_complete_manual_payout_and_balance_updates(): void
@@ -111,7 +115,8 @@ class GiftPayoutTest extends TestCase
         $this->withToken($token)->getJson("/api/invitations/{$invitation->id}/gifts")
             ->assertOk()
             ->assertJsonPath('summary.available_balance', 50000)
-            ->assertJsonPath('summary.paid_out', 100000);
+            ->assertJsonPath('summary.paid_out', 99000)
+            ->assertJsonPath('summary.platform_fee_paid', 1000);
     }
 
     public function test_only_admin_can_open_payout_processing_page(): void
@@ -133,14 +138,25 @@ class GiftPayoutTest extends TestCase
 
     public function test_admin_dashboard_shows_invitation_usage_summary(): void
     {
-        [$invitation] = $this->publishedInvitation();
+        [$invitation, $token] = $this->publishedInvitation();
         $template = $invitation->template;
         $user = $invitation->user;
         $admin = User::where('role', 'admin')->firstOrFail();
         $this->paidGift($invitation, 'WGIFT-DASHBOARD-FEE', 150000);
-        $invitation->weddingGifts()->where('order_id', 'WGIFT-DASHBOARD-FEE')->firstOrFail()
-            ->fee()
-            ->create(['amount' => 3000, 'status' => 'earned']);
+        $accountId = $this->withToken($token)->postJson('/api/payout-account', [
+            'bank_code' => 'BCA',
+            'bank_name' => 'Bank Central Asia',
+            'account_number' => '1234567890',
+            'account_holder_name' => 'Pasangan Gift',
+        ])->assertOk()->json('data.id');
+        $payoutId = $this->withToken($token)->postJson("/api/invitations/{$invitation->id}/payout-requests", [
+            'payout_account_id' => $accountId,
+            'amount' => 100000,
+        ])->assertCreated()->json('data.id');
+        $this->actingAs($admin, 'web')->put("/admin/payouts/{$payoutId}", [
+            'status' => 'paid',
+            'transfer_reference' => 'TRX-DASHBOARD-001',
+        ])->assertRedirect();
 
         Invitation::create([
             'user_id' => $user->id,
@@ -170,7 +186,7 @@ class GiftPayoutTest extends TestCase
             ->assertSee($invitation->public_url, false)
             ->assertSee('Laporan Penghasilan Platform')
             ->assertSee('Total fee earned')
-            ->assertSee('Rp3.000')
+            ->assertSee('Rp1.000')
             ->assertSee('Fee platform terbaru');
 
         $this->actingAs($admin, 'web')->get('/admin/dashboard')
@@ -212,8 +228,8 @@ class GiftPayoutTest extends TestCase
         $invitation->weddingGifts()->create([
             'guest_name' => 'Tamu Baik',
             'gift_amount' => $amount,
-            'service_fee' => 2000,
-            'total_amount' => $amount + 2000,
+            'service_fee' => 0,
+            'total_amount' => $amount,
             'order_id' => $orderId,
             'transaction_status' => 'paid',
             'paid_at' => now(),

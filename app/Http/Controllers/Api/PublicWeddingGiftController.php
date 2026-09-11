@@ -7,6 +7,7 @@ use App\Http\Requests\StoreWeddingGiftRequest;
 use App\Models\Invitation;
 use App\Models\WeddingGift;
 use App\Services\MidtransService;
+use App\Services\SocialNotificationService;
 use App\Services\XenditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -32,20 +33,18 @@ class PublicWeddingGiftController extends Controller
             ]);
         }
 
-        $serviceFee = $setting->serviceFeeFor($request->integer('gift_amount'));
+        $giftAmount = $request->integer('gift_amount');
         $gift = $invitation->weddingGifts()->create([
             'guest_name' => $request->string('guest_name')->toString(),
             'guest_phone' => $request->string('guest_phone')->toString() ?: null,
             'message' => $setting->allow_message ? ($request->string('message')->toString() ?: null) : null,
-            'gift_amount' => $request->integer('gift_amount'),
-            'service_fee' => $serviceFee,
-            'total_amount' => $request->integer('gift_amount') + $serviceFee,
+            'gift_amount' => $giftAmount,
+            'service_fee' => 0,
+            'total_amount' => $giftAmount,
             'order_id' => $this->uniqueOrderId($invitation),
             'payment_type' => $this->paymentProvider() === 'xendit' ? 'xendit_invoice' : 'qris',
             'transaction_status' => 'pending',
         ]);
-        $gift->fee()->create(['amount' => $serviceFee, 'status' => 'pending']);
-
         try {
             if ($this->paymentProvider() === 'xendit') {
                 $response = $xendit->createInvoice($gift->load('invitation'));
@@ -71,7 +70,6 @@ class PublicWeddingGiftController extends Controller
                 'error' => $exception->getMessage(),
             ]);
             $gift->update(['transaction_status' => 'failure']);
-            $gift->fee()->update(['status' => 'refunded']);
 
             return response()->json([
                 'message' => 'Pembayaran belum berhasil dibuat. Silakan coba kembali.',
@@ -84,8 +82,12 @@ class PublicWeddingGiftController extends Controller
         ], 201);
     }
 
-    public function status(string $orderId, MidtransService $midtrans, XenditService $xendit): JsonResponse
-    {
+    public function status(
+        string $orderId,
+        MidtransService $midtrans,
+        XenditService $xendit,
+        SocialNotificationService $notifications
+    ): JsonResponse {
         $gift = WeddingGift::where('order_id', $orderId)->firstOrFail();
 
         if ($gift->transaction_status === 'pending') {
@@ -109,6 +111,8 @@ class PublicWeddingGiftController extends Controller
                 Log::warning('Wedding Gift status check failed.', ['order_id' => $gift->order_id, 'error' => $exception->getMessage()]);
             }
         }
+
+        $notifications->sendGiftPaidIfNeeded($gift);
 
         return response()->json(['data' => $this->publicGiftData($gift)]);
     }

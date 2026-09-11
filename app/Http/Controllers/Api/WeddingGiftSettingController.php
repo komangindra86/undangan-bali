@@ -30,8 +30,8 @@ class WeddingGiftSettingController extends Controller
 
         $setting = $invitation->giftSetting()->updateOrCreate([], [
             ...$request->validated(),
-            'fee_type' => config('wedding_gift.fee.type'),
-            'fee_value' => config('wedding_gift.fee.value'),
+            'fee_type' => 'percent',
+            'fee_value' => config('wedding_gift.payout_fee_percent'),
         ]);
 
         return response()->json([
@@ -45,8 +45,8 @@ class WeddingGiftSettingController extends Controller
         return new WeddingGiftSetting([
             'invitation_id' => $invitation->id,
             'is_active' => false,
-            'fee_type' => config('wedding_gift.fee.type'),
-            'fee_value' => config('wedding_gift.fee.value'),
+            'fee_type' => 'percent',
+            'fee_value' => config('wedding_gift.payout_fee_percent'),
             'minimum_amount' => config('wedding_gift.minimum_amount'),
             'show_amount_public' => false,
             'allow_message' => true,
