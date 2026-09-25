@@ -109,7 +109,8 @@ class InvitationController extends Controller
         ])->validate();
 
         DB::transaction(function () use ($invitation) {
-            $firstPublish = $invitation->status !== 'published';
+            // Editing a live invitation resets it to draft, so only a missing slug marks the first publish.
+            $firstPublish = ! $invitation->slug;
 
             $invitation->update([
                 'slug' => $invitation->slug ?: $this->uniqueSlug($invitation),

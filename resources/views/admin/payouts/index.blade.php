@@ -151,6 +151,14 @@
                                 </div>
                             </dl>
 
+                            @php($refundedAmount = $payout->items->filter(fn ($item) => $item->weddingGift?->transaction_status === 'refunded')->sum('amount'))
+                            @if ($refundedAmount > 0 && ! $isFinal)
+                                <div class="mt-4 rounded-xl border border-red-500/40 bg-red-950/40 p-3 text-sm text-red-100">
+                                    <p class="font-semibold">Rp{{ number_format($refundedAmount, 0, ',', '.') }} dari pengajuan ini berasal dari gift yang sudah di-refund.</p>
+                                    <p class="mt-1">Tolak pengajuan ini agar pasangan mengajukan ulang dengan saldo yang benar.</p>
+                                </div>
+                            @endif
+
                             @if ($accountChanged)
                                 <div class="mt-4 rounded-xl border border-red-500/40 bg-red-950/40 p-3 text-sm text-red-100">
                                     <p class="font-semibold">Rekening akun saat ini berbeda dari rekening saat pengajuan.</p>
@@ -171,12 +179,16 @@
                             <p class="text-stone-500 text-sm mt-1">{{ $payout->items->count() }} transaksi gift masuk ke pengajuan ini.</p>
                             <div class="mt-4 space-y-2 max-h-52 overflow-y-auto pr-1">
                                 @forelse ($payout->items as $item)
-                                    <div class="rounded-xl bg-stone-900 p-3 text-sm">
+                                    @php($itemRefunded = $item->weddingGift?->transaction_status === 'refunded')
+                                    <div class="rounded-xl p-3 text-sm {{ $itemRefunded ? 'bg-red-950/60 border border-red-500/50' : 'bg-stone-900' }}">
                                         <div class="flex justify-between gap-3">
                                             <p class="text-stone-200">{{ $item->weddingGift?->guest_name ?? 'Tamu' }}</p>
                                             <p class="text-amber-200">Rp{{ number_format($item->amount, 0, ',', '.') }}</p>
                                         </div>
                                         <p class="text-stone-500 mt-1">{{ $item->weddingGift?->paid_at?->format('d/m/Y H:i') ?? 'Tanggal bayar tidak tersedia' }}</p>
+                                        @if ($itemRefunded)
+                                            <p class="text-red-200 font-semibold mt-1">Gift ini sudah di-refund ke tamu. Jangan ikut ditransfer.</p>
+                                        @endif
                                     </div>
                                 @empty
                                     <p class="text-stone-500 text-sm">Rincian gift tidak tersedia.</p>

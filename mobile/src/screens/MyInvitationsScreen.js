@@ -32,8 +32,17 @@ export default function MyInvitationsScreen({ navigation }) {
 
     setLoading(true);
     try {
-      const response = await api.invitations(token);
-      setItems(response.data || []);
+      // The API pages 15 at a time; accounts with more invitations need every page.
+      let page = 1;
+      let lastPage = 1;
+      const allItems = [];
+      do {
+        const response = await api.invitations(token, page);
+        allItems.push(...(response.data || []));
+        lastPage = response.last_page || 1;
+        page += 1;
+      } while (page <= lastPage && page <= 20);
+      setItems(allItems);
     } catch (error) {
       if (error.status === 401) {
         await expireSession();

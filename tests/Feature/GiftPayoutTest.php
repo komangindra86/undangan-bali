@@ -194,6 +194,52 @@ class GiftPayoutTest extends TestCase
             ->assertSee('Template populer');
     }
 
+    public function test_admin_is_warned_when_a_pending_payout_contains_a_refunded_gift(): void
+    {
+        [$invitation, $token] = $this->publishedInvitation();
+        $this->paidGift($invitation, 'WGIFT-REFUND-1', 80000);
+        $accountId = $this->withToken($token)->postJson('/api/payout-account', [
+            'bank_code' => 'BNI',
+            'bank_name' => 'Bank Negara Indonesia',
+            'account_number' => '9988776655',
+            'account_holder_name' => 'Ni Putu Ayu',
+        ])->assertOk()->json('data.id');
+        $this->withToken($token)->postJson("/api/invitations/{$invitation->id}/payout-requests", [
+            'payout_account_id' => $accountId,
+            'amount' => 80000,
+        ])->assertCreated();
+
+        $invitation->weddingGifts()->update(['transaction_status' => 'refunded']);
+
+        $this->actingAs(User::where('role', 'admin')->firstOrFail(), 'web')
+            ->get('/admin/payouts')
+            ->assertOk()
+            ->assertSee('sudah di-refund ke tamu')
+            ->assertSee('Tolak pengajuan ini');
+    }
+
+    public function test_republishing_an_edited_invitation_does_not_count_template_usage_again(): void
+    {
+        [$invitation, $token] = $this->publishedInvitation();
+        $usage = $invitation->template()->value('usage_count');
+
+        $this->withToken($token)->putJson("/api/invitations/{$invitation->id}", [
+            'template_id' => $invitation->template_id,
+            'groom_full_name' => 'I Made Wira',
+            'groom_nickname' => 'Wira',
+            'bride_full_name' => 'Ni Putu Ayu',
+            'bride_nickname' => 'Ayu Lestari',
+            'event_type' => 'Pawiwahan',
+            'event_date' => now()->addMonth()->toDateString(),
+            'start_time' => '10:00',
+            'venue_name' => 'Bale Banjar',
+            'venue_address' => 'Ubud, Bali',
+        ])->assertOk();
+        $this->withToken($token)->postJson("/api/invitations/{$invitation->id}/publish")->assertOk();
+
+        $this->assertSame($usage, $invitation->template()->value('usage_count'));
+    }
+
     private function publishedInvitation(): array
     {
         $this->seed();
