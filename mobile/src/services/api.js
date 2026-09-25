@@ -142,7 +142,12 @@ export const api = {
     return { ...response, data: templatesForType(response.data, type) };
   },
   musics: () => request('/musics?catalog_version=2'),
-  moments: (page = 1) => request(`/moments?page=${page}`),
+  moments: (page = 1, token = null) => request(`/moments?page=${page}`, {}, token),
+  reportMoment: (id, values, token) => request(`/moments/${id}/report`, { method: 'POST', body: JSON.stringify(values) }, token),
+  reportComment: (id, commentId, values, token) => request(`/moments/${id}/comments/${commentId}/report`, { method: 'POST', body: JSON.stringify(values) }, token),
+  blockedUsers: (token) => request('/blocked-users', {}, token),
+  blockUser: (userId, token) => request(`/users/${userId}/block`, { method: 'POST' }, token),
+  unblockUser: (userId, token) => request(`/users/${userId}/block`, { method: 'DELETE' }, token),
   moment: (id, token = null) => request(`/moments/${id}`, {}, token),
   momentComments: (id, beforeId, token = null) => request(`/moments/${id}/comments?before_id=${beforeId}`, {}, token),
   deleteMomentComment: (id, commentId, token) => request(`/moments/${id}/comments/${commentId}`, { method: 'DELETE' }, token),

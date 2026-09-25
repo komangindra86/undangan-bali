@@ -9,6 +9,7 @@ use App\Models\InvitationMoment;
 use App\Models\InvitationReaction;
 use App\Models\InvitationRequest;
 use App\Models\SocialNotification;
+use App\Models\UserBlock;
 use App\Services\SocialNotificationService;
 use App\Services\TestLabRequestDetector;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +25,7 @@ class SocialController extends Controller
     public function react(Request $request, Invitation $invitation, SocialNotificationService $notifications, TestLabRequestDetector $testLab): JsonResponse
     {
         $this->published($invitation);
+        $this->ensureNotBlocked($request, $invitation);
         $data = $request->validate(['type' => ['required', Rule::in(['like', 'love'])]]);
         if ($testLab->matches($request)) {
             return response()->json([
@@ -70,6 +72,7 @@ class SocialController extends Controller
     public function comment(Request $request, Invitation $invitation, SocialNotificationService $notifications, TestLabRequestDetector $testLab): JsonResponse
     {
         $this->published($invitation);
+        $this->ensureNotBlocked($request, $invitation);
         $data = $request->validate([
             'body' => ['required', 'string', 'min:2', 'max:500', 'not_regex:/[<>]/'],
             'client_request_id' => ['nullable', 'string', 'min:16', 'max:80', 'regex:/^[A-Za-z0-9_-]+$/'],
@@ -270,6 +273,15 @@ class SocialController extends Controller
     private function owner(Request $request, Invitation $invitation): void
     {
         abort_unless($invitation->user_id === $request->user()->id, 404);
+    }
+
+    private function ensureNotBlocked(Request $request, Invitation $invitation): void
+    {
+        abort_if(
+            $invitation->user_id && UserBlock::existsBetween($request->user()->id, $invitation->user_id),
+            403,
+            'Anda tidak dapat berinteraksi dengan Moment ini.'
+        );
     }
 
     private function published(Invitation $invitation): void

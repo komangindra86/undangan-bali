@@ -38,6 +38,7 @@
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Penggunaan yang Dilarang</h2>
                 <p class="mt-3">Layanan tidak boleh digunakan untuk penipuan, spam, penyamaran, pelanggaran hak cipta, konten ilegal, serangan terhadap sistem, atau tindakan yang merugikan pengguna dan pihak lain.</p>
+                <p class="mt-3">Di Moment dan komentar, dilarang mengunggah pelecehan, ujaran kebencian, ancaman, konten seksual, kekerasan, spam, atau informasi pribadi orang lain tanpa izin. Pengguna dapat melaporkan Moment atau komentar serta memblokir pengguna lain langsung dari aplikasi. Admin meninjau laporan dan dapat menyembunyikan konten atau menonaktifkan akun yang melanggar.</p>
             </div>
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Gift dan Pembayaran</h2>

@@ -77,6 +77,7 @@ export default function ProfileScreen({ navigation }) {
             <ProfileMenu icon="mail-open-outline" label="Undangan Saya" onPress={() => navigation.navigate('InvitationsTab')} />
             <ProfileMenu icon="notifications-outline" label="Notifikasi" onPress={() => navigation.navigate('NotificationsTab')} />
             <ProfileMenu icon="add-circle-outline" label="Buat Undangan Baru" onPress={() => openStack('InvitationType')} />
+            <ProfileMenu icon="ban-outline" label="Pengguna Diblokir" onPress={() => openStack('BlockedUsers')} />
             <ProfileMenu danger icon="log-out-outline" label="Keluar" onPress={confirmLogout} />
           </>
         ) : null}

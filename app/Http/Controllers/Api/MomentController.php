@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\MomentResource;
 use App\Models\Invitation;
 use App\Models\User;
+use App\Models\UserBlock;
 use App\Services\SocialNotificationService;
 use App\Services\TestLabRequestDetector;
 use Illuminate\Http\JsonResponse;
@@ -14,19 +15,19 @@ use Illuminate\Validation\ValidationException;
 
 class MomentController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $moments = $this->feedQuery()->paginate(10);
+        $moments = $this->feedQuery($request->user('sanctum'))->paginate(10);
 
         return MomentResource::collection($moments)->response();
     }
 
     public function show(Request $request, int $invitation): JsonResponse
     {
-        $invitation = $this->feedQuery()
+        $viewer = $request->user('sanctum');
+        $invitation = $this->feedQuery($viewer)
             ->with(['moments' => fn ($query) => $query->latest('occurred_at')->latest()])
             ->findOrFail($invitation);
-        $viewer = $request->user('sanctum');
 
         $data = (new MomentResource($invitation))->resolve();
         $data['timeline'] = $invitation->moments->map(fn ($moment) => [
@@ -36,6 +37,8 @@ class MomentController extends Controller
             'photo_url' => $moment->photo_path ? url('/storage/'.$moment->photo_path) : null,
             'occurred_at' => $invitation->isBirthday() ? null : $moment->occurred_at?->toISOString(),
         ])->values();
+        $data['owner_id'] = $invitation->user_id;
+        $data['viewer_is_owner'] = $viewer !== null && $viewer->id === $invitation->user_id;
         $data['my_reaction'] = $viewer
             ? $invitation->reactions()->where('user_id', $viewer->id)->value('type')
             : null;
@@ -46,9 +49,10 @@ class MomentController extends Controller
 
     public function comments(Request $request, int $invitation): JsonResponse
     {
-        $invitation = $this->feedQuery()->findOrFail($invitation);
+        $viewer = $request->user('sanctum');
+        $invitation = $this->feedQuery($viewer)->findOrFail($invitation);
         $beforeId = $request->integer('before_id') ?: null;
-        [$comments, $hasMore] = $this->commentPage($invitation, $request->user('sanctum'), $beforeId);
+        [$comments, $hasMore] = $this->commentPage($invitation, $viewer, $beforeId);
 
         return response()->json(['data' => $comments, 'has_more' => $hasMore]);
     }
@@ -56,8 +60,12 @@ class MomentController extends Controller
     private function commentPage(Invitation $invitation, ?User $viewer, ?int $beforeId = null): array
     {
         $perPage = 30;
+        // Hide commenters the viewer blocked (either way) and anyone the invitation owner blocked.
+        $hiddenUserIds = UserBlock::hiddenUserIdsFor($viewer)
+            ->merge(UserBlock::where('blocker_user_id', $invitation->user_id)->pluck('blocked_user_id'));
         $comments = $invitation->comments()
             ->whereNull('deleted_at')
+            ->when($hiddenUserIds->isNotEmpty(), fn ($query) => $query->whereNotIn('user_id', $hiddenUserIds))
             ->when($beforeId, fn ($query) => $query->where('id', '<', $beforeId))
             ->with('user:id,name')
             ->latest('id')
@@ -70,6 +78,7 @@ class MomentController extends Controller
                 'body' => $comment->body,
                 'created_at' => $comment->created_at->toISOString(),
                 'user' => ['id' => $comment->user->id, 'name' => $comment->user->name],
+                'is_mine' => $viewer !== null && $viewer->id === $comment->user_id,
                 'can_delete' => $viewer !== null
                     && ($viewer->id === $comment->user_id || $viewer->id === $invitation->user_id),
             ])->values(),
@@ -127,9 +136,12 @@ class MomentController extends Controller
         ], 201);
     }
 
-    private function feedQuery()
+    private function feedQuery(?User $viewer = null)
     {
+        $hiddenOwnerIds = UserBlock::hiddenUserIdsFor($viewer);
+
         return Invitation::query()
+            ->when($hiddenOwnerIds->isNotEmpty(), fn ($query) => $query->whereNotIn('user_id', $hiddenOwnerIds))
             ->withoutRetentionExemptions()
             ->where('status', 'published')
             ->whereNull('archived_at')

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminPasswordController;
+use App\Http\Controllers\Admin\ContentReportController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GiftPayoutController;
 use App\Http\Controllers\GoogleMobileOAuthController;
@@ -47,4 +48,6 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::get('/payout', [GiftPayoutController::class, 'index'])->name('payout.index');
     Route::get('/payouts', [GiftPayoutController::class, 'index'])->name('payouts.index');
     Route::put('/payouts/{payout}', [GiftPayoutController::class, 'update'])->name('payouts.update');
+    Route::get('/reports', [ContentReportController::class, 'index'])->name('reports.index');
+    Route::put('/reports/{report}', [ContentReportController::class, 'update'])->name('reports.update');
 });

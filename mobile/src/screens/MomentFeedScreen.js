@@ -10,7 +10,7 @@ import { colors, commonStyles, spacing } from '../theme';
 import { feedSession } from '../utils/feedSession';
 
 export default function MomentFeedScreen({ navigation }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading, token } = useAuth();
   const { width: screenWidth } = useWindowDimensions();
   const feedRef = useRef(null);
   const seenVersion = useRef(feedSession.version);
@@ -27,7 +27,7 @@ export default function MomentFeedScreen({ navigation }) {
     refresh ? setRefreshing(true) : setLoading(true);
     setError(null);
     try {
-      const response = await api.moments(1);
+      const response = await api.moments(1, token);
       const nextItems = response.data || [];
       const nextPage = response.meta?.current_page || 1;
       const nextHasMore = nextPage < (response.meta?.last_page || 1);
@@ -45,14 +45,14 @@ export default function MomentFeedScreen({ navigation }) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [token]);
 
   const loadNextPage = useCallback(async () => {
     if (loading || refreshing || loadingMore || !hasMore) return;
 
     setLoadingMore(true);
     try {
-      const response = await api.moments(page + 1);
+      const response = await api.moments(page + 1, token);
       setItems((current) => {
         const existingIds = new Set(current.map((item) => item.id));
         const nextItems = [...current, ...(response.data || []).filter((item) => !existingIds.has(item.id))];
@@ -70,11 +70,17 @@ export default function MomentFeedScreen({ navigation }) {
     } finally {
       setLoadingMore(false);
     }
-  }, [hasMore, loading, loadingMore, page, refreshing]);
+  }, [hasMore, loading, loadingMore, page, refreshing, token]);
 
+  const loadedToken = useRef(token);
   useEffect(() => {
-    if (!feedSession.items.length) loadFirstPage();
-  }, [loadFirstPage]);
+    // Blocked users differ per account, so the feed reloads when the signed-in user changes.
+    if (authLoading) return;
+    if (!feedSession.items.length || loadedToken.current !== token) {
+      loadedToken.current = token;
+      loadFirstPage();
+    }
+  }, [authLoading, loadFirstPage, token]);
 
   useFocusEffect(useCallback(() => {
     if (seenVersion.current !== feedSession.version) {

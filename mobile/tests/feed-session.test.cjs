@@ -36,3 +36,14 @@ test('patching a moment that is not in the feed leaves the feed untouched', () =
   assert.equal(feedSession.version, 0);
   assert.deepEqual(feedSession.items, [{ id: 1 }]);
 });
+
+test('blocking a Moment owner removes the card from the cached feed', () => {
+  const { feedSession, removeFeedItem } = loadFeedSession();
+  feedSession.items = [{ id: 1 }, { id: 2 }];
+
+  removeFeedItem(1);
+  removeFeedItem(42);
+
+  assert.deepEqual(feedSession.items, [{ id: 2 }]);
+  assert.equal(feedSession.version, 1);
+});

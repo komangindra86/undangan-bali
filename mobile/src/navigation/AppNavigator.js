@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AuthGateScreen from '../screens/AuthGateScreen';
+import BlockedUsersScreen from '../screens/BlockedUsersScreen';
 import InvitationTypeScreen from '../screens/InvitationTypeScreen';
 import BirthdayFormScreen from '../screens/BirthdayFormScreen';
 import EventFormScreen from '../screens/EventFormScreen';
@@ -40,6 +41,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="InvitationRequests" component={InvitationRequestsScreen} />
       <Stack.Screen name="ManageMoments" component={ManageMomentsScreen} />
+      <Stack.Screen name="BlockedUsers" component={BlockedUsersScreen} />
       <Stack.Screen name="Landing" component={LandingScreen} />
       <Stack.Screen name="Template" component={TemplateScreen} />
       <Stack.Screen name="InvitationType" component={InvitationTypeScreen} />

@@ -18,3 +18,11 @@ export function patchFeedItem(id, patch) {
   });
   if (changed) feedSession.version += 1;
 }
+
+// Called after the viewer blocks a Moment owner so the card disappears without a full refresh.
+export function removeFeedItem(id) {
+  const nextItems = feedSession.items.filter((item) => item.id !== id);
+  if (nextItems.length === feedSession.items.length) return;
+  feedSession.items = nextItems;
+  feedSession.version += 1;
+}

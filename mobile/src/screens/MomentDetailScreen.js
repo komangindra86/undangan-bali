@@ -6,7 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import { giftLabelFor } from '../constants/invitation';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
-import { patchFeedItem } from '../utils/feedSession';
+import ReportSheet from '../components/ReportSheet';
+import { patchFeedItem, removeFeedItem } from '../utils/feedSession';
 
 export default function MomentDetailScreen({ navigation, route }) {
   const { id } = route.params;
@@ -17,6 +18,7 @@ export default function MomentDetailScreen({ navigation, route }) {
   const [sending, setSending] = useState(false);
   const [reacting, setReacting] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
   const sendingCommentRef = useRef(false);
   const pendingCommentRef = useRef(null);
 
@@ -86,6 +88,47 @@ export default function MomentDetailScreen({ navigation, route }) {
     }
   }
 
+  function openReport(target) {
+    if (!requireLogin()) return;
+    setReportTarget(target);
+  }
+
+  async function submitReport(values) {
+    try {
+      const response = reportTarget.comment
+        ? await api.reportComment(id, reportTarget.comment.id, values, token)
+        : await api.reportMoment(id, values, token);
+      setReportTarget(null);
+      Alert.alert('Laporan terkirim', response.message);
+    } catch (error) {
+      Alert.alert('Laporan belum terkirim', error.message);
+    }
+  }
+
+  function confirmBlock(userId, name, isOwner) {
+    if (!requireLogin()) return;
+    Alert.alert(`Blokir ${name}?`, 'Moment dan komentarnya tidak akan tampil untuk Anda, dan dia tidak dapat berinteraksi dengan Moment Anda. Blokir dapat dibuka dari Profil.', [
+      { text: 'Batal', style: 'cancel' },
+      {
+        text: 'Blokir',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await api.blockUser(userId, token);
+            if (isOwner) {
+              removeFeedItem(moment.id);
+              navigation.goBack();
+              return;
+            }
+            await load();
+          } catch (error) {
+            Alert.alert('Belum dapat memblokir', error.message);
+          }
+        },
+      },
+    ]);
+  }
+
   function confirmDeleteComment(entry) {
     Alert.alert('Hapus komentar', 'Komentar ini akan dihapus dari Moment.', [
       { text: 'Batal', style: 'cancel' },
@@ -152,6 +195,14 @@ export default function MomentDetailScreen({ navigation, route }) {
           <Text style={commonStyles.eyebrow}>Moment Perayaan</Text>
           <Text style={commonStyles.title}>{moment.names}</Text>
           <Text style={styles.caption}>{moment.caption || 'Membagikan cerita menuju hari bahagia.'}</Text>
+          {!moment.viewer_is_owner ? (
+            <View style={styles.moderation}>
+              <Text accessibilityRole="button" onPress={() => openReport({})} style={styles.moderationLink}>Laporkan Moment</Text>
+              {moment.owner_id ? (
+                <Text accessibilityRole="button" onPress={() => confirmBlock(moment.owner_id, moment.names, true)} style={styles.moderationLink}>Blokir pemilik</Text>
+              ) : null}
+            </View>
+          ) : null}
           <View style={styles.reactions}>
             <Reaction active={moment.my_reaction === 'like'} disabled={reacting} label={`Like ${moment.reactions?.like || 0}`} onPress={() => react('like')} />
             <Reaction active={moment.my_reaction === 'love'} disabled={reacting} label={`Love ${moment.reactions?.love || 0}`} onPress={() => react('love')} />
@@ -172,9 +223,17 @@ export default function MomentDetailScreen({ navigation, route }) {
             <View key={entry.id} style={styles.comment}>
               <View style={styles.commentHeader}>
                 <Text style={styles.commentName}>{entry.user.name}</Text>
-                {entry.can_delete ? (
-                  <Text accessibilityRole="button" onPress={() => confirmDeleteComment(entry)} style={styles.commentDelete}>Hapus</Text>
-                ) : null}
+                <View style={styles.commentActions}>
+                  {!entry.is_mine ? (
+                    <>
+                      <Text accessibilityRole="button" onPress={() => openReport({ comment: entry })} style={styles.commentDelete}>Laporkan</Text>
+                      <Text accessibilityRole="button" onPress={() => confirmBlock(entry.user.id, entry.user.name, false)} style={styles.commentDelete}>Blokir</Text>
+                    </>
+                  ) : null}
+                  {entry.can_delete ? (
+                    <Text accessibilityRole="button" onPress={() => confirmDeleteComment(entry)} style={styles.commentDelete}>Hapus</Text>
+                  ) : null}
+                </View>
               </View>
               <Text style={styles.commentBody}>{entry.body}</Text>
             </View>
@@ -204,6 +263,12 @@ export default function MomentDetailScreen({ navigation, route }) {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+      <ReportSheet
+        visible={Boolean(reportTarget)}
+        title={reportTarget?.comment ? 'Laporkan komentar' : 'Laporkan Moment'}
+        onCancel={() => setReportTarget(null)}
+        onSubmit={submitReport}
+      />
     </SafeAreaView>
   );
 }
@@ -256,7 +321,10 @@ const styles = StyleSheet.create({
   comment: { borderBottomColor: colors.border, borderBottomWidth: 1, paddingVertical: spacing.md },
   commentHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   commentName: { color: colors.goldLight, fontSize: 13, fontWeight: '700' },
+  commentActions: { flexDirection: 'row' },
   commentDelete: { color: colors.muted, fontSize: 12, fontWeight: '700', paddingLeft: spacing.md },
+  moderation: { flexDirection: 'row', gap: spacing.lg, marginTop: spacing.sm },
+  moderationLink: { color: colors.muted, fontSize: 12, fontWeight: '700' },
   olderComments: { marginTop: spacing.md },
   commentBody: { color: colors.text, lineHeight: 20, marginTop: spacing.xs },
   noComments: { color: colors.muted },
