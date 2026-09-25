@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { giftLabelFor } from '../constants/invitation';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
+import { patchFeedItem } from '../utils/feedSession';
 
 export default function MomentDetailScreen({ navigation, route }) {
   const { id } = route.params;
@@ -14,20 +15,26 @@ export default function MomentDetailScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
   const [sending, setSending] = useState(false);
+  const [reacting, setReacting] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const sendingCommentRef = useRef(false);
   const pendingCommentRef = useRef(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await api.moment(id);
+      const response = await api.moment(id, token);
       setMoment(response.data);
+      patchFeedItem(response.data.id, {
+        reactions: response.data.reactions,
+        comments_count: response.data.comments_count,
+      });
     } catch (error) {
       Alert.alert('Moment tidak tersedia', error.message);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, token]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -38,13 +45,63 @@ export default function MomentDetailScreen({ navigation, route }) {
   }
 
   async function react(type) {
-    if (!requireLogin()) return;
+    if (reacting || !requireLogin()) return;
+    setReacting(true);
     try {
-      await api.reactToMoment(id, type, token);
-      await load();
+      // Tapping the reaction already given removes it, like other social apps.
+      if (moment.my_reaction === type) {
+        await api.removeMomentReaction(id, token);
+      } else {
+        await api.reactToMoment(id, type, token);
+      }
+      const response = await api.moment(id, token);
+      setMoment((current) => ({
+        ...current,
+        reactions: response.data.reactions,
+        my_reaction: response.data.my_reaction,
+      }));
+      patchFeedItem(response.data.id, { reactions: response.data.reactions });
     } catch (error) {
       Alert.alert('Reaksi belum tersimpan', error.message);
+    } finally {
+      setReacting(false);
     }
+  }
+
+  async function loadOlderComments() {
+    const oldest = moment.comments?.[moment.comments.length - 1];
+    if (loadingOlder || !oldest) return;
+    setLoadingOlder(true);
+    try {
+      const response = await api.momentComments(id, oldest.id, token);
+      setMoment((current) => ({
+        ...current,
+        comments: [...current.comments, ...response.data.filter((entry) => !current.comments.some((known) => known.id === entry.id))],
+        has_more_comments: response.has_more,
+      }));
+    } catch (error) {
+      Alert.alert('Komentar belum dapat dimuat', error.message);
+    } finally {
+      setLoadingOlder(false);
+    }
+  }
+
+  function confirmDeleteComment(entry) {
+    Alert.alert('Hapus komentar', 'Komentar ini akan dihapus dari Moment.', [
+      { text: 'Batal', style: 'cancel' },
+      {
+        text: 'Hapus',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await api.deleteMomentComment(id, entry.id, token);
+            await load();
+          } catch (error) {
+            Alert.alert('Tidak dapat menghapus', error.message);
+          }
+        },
+      },
+    ]);
   }
 
   async function sendComment() {
@@ -96,8 +153,8 @@ export default function MomentDetailScreen({ navigation, route }) {
           <Text style={commonStyles.title}>{moment.names}</Text>
           <Text style={styles.caption}>{moment.caption || 'Membagikan cerita menuju hari bahagia.'}</Text>
           <View style={styles.reactions}>
-            <Reaction label={`Like ${moment.reactions?.like || 0}`} onPress={() => react('like')} />
-            <Reaction label={`Love ${moment.reactions?.love || 0}`} onPress={() => react('love')} />
+            <Reaction active={moment.my_reaction === 'like'} disabled={reacting} label={`Like ${moment.reactions?.like || 0}`} onPress={() => react('like')} />
+            <Reaction active={moment.my_reaction === 'love'} disabled={reacting} label={`Love ${moment.reactions?.love || 0}`} onPress={() => react('love')} />
           </View>
           <PrimaryButton title="Minta Undangan" onPress={() => navigation.navigate('RequestInvitation', { invitation: moment })} style={styles.action} />
           {moment.gift_active ? <SecondaryButton title={`Kirim ${giftLabelFor(moment)} di Browser`} onPress={() => Linking.openURL(moment.gift_url)} style={styles.gift} /> : null}
@@ -113,10 +170,18 @@ export default function MomentDetailScreen({ navigation, route }) {
           <Text style={styles.sectionTitle}>Komentar</Text>
           {moment.comments?.length ? moment.comments.map((entry) => (
             <View key={entry.id} style={styles.comment}>
-              <Text style={styles.commentName}>{entry.user.name}</Text>
+              <View style={styles.commentHeader}>
+                <Text style={styles.commentName}>{entry.user.name}</Text>
+                {entry.can_delete ? (
+                  <Text accessibilityRole="button" onPress={() => confirmDeleteComment(entry)} style={styles.commentDelete}>Hapus</Text>
+                ) : null}
+              </View>
               <Text style={styles.commentBody}>{entry.body}</Text>
             </View>
           )) : <Text style={styles.noComments}>Belum ada komentar. Jadilah yang pertama memberi ucapan.</Text>}
+          {moment.has_more_comments ? (
+            <SecondaryButton title={loadingOlder ? 'Memuat...' : 'Lihat komentar sebelumnya'} onPress={loadOlderComments} disabled={loadingOlder} style={styles.olderComments} />
+          ) : null}
         </ScrollView>
         <View style={styles.composer}>
           <TextInput
@@ -148,8 +213,18 @@ function createCommentRequestId() {
   return `comment-${Date.now().toString(36)}-${random()}-${random()}`;
 }
 
-function Reaction({ label, onPress }) {
-  return <Pressable onPress={onPress} style={styles.reaction}><Text style={styles.reactionText}>{label}</Text></Pressable>;
+function Reaction({ active, disabled, label, onPress }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected: active, disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.reaction, active && styles.reactionActive]}
+    >
+      <Text style={[styles.reactionText, active && styles.reactionTextActive]}>{label}</Text>
+    </Pressable>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -161,7 +236,9 @@ const styles = StyleSheet.create({
   caption: { color: colors.muted, fontSize: 16, lineHeight: 23, marginTop: spacing.md },
   reactions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
   reaction: { borderColor: colors.border, borderRadius: 99, borderWidth: 1, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
+  reactionActive: { backgroundColor: colors.gold, borderColor: colors.gold },
   reactionText: { color: colors.goldLight, fontSize: 13, fontWeight: '700' },
+  reactionTextActive: { color: colors.background },
   action: { marginTop: spacing.lg },
   gift: { marginTop: spacing.sm },
   privacy: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: spacing.md },
@@ -177,7 +254,10 @@ const styles = StyleSheet.create({
   sendDisabled: { opacity: 0.55 },
   sendText: { color: colors.background, fontSize: 14, fontWeight: '800' },
   comment: { borderBottomColor: colors.border, borderBottomWidth: 1, paddingVertical: spacing.md },
+  commentHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   commentName: { color: colors.goldLight, fontSize: 13, fontWeight: '700' },
+  commentDelete: { color: colors.muted, fontSize: 12, fontWeight: '700', paddingLeft: spacing.md },
+  olderComments: { marginTop: spacing.md },
   commentBody: { color: colors.text, lineHeight: 20, marginTop: spacing.xs },
   noComments: { color: colors.muted },
   empty: { color: colors.muted },

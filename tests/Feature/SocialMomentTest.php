@@ -264,6 +264,80 @@ class SocialMomentTest extends TestCase
             ->assertJsonPath('meta.current_page', 2);
     }
 
+    public function test_moment_detail_reports_the_viewers_reaction_and_it_can_be_removed(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $guest = User::factory()->create(['role' => 'user']);
+
+        $this->getJson('/api/moments/'.$invitation->id)->assertOk()->assertJsonPath('data.my_reaction', null);
+
+        $this->actingAs($guest, 'sanctum')->postJson('/api/moments/'.$invitation->id.'/reaction', ['type' => 'like'])->assertOk();
+        $this->actingAs($guest, 'sanctum')->getJson('/api/moments/'.$invitation->id)
+            ->assertJsonPath('data.my_reaction', 'like')
+            ->assertJsonPath('data.reactions.like', 1);
+
+        $this->actingAs($guest, 'sanctum')->deleteJson('/api/moments/'.$invitation->id.'/reaction')->assertOk();
+        $this->actingAs($guest, 'sanctum')->getJson('/api/moments/'.$invitation->id)
+            ->assertJsonPath('data.my_reaction', null)
+            ->assertJsonPath('data.reactions.like', 0);
+    }
+
+    public function test_toggling_reactions_notifies_the_owner_only_once(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $guest = User::factory()->create(['role' => 'user']);
+        $url = '/api/moments/'.$invitation->id.'/reaction';
+
+        $this->actingAs($guest, 'sanctum')->postJson($url, ['type' => 'like'])->assertOk();
+        $this->actingAs($guest, 'sanctum')->postJson($url, ['type' => 'love'])->assertOk();
+        $this->actingAs($guest, 'sanctum')->deleteJson($url)->assertOk();
+        $this->actingAs($guest, 'sanctum')->postJson($url, ['type' => 'like'])->assertOk();
+
+        $this->assertDatabaseCount('invitation_reactions', 1);
+        $this->assertSame(1, $invitation->socialNotifications()->where('type', 'reaction')->count());
+    }
+
+    public function test_older_comments_are_reachable_beyond_the_first_page(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $guest = User::factory()->create(['role' => 'user']);
+        foreach (range(1, 35) as $number) {
+            $invitation->comments()->create(['user_id' => $guest->id, 'body' => "Ucapan {$number}"]);
+        }
+
+        $first = $this->getJson('/api/moments/'.$invitation->id)
+            ->assertJsonCount(30, 'data.comments')
+            ->assertJsonPath('data.has_more_comments', true)
+            ->assertJsonPath('data.comments.0.body', 'Ucapan 35');
+
+        $this->getJson('/api/moments/'.$invitation->id.'/comments?before_id='.$first->json('data.comments.29.id'))
+            ->assertOk()
+            ->assertJsonCount(5, 'data')
+            ->assertJsonPath('has_more', false)
+            ->assertJsonPath('data.4.body', 'Ucapan 1');
+    }
+
+    public function test_comment_can_be_deleted_by_its_author_or_the_owner_only(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $author = User::factory()->create(['role' => 'user']);
+        $stranger = User::factory()->create(['role' => 'user']);
+        $first = $invitation->comments()->create(['user_id' => $author->id, 'body' => 'Komentar pertama']);
+        $second = $invitation->comments()->create(['user_id' => $author->id, 'body' => 'Komentar kedua']);
+        $url = fn ($comment) => '/api/moments/'.$invitation->id.'/comments/'.$comment->id;
+
+        $this->actingAs($stranger, 'sanctum')->getJson('/api/moments/'.$invitation->id)
+            ->assertJsonPath('data.comments.0.can_delete', false);
+        $this->actingAs($stranger, 'sanctum')->deleteJson($url($first))->assertForbidden();
+
+        $this->actingAs($author, 'sanctum')->deleteJson($url($first))->assertOk();
+        $this->actingAs($invitation->user, 'sanctum')->deleteJson($url($second))->assertOk();
+
+        $this->getJson('/api/moments/'.$invitation->id)
+            ->assertJsonCount(0, 'data.comments')
+            ->assertJsonPath('data.comments_count', 0);
+    }
+
     private function publishedInvitation(): Invitation
     {
         $owner = User::factory()->create(['role' => 'user']);

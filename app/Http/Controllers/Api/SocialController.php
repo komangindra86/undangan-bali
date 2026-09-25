@@ -13,6 +13,7 @@ use App\Services\SocialNotificationService;
 use App\Services\TestLabRequestDetector;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -31,16 +32,18 @@ class SocialController extends Controller
                 'test_lab' => true,
             ]);
         }
-        $reaction = InvitationReaction::firstOrNew([
+        // createOrFirst survives a double tap: the unique (invitation, user) index decides the winner.
+        $reaction = InvitationReaction::createOrFirst([
             'invitation_id' => $invitation->id,
             'user_id' => $request->user()->id,
-        ]);
-        $isNew = ! $reaction->exists;
-        $hasChanged = $isNew || $reaction->type !== $data['type'];
-        $reaction->type = $data['type'];
-        $reaction->save();
+        ], ['type' => $data['type']]);
+        if ($reaction->type !== $data['type']) {
+            $reaction->update(['type' => $data['type']]);
+        }
 
-        if ($hasChanged && $invitation->user_id !== $request->user()->id) {
+        // Notify the owner once per reacting user per day, so toggling or switching reactions cannot spam pushes.
+        $notifyKey = "reaction-notified:{$invitation->id}:{$request->user()->id}";
+        if ($invitation->user_id !== $request->user()->id && Cache::add($notifyKey, true, now()->addDay())) {
             $notifications->send($invitation, 'reaction', [
                 'actor_name' => $request->user()->name,
                 'reaction' => $reaction->type,
@@ -133,6 +136,20 @@ class SocialController extends Controller
         }
 
         return $this->commentResponse($comment, $request, ! $created);
+    }
+
+    public function deleteComment(Request $request, Invitation $invitation, InvitationComment $comment): JsonResponse
+    {
+        abort_unless($comment->invitation_id === $invitation->id && $comment->deleted_at === null, 404);
+        abort_unless(
+            in_array($request->user()->id, [$comment->user_id, $invitation->user_id], true),
+            403,
+            'Anda tidak dapat menghapus komentar ini.'
+        );
+
+        $comment->update(['deleted_at' => now()]);
+
+        return response()->json(['message' => 'Komentar dihapus.']);
     }
 
     private function commentResponse(InvitationComment $comment, Request $request, bool $duplicate): JsonResponse

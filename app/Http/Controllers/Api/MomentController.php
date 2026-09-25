@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\MomentResource;
 use App\Models\Invitation;
+use App\Models\User;
 use App\Services\SocialNotificationService;
 use App\Services\TestLabRequestDetector;
 use Illuminate\Http\JsonResponse;
@@ -20,11 +21,12 @@ class MomentController extends Controller
         return MomentResource::collection($moments)->response();
     }
 
-    public function show(int $invitation): JsonResponse
+    public function show(Request $request, int $invitation): JsonResponse
     {
         $invitation = $this->feedQuery()
             ->with(['moments' => fn ($query) => $query->latest('occurred_at')->latest()])
             ->findOrFail($invitation);
+        $viewer = $request->user('sanctum');
 
         $data = (new MomentResource($invitation))->resolve();
         $data['timeline'] = $invitation->moments->map(fn ($moment) => [
@@ -34,21 +36,45 @@ class MomentController extends Controller
             'photo_url' => $moment->photo_path ? url('/storage/'.$moment->photo_path) : null,
             'occurred_at' => $invitation->isBirthday() ? null : $moment->occurred_at?->toISOString(),
         ])->values();
-        $data['comments'] = $invitation->comments()
+        $data['my_reaction'] = $viewer
+            ? $invitation->reactions()->where('user_id', $viewer->id)->value('type')
+            : null;
+        [$data['comments'], $data['has_more_comments']] = $this->commentPage($invitation, $viewer);
+
+        return response()->json(['data' => $data]);
+    }
+
+    public function comments(Request $request, int $invitation): JsonResponse
+    {
+        $invitation = $this->feedQuery()->findOrFail($invitation);
+        $beforeId = $request->integer('before_id') ?: null;
+        [$comments, $hasMore] = $this->commentPage($invitation, $request->user('sanctum'), $beforeId);
+
+        return response()->json(['data' => $comments, 'has_more' => $hasMore]);
+    }
+
+    private function commentPage(Invitation $invitation, ?User $viewer, ?int $beforeId = null): array
+    {
+        $perPage = 30;
+        $comments = $invitation->comments()
             ->whereNull('deleted_at')
+            ->when($beforeId, fn ($query) => $query->where('id', '<', $beforeId))
             ->with('user:id,name')
-            ->latest()
-            ->limit(30)
-            ->get()
-            ->map(fn ($comment) => [
+            ->latest('id')
+            ->limit($perPage + 1)
+            ->get();
+
+        return [
+            $comments->take($perPage)->map(fn ($comment) => [
                 'id' => $comment->id,
                 'body' => $comment->body,
                 'created_at' => $comment->created_at->toISOString(),
                 'user' => ['id' => $comment->user->id, 'name' => $comment->user->name],
-            ])
-            ->values();
-
-        return response()->json(['data' => $data]);
+                'can_delete' => $viewer !== null
+                    && ($viewer->id === $comment->user_id || $viewer->id === $invitation->user_id),
+            ])->values(),
+            $comments->count() > $perPage,
+        ];
     }
 
     public function requestInvitation(Request $request, int $invitation, SocialNotificationService $notifications, TestLabRequestDetector $testLab): JsonResponse

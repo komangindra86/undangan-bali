@@ -7,19 +7,13 @@ import { useAuth } from '../context/AuthContext';
 import { isBirthday } from '../constants/invitation';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
-
-const feedSession = {
-  hasMore: true,
-  items: [],
-  page: 1,
-  photoIndexes: {},
-  scrollOffset: 0,
-};
+import { feedSession } from '../utils/feedSession';
 
 export default function MomentFeedScreen({ navigation }) {
   const { isAuthenticated } = useAuth();
   const { width: screenWidth } = useWindowDimensions();
   const feedRef = useRef(null);
+  const seenVersion = useRef(feedSession.version);
   const [items, setItems] = useState(feedSession.items);
   const [loading, setLoading] = useState(feedSession.items.length === 0);
   const [refreshing, setRefreshing] = useState(false);
@@ -81,6 +75,13 @@ export default function MomentFeedScreen({ navigation }) {
   useEffect(() => {
     if (!feedSession.items.length) loadFirstPage();
   }, [loadFirstPage]);
+
+  useFocusEffect(useCallback(() => {
+    if (seenVersion.current !== feedSession.version) {
+      seenVersion.current = feedSession.version;
+      setItems(feedSession.items);
+    }
+  }, []));
 
   useFocusEffect(useCallback(() => {
     if (!items.length || feedSession.scrollOffset <= 0) return undefined;

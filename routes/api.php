@@ -27,6 +27,7 @@ Route::get('/templates/{template}', [TemplateController::class, 'show']);
 Route::get('/musics', [MusicController::class, 'index']);
 Route::get('/moments', [MomentController::class, 'index']);
 Route::get('/moments/{invitation}', [MomentController::class, 'show']);
+Route::get('/moments/{invitation}/comments', [MomentController::class, 'comments']);
 Route::post('/moments/{invitation}/request-invitation', [MomentController::class, 'requestInvitation'])->middleware('throttle:3,10');
 Route::post('/public/invitations/{slug}/wedding-gift/create', [PublicWeddingGiftController::class, 'store']);
 Route::get('/public/wedding-gift/{orderId}/status', [PublicWeddingGiftController::class, 'status']);
@@ -55,6 +56,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/moments/{invitation}/reaction', [SocialController::class, 'react'])->middleware('throttle:20,1');
     Route::delete('/moments/{invitation}/reaction', [SocialController::class, 'removeReaction']);
     Route::post('/moments/{invitation}/comments', [SocialController::class, 'comment'])->middleware('throttle:6,1');
+    Route::delete('/moments/{invitation}/comments/{comment}', [SocialController::class, 'deleteComment']);
     Route::get('/social/notifications', [SocialController::class, 'notifications']);
     Route::put('/social/notifications/{notification}/read', [SocialController::class, 'readNotification']);
     Route::post('/push-tokens', [PushTokenController::class, 'store']);
