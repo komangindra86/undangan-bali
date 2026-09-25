@@ -21,7 +21,7 @@ function harness(responseFor = (url) => ({ data: url.includes('/templates?') ? [
       setItem: async (key, value) => storage.set(key, value),
       multiRemove: async (keys) => keys.forEach((key) => storage.delete(key)),
     },
-    'react-native': { Platform: { OS: 'android' } },
+    'react-native': { NativeModules: {}, Platform: { OS: 'android' } },
     './localMedia': { ensureLocalFileExists: async () => {} },
   };
   function load(relativePath) {

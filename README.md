@@ -1,6 +1,6 @@
 # Undangan Bali Santih - Backend MVP
 
-Backend Laravel untuk aplikasi pembuat undangan pernikahan Bali. Tahap ini menyediakan API mobile, autentikasi token, sinkronisasi draft setelah login, publish dengan slug unik, dan halaman undangan publik.
+Backend Laravel untuk aplikasi pembuat undangan pernikahan Bali dan ulang tahun. Backend menyediakan API mobile, autentikasi token, sinkronisasi draft setelah login, publish dengan slug unik, dan halaman undangan publik.
 
 ## Stack
 
@@ -10,26 +10,29 @@ Backend Laravel untuk aplikasi pembuat undangan pernikahan Bali. Tahap ini menye
 - Blade + Tailwind CDN untuk template publik MVP
 - File publik melalui `storage/app/public`
 
-## Fitur Tahap 1
+## Fitur
 
 - Register, login, logout, dan profil user API.
-- Daftar template aktif dan tiga metadata musik bawaan.
+- Daftar template aktif (lima pernikahan, tiga ulang tahun; lihat [`docs/UNDANGAN-ULANG-TAHUN.md`](docs/UNDANGAN-ULANG-TAHUN.md)) dan katalog musik berlisensi (lihat [`docs/KATALOG-MUSIK.md`](docs/KATALOG-MUSIK.md)).
 - Draft undangan milik user setelah login.
 - Endpoint `sync-local-draft` untuk menerima draft AsyncStorage dari mobile.
 - Publish hanya jika data pasangan dan acara minimum lengkap.
 - Perubahan pada undangan published mengembalikannya menjadi draft hingga dipublish ulang.
 - Slug publik unik otomatis, contoh `/u/undangan-wira-ayu`.
-- Tiga template publik dengan identitas berbeda: `Bali Classic` gelap ceremonial, `Pura Sunset` sinematik dengan countdown, dan `Ubud Garden` editorial terang.
+- Template pernikahan: `Bali Classic`, `Pura Sunset`, `Ubud Garden`, `Royal Kamasan`, dan `Puspa Kencana` (animasi). Template ulang tahun: `Ceria Confetti`, `Ruang Putih`, dan `Bali Pradnyan`.
 - Preview dummy template sebelum dipilih, lengkap dengan foto, galeri, animasi, tombol Maps/share, dan watermark.
 - Upload foto mempelai dan maksimal enam foto galeri milik user; foto dummy hanya tampil pada preview template.
-- Tiga cuplikan musik lokal ringan dan upload musik sendiri (MP3/WAV/M4A maksimal 10 MB) dengan tombol putar manual pada undangan browser.
+- Musik dari katalog bawaan atau upload musik sendiri (MP3/WAV/M4A maksimal 10 MB, wajib persetujuan hak cipta) yang diputar saat cover undangan dibuka.
 - Pencatatan setiap view halaman publik.
-- Wedding Gift melalui Midtrans QRIS: pembayaran hanya terjadi di halaman web undangan, sedangkan aplikasi mobile mengatur dan memonitor.
-- Fee layanan tampil transparan kepada tamu, dan status paid hanya bersumber dari webhook bertanda tangan atau Get Status API Midtrans.
+- Wedding Gift melalui Midtrans QRIS atau Xendit Invoice (`WEDDING_GIFT_PAYMENT_PROVIDER`): pembayaran hanya terjadi di halaman web undangan, sedangkan aplikasi mobile mengatur dan memonitor.
+- Tamu tidak dikenakan biaya layanan; fee platform dipotong saat pasangan mencairkan dana. Status paid hanya bersumber dari webhook terverifikasi atau Get Status API provider.
 - Wizard mobile menawarkan Wedding Gift sesudah langkah musik, sebelum konfirmasi/publish; pilihan user baru disimpan sebagai draft lokal sampai login.
-- Pencairan Wedding Gift MVP: pasangan menyimpan rekening dan mengajukan klaim di mobile; admin mentransfer manual dan mencatat referensi dari dashboard Blade.
+- Pencairan Wedding Gift MVP: pasangan menyimpan rekening dan mengajukan klaim di mobile; admin mentransfer manual dan mencatat referensi dari dashboard Blade (`/admin`).
+- Feed sosial Moment: undangan dapat tampil di feed, menerima reaksi, komentar, dan permintaan undangan; notifikasi push melalui Firebase Cloud Messaging.
+- Link undangan personal per tamu melalui parameter `?to=Nama%20Tamu`.
+- Jadwal harian: arsip undangan lewat tanggal, pembersihan media, dan penghapusan draft kedaluwarsa (`routes/console.php`).
 
-Dashboard admin dikerjakan pada tahap berikutnya. Aplikasi Expo MVP tersedia di folder `mobile`.
+Aplikasi Expo tersedia di folder `mobile`.
 
 ## Struktur Penting
 
@@ -184,24 +187,26 @@ Contoh payload sinkronisasi draft mobile:
 }
 ```
 
-## Wedding Gift QRIS
+## Wedding Gift
 
-Tambahkan key Sandbox Midtrans ke `.env`:
+Pilih provider dan isi key Sandbox/development pada `.env`:
 
 ```dotenv
+WEDDING_GIFT_PAYMENT_PROVIDER=midtrans   # atau xendit
+
 MIDTRANS_SERVER_KEY=SB-Mid-server-xxxxxxxx
 MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxxxxxx
 MIDTRANS_IS_PRODUCTION=false
-WEDDING_GIFT_FEE_TYPE=flat
-WEDDING_GIFT_FEE_VALUE=2000
-WEDDING_GIFT_FEE_FLAT_BELOW_AMOUNT=100000
-WEDDING_GIFT_FEE_FLAT_VALUE=2000
-WEDDING_GIFT_FEE_PERCENT_VALUE=2
+
+XENDIT_SECRET_KEY=xnd_development_xxxxxxxx
+XENDIT_WEBHOOK_TOKEN=token-verifikasi-callback
+
 WEDDING_GIFT_MINIMUM_AMOUNT=10000
 WEDDING_GIFT_PAYOUT_MINIMUM_AMOUNT=50000
+WEDDING_GIFT_PAYOUT_FEE_PERCENT=1
 ```
 
-`WEDDING_GIFT_FEE_*` adalah konfigurasi sistem. Payload mobile tidak dapat mengganti fee tersebut. Default fee otomatis: gift di bawah Rp100.000 dikenakan Rp2.000, sedangkan gift Rp100.000 ke atas dikenakan 2%. Contoh gift Rp150.000 menghasilkan biaya layanan Rp3.000, QRIS dibuat dengan `gross_amount` Rp153.000, dan pasangan tetap tercatat menerima Rp150.000.
+Fee adalah konfigurasi sistem dan tidak dapat diubah oleh payload mobile. Tamu membayar tepat sebesar nominal gift (`service_fee` 0, `total_amount` = `gift_amount`). Fee platform `WEDDING_GIFT_PAYOUT_FEE_PERCENT` (default 1%, dibulatkan ke atas) dipotong saat pasangan mengajukan pencairan. Contoh: pencairan Rp150.000 menghasilkan `platform_fee` Rp1.500 dan `net_amount` Rp148.500 yang ditransfer ke rekening pasangan.
 
 Contoh mengaktifkan Wedding Gift untuk undangan milik user:
 
@@ -242,8 +247,8 @@ Contoh respons:
   "data": {
     "order_id": "WGIFT-12-20260527143000-A1B2C3",
     "gift_amount": 100000,
-    "service_fee": 2000,
-    "total_amount": 102000,
+    "service_fee": 0,
+    "total_amount": 100000,
     "payment_type": "qris",
     "qr_image_url": "https://api.sandbox.midtrans.com/...",
     "transaction_status": "pending"
@@ -272,19 +277,21 @@ https://DOMAIN-HTTPS-ANDA/api/midtrans/webhook
 4. Aktifkan Wedding Gift dari mobile, buka link `/u/{slug}` di browser, isi form, dan scan/simulasikan pembayaran QRIS pada Sandbox.
 5. Tombol **Cek Status Pembayaran** memanggil backend, lalu backend memanggil Get Status API Midtrans. Webhook dan pengecekan status sama-sama idempotent; callback browser tidak pernah menetapkan status `paid`.
 
+Untuk Xendit, respons `create` berisi `payment_url` (halaman Invoice Xendit) alih-alih QRIS. Atur callback URL Invoice ke `https://DOMAIN-HTTPS-ANDA/api/xendit/webhook`; backend menolak callback tanpa header `x-callback-token` yang cocok dengan `XENDIT_WEBHOOK_TOKEN`.
+
 ### Catatan Play Store
 
-Aplikasi mobile tidak berisi tombol pembayaran Wedding Gift atau checkout QRIS; ia hanya mengatur dan memonitor gift. Pembayaran tamu dilakukan di web publik dan tidak membuka fitur digital. Namun, karena model ini mengenakan fee aplikasi, evaluasi kebijakan Play Store kembali sebelum rilis produksi; pembelian template premium atau penghapusan watermark di dalam aplikasi tetap harus memakai Google Play Billing.
+Aplikasi mobile tidak berisi tombol pembayaran Wedding Gift atau checkout QRIS; ia hanya mengatur dan memonitor gift. Pembayaran tamu dilakukan di web publik dan tidak membuka fitur digital. Namun, karena model ini mengenakan fee platform saat pencairan, evaluasi kebijakan Play Store kembali sebelum rilis produksi; pembelian template premium atau penghapusan watermark di dalam aplikasi tetap harus memakai Google Play Billing.
 
 ## Klaim Dan Pencairan Gift
 
-MVP memakai pencairan manual admin. Dana QRIS diterima merchant aplikasi melalui Midtrans; pasangan tidak otomatis menerima transfer saat tamu membayar.
+MVP memakai pencairan manual admin. Dana gift diterima merchant aplikasi melalui Midtrans atau Xendit; pasangan tidak otomatis menerima transfer saat tamu membayar.
 
 Alur pasangan:
 
 1. Buka `Dashboard Gift` pada mobile setelah ada transaksi berstatus `paid`.
 2. Pilih **Kelola Rekening** dan simpan bank, nomor rekening, serta nama pemilik.
-3. Pilih **Ajukan Pencairan**. Minimum default adalah `Rp50.000`.
+3. Pilih **Ajukan Pencairan**. Minimum default adalah `Rp50.000`; fee platform 1% dipotong dari nominal pencairan.
 4. Pantau status pada **Riwayat Pencairan**: menunggu, diproses, terkirim, atau ditolak.
 
 Alur admin:
@@ -314,6 +321,14 @@ Pengujian menggunakan database `undangan_bali_test` agar database pengembangan t
 ```powershell
 php artisan test
 vendor\bin\pint --test
+```
+
+Pastikan `php` yang dipakai adalah PHP 8.2, misalnya `C:\laragon\bin\php\php-8.2.27-Win32-vs16-x64\php.exe`. PHP lama di PATH akan gagal pada pemeriksaan platform Composer.
+
+Tes mobile dijalankan dari folder `mobile`:
+
+```powershell
+Get-ChildItem tests\*.test.cjs | ForEach-Object { node $_.FullName }
 ```
 
 ## Mobile Expo

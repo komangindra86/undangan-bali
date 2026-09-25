@@ -7,6 +7,7 @@
 /musik pixbay/
 .phpactor.json
 .phpunit.result.cache
+/.codex-remote-attachments
 /.fleet
 /.idea
 /.nova

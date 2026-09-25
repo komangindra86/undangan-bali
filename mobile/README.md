@@ -6,23 +6,43 @@ Pada beranda, user baru tetap diarahkan untuk mulai tanpa login. User yang perna
 
 ## Screen
 
+Navigasi utama memakai bottom tab (Moment, Undangan, Buat, Notifikasi, Profil). Tombol **Buat** membuka pilihan jenis undangan (pernikahan atau ulang tahun).
+
 ```text
+# Awal dan tab utama
 SplashScreen
+MomentFeedScreen          # tab Moment
+MyInvitationsScreen       # tab Undangan
+NotificationsScreen       # tab Notifikasi
+ProfileScreen             # tab Profil
 LandingScreen
+
+# Wizard pembuatan (tanpa login)
+InvitationTypeScreen      # pernikahan / ulang tahun
 TemplateScreen
 TemplatePreviewScreen
-GroomBrideFormScreen
+GroomBrideFormScreen      # pernikahan
+BirthdayFormScreen        # ulang tahun
 EventFormScreen
 LocationScreen
 GalleryScreen
 MusicScreen
 GiftSetupScreen
 PreviewScreen
+
+# Login dan publish
 AuthGateScreen
 LoginScreen
 RegisterScreen
 ShareScreen
-MyInvitationsScreen
+
+# Sosial
+MomentDetailScreen
+RequestInvitationScreen
+InvitationRequestsScreen
+ManageMomentsScreen
+
+# Wedding Gift dan pencairan
 WeddingGiftSettingScreen
 WeddingGiftDashboardScreen
 PayoutAccountScreen
