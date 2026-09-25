@@ -170,15 +170,17 @@ export default function MyInvitationsScreen({ navigation }) {
 
 function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleFeed, resuming, feedBusy, needsConsent, onConsent, onCancelConsent }) {
   const published = item.status === 'published';
+  const archived = item.status === 'archived';
+  const resumable = !published && !archived;
 
   return (
     <View style={styles.card}>
       <Pressable
-        accessibilityLabel={published ? undefined : 'Lanjutkan draft undangan'}
-        accessibilityRole={published ? undefined : 'button'}
-        disabled={published || resuming}
-        onPress={published ? undefined : onResume}
-        style={({ pressed }) => [styles.cardTop, !published && pressed && styles.pressed]}
+        accessibilityLabel={resumable ? 'Lanjutkan draft undangan' : undefined}
+        accessibilityRole={resumable ? 'button' : undefined}
+        disabled={!resumable || resuming}
+        onPress={resumable ? onResume : undefined}
+        style={({ pressed }) => [styles.cardTop, resumable && pressed && styles.pressed]}
       >
         <View style={styles.coupleIcon}>
           <Ionicons color={colors.goldLight} name={isBirthday(item) ? 'gift-outline' : 'heart-outline'} size={20} />
@@ -188,7 +190,7 @@ function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleF
           <Text style={styles.meta}>{item.event_date || 'Tanggal belum diisi'}</Text>
         </View>
         <View style={[styles.statusPill, published && styles.publishedPill]}>
-          <Text style={[styles.statusText, published && styles.publishedText]}>{published ? 'Live' : 'Draft'}</Text>
+          <Text style={[styles.statusText, published && styles.publishedText]}>{published ? 'Live' : archived ? 'Selesai' : 'Draft'}</Text>
         </View>
       </Pressable>
 
@@ -212,6 +214,11 @@ function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleF
             <PrimaryButton title="Saya Setuju, Bagikan" onPress={onConsent} loading={feedBusy} style={styles.openButton} />
             <SecondaryButton title="Batal, Tetap Tersembunyi" onPress={onCancelConsent} disabled={feedBusy} style={styles.secondaryButton} />
           </View> : null}
+        </>
+      ) : archived ? (
+        <>
+          <Text style={styles.draftHelp}>Acara sudah selesai dan undangan telah diarsipkan. {giftLabelFor(item)} dan pencairan saldo tetap dapat dikelola.</Text>
+          <PrimaryButton title={`${giftLabelFor(item)} & Pencairan`} onPress={() => onNavigate('WeddingGiftDashboard')} style={styles.openButton} />
         </>
       ) : (
         <>

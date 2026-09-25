@@ -31,7 +31,7 @@ class PublicWeddingGiftController extends Controller
             ->firstOrFail();
         $setting = $invitation->giftSetting;
 
-        abort_unless($setting?->is_active, 404);
+        abort_unless($setting?->is_active && $invitation->canReceiveGiftPayments(), 404);
 
         if ($testLab->matches($request)) {
             return response()->json([

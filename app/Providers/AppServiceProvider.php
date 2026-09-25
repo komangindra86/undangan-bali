@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Keyed by email + IP so guessing is slowed without blocking users who share a carrier-NAT IP.
+        RateLimiter::for('mobile-login', fn (Request $request) => Limit::perMinute(5)->by(
+            strtolower(trim((string) $request->input('email'))).'|'.$request->ip()
+        ));
+        RateLimiter::for('mobile-register', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
     }
 }

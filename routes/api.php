@@ -17,8 +17,8 @@ use App\Http\Controllers\Api\XenditWebhookController;
 use App\Http\Controllers\GoogleMobileOAuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:mobile-register');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:mobile-login');
 Route::post('/auth/google', [AuthController::class, 'google']);
 Route::post('/auth/google/exchange', [GoogleMobileOAuthController::class, 'exchange'])->middleware('throttle:10,1');
 

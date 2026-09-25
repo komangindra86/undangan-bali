@@ -42,7 +42,7 @@ class PublicInvitationController extends Controller
             ->where('status', 'published')
             ->firstOrFail();
 
-        abort_unless($invitation->giftSetting?->is_active, 404);
+        abort_unless($invitation->giftSetting?->is_active && $invitation->canReceiveGiftPayments(), 404);
 
         return view('gifts.public', ['invitation' => $invitation]);
     }

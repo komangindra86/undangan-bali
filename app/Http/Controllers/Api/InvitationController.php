@@ -61,6 +61,7 @@ class InvitationController extends Controller
     public function update(StoreInvitationRequest $request, Invitation $invitation): JsonResponse
     {
         $this->ensureOwner($request, $invitation);
+        abort_if($invitation->status === 'archived', 422, 'Undangan yang sudah diarsipkan tidak dapat diubah.');
         $invitation->update($this->draftAttributes($request, $invitation));
         $this->syncGiftSetting($request, $invitation);
 
@@ -134,17 +135,24 @@ class InvitationController extends Controller
     public function destroy(Request $request, Invitation $invitation): JsonResponse
     {
         $this->ensureOwner($request, $invitation);
+        abort_if(
+            $invitation->weddingGifts()->whereIn('transaction_status', ['pending', 'paid', 'refunded'])->exists()
+                || $invitation->payoutRequests()->exists(),
+            422,
+            'Undangan yang memiliki transaksi gift tidak dapat dihapus.'
+        );
 
-        foreach (['groom_photo', 'bride_photo', 'celebrant_photo', 'music_file'] as $file) {
-            if ($invitation->{$file}) {
-                Storage::disk('public')->delete($invitation->{$file});
-            }
-        }
-        foreach ($invitation->gallery_photos ?? [] as $file) {
-            Storage::disk('public')->delete($file);
-        }
+        $files = array_filter([
+            $invitation->groom_photo,
+            $invitation->bride_photo,
+            $invitation->celebrant_photo,
+            $invitation->music_file,
+            ...($invitation->gallery_photos ?? []),
+            ...$invitation->moments()->pluck('photo_path')->all(),
+        ]);
 
         $invitation->delete();
+        Storage::disk('public')->delete($files);
 
         return response()->json(['message' => 'Undangan berhasil dihapus.']);
     }

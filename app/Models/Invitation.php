@@ -177,6 +177,13 @@ class Invitation extends Model
         return $query;
     }
 
+    public function canReceiveGiftPayments(): bool
+    {
+        // Production gifts need an owner who can request a payout; demo pages stay display-only.
+        return ! app()->environment('production')
+            || ($this->user_id !== null && ! $this->isRetentionExempt());
+    }
+
     public function isRetentionExempt(): bool
     {
         foreach (self::RETENTION_EXEMPT_SLUG_PREFIXES as $prefix) {

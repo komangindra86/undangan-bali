@@ -375,6 +375,58 @@ class WeddingGiftTest extends TestCase
             ->assertJsonPath('transaction_status', 'ignored');
     }
 
+    public function test_demo_invitation_never_creates_real_payments_in_production(): void
+    {
+        $this->seed();
+        $this->app->detectEnvironment(fn () => 'production');
+        Http::fake();
+
+        $this->get('/demo/wedding-gift-xendit')->assertOk();
+
+        $this->get('/gift/demo-wedding-gift-xendit')->assertNotFound();
+        $this->postJson('/api/public/invitations/demo-wedding-gift-xendit/wedding-gift/create', [
+            'guest_name' => 'Komang',
+            'gift_amount' => 100000,
+        ])->assertNotFound();
+
+        Http::assertNothingSent();
+        $this->assertSame(0, WeddingGift::count());
+    }
+
+    public function test_invitation_with_gift_transactions_cannot_be_deleted(): void
+    {
+        [$invitation, $token] = $this->publishedInvitation();
+        $this->pendingGift($invitation)->update(['transaction_status' => 'paid', 'paid_at' => now()]);
+
+        $this->withToken($token)
+            ->deleteJson("/api/invitations/{$invitation->id}")
+            ->assertUnprocessable();
+
+        $this->assertModelExists($invitation);
+        $this->assertSame(1, $invitation->weddingGifts()->count());
+    }
+
+    public function test_archived_invitation_is_read_only_but_gift_dashboard_stays_available(): void
+    {
+        [$invitation, $token] = $this->publishedInvitation();
+        $this->pendingGift($invitation)->update(['transaction_status' => 'paid', 'paid_at' => now()]);
+        $invitation->update(['status' => 'archived', 'archived_at' => now()]);
+
+        $this->withToken($token)
+            ->putJson("/api/invitations/{$invitation->id}", [
+                'template_id' => $invitation->template_id,
+                'groom_nickname' => 'Wira',
+                'bride_nickname' => 'Ayu',
+            ])
+            ->assertUnprocessable();
+        $this->assertSame('archived', $invitation->fresh()->status);
+
+        $this->withToken($token)
+            ->getJson("/api/invitations/{$invitation->id}/gifts")
+            ->assertOk()
+            ->assertJsonPath('summary.available_balance', 100000);
+    }
+
     private function publishedInvitation(): array
     {
         $this->seed();
