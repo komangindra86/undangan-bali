@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700" role="img" aria-label="Ilustrasi bunga padma">
+  <rect width="600" height="700" fill="#f8f1e4"/>
+  <circle cx="300" cy="300" r="232" fill="#f1e4cc"/>
+  <circle cx="300" cy="300" r="200" fill="none" stroke="#a9833f" stroke-width="2" stroke-dasharray="2 12" stroke-linecap="round"/>
+  <circle cx="300" cy="300" r="170" fill="none" stroke="#a9833f" stroke-opacity=".45" stroke-width="1.5"/>
+  <g transform="translate(300 330)">
+    <g fill="#e2b9a0" fill-opacity=".28" stroke="#a9833f" stroke-width="2">
+      <path d="M0 0C-70-30-120-90-128-160-70-140-20-90 0 0Z" transform="rotate(-62)"/>
+      <path d="M0 0C70-30 120-90 128-160 70-140 20-90 0 0Z" transform="rotate(62)"/>
+    </g>
+    <g fill="#f1cdb9" fill-opacity=".5" stroke="#a9833f" stroke-width="2">
+      <path d="M0 0C-52-48-66-118-44-178-6-134 10-70 0 0Z" transform="rotate(-34)"/>
+      <path d="M0 0C52-48 66-118 44-178 6-134-10-70 0 0Z" transform="rotate(34)"/>
+    </g>
+    <path d="M0 0C-46-58-46-138 0-196 46-138 46-58 0 0Z" fill="#fbe6d6" stroke="#a9833f" stroke-width="2.5"/>
+    <path d="M0-28C-18-70-18-118 0-158 18-118 18-70 0-28Z" fill="#a9833f" fill-opacity=".55"/>
+    <path d="M-150 14q150 46 300 0" fill="none" stroke="#a9833f" stroke-width="3" stroke-linecap="round"/>
+    <path d="M-104 44q104 30 208 0M-62 70q62 18 124 0" fill="none" stroke="#a9833f" stroke-opacity=".6" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <g fill="#a9833f">
+    <path d="m300 84 6 16 16 6-16 6-6 16-6-16-16-6 16-6z"/>
+    <circle cx="150" cy="210" r="4"/><circle cx="450" cy="210" r="4"/>
+    <circle cx="118" cy="330" r="3"/><circle cx="482" cy="330" r="3"/>
+  </g>
+  <g fill="none" stroke="#a9833f" stroke-opacity=".5" stroke-width="2" stroke-linecap="round">
+    <path d="M70 610q115-40 230 0t230 0"/>
+    <path d="M110 646q95-30 190 0t190 0"/>
+  </g>
+</svg>

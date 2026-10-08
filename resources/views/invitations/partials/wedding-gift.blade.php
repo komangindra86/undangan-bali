@@ -69,7 +69,7 @@
             @if ($giftSetting->allow_message)
                 <label class="wg-field">
                     <span>Ucapan (opsional)</span>
-                    <textarea class="wg-input" name="message" maxlength="300" placeholder="{{ $invitation->isBirthday() ? 'Doa dan ucapan ulang tahun' : 'Doa dan ucapan untuk mempelai' }}"></textarea>
+                    <textarea class="wg-input" name="message" maxlength="300" placeholder="{{ $invitation->isBirthday() ? 'Doa dan ucapan ulang tahun' : ($invitation->isMegedong() ? 'Doa untuk ibu dan calon buah hati' : 'Doa dan ucapan untuk mempelai') }}"></textarea>
                 </label>
             @endif
             <div class="wg-breakdown">

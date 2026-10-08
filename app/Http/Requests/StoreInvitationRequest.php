@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Invitation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,7 @@ class StoreInvitationRequest extends FormRequest
         $this->replace($this->trimStrings($this->all()));
 
         $nested = [];
-        $groups = ['groom_data', 'bride_data', 'birthday_data', 'event_data', 'location_data', 'music_data'];
+        $groups = ['groom_data', 'bride_data', 'birthday_data', 'megedong_data', 'event_data', 'location_data', 'music_data'];
 
         foreach ($groups as $group) {
             if (is_array($this->input($group))) {
@@ -85,10 +86,11 @@ class StoreInvitationRequest extends FormRequest
         $name = ['nullable', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'];
         $nickname = ['nullable', 'string', 'max:18', 'regex:/^[\pL\s.\'-]+$/u'];
         $safeText = ['nullable', 'string', 'not_regex:/[<>]/'];
-        $birthday = $this->input('invitation_type') === 'birthday';
+        $type = $this->input('invitation_type');
+        $birthday = $type === 'birthday';
 
         return [
-            'invitation_type' => ['required', Rule::in($this->route('invitation') ? [$this->route('invitation')->invitation_type] : ['wedding', 'birthday'])],
+            'invitation_type' => ['required', Rule::in($this->route('invitation') ? [$this->route('invitation')->invitation_type] : Invitation::TYPES)],
             'template_id' => [
                 'required',
                 Rule::exists('invitation_templates', 'id')->where('is_active', true)->where('invitation_type', $this->input('invitation_type')),
@@ -100,6 +102,8 @@ class StoreInvitationRequest extends FormRequest
             'host_name' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:80'],
             'event_title' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:120'],
             'dress_code' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:80'],
+            'pregnancy_age' => ['exclude_unless:invitation_type,megedong', ...$safeText, 'max:40'],
+            'child_order' => ['exclude_unless:invitation_type,megedong', ...$safeText, 'max:50'],
             'music_id' => [
                 'nullable',
                 'required_if:music_type,default',
@@ -123,7 +127,7 @@ class StoreInvitationRequest extends FormRequest
             'gallery_existing_paths.*' => ['string', 'max:255'],
             'gallery_photos_changed' => ['nullable', 'boolean'],
             'opening_quote' => [...$safeText, 'max:300'],
-            'event_type' => ['nullable', Rule::in($birthday ? ['Ulang Tahun'] : ['Pawiwahan', 'Resepsi'])],
+            'event_type' => ['nullable', Rule::in(Invitation::EVENT_TYPES[$type] ?? Invitation::EVENT_TYPES['wedding'])],
             'event_date' => ['nullable', 'date', 'after_or_equal:today'],
             'start_time' => ['nullable', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
@@ -158,6 +162,8 @@ class StoreInvitationRequest extends FormRequest
             'host_name' => 'nama pengundang',
             'event_title' => 'judul acara',
             'dress_code' => 'dress code',
+            'pregnancy_age' => 'usia kandungan',
+            'child_order' => 'anak ke',
             'template_id' => 'template',
             'groom_full_name' => 'nama lengkap mempelai pria',
             'groom_nickname' => 'nama panggilan mempelai pria',

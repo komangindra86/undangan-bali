@@ -1,0 +1,79 @@
+* { box-sizing: border-box; }
+body.megedong { --paper:#1d140e; --ink:#f3e7cf; --muted:#cbb994; --accent:#d4ad61; --on-accent:#21170f; --panel:#2a1d14; --line:#d4ad6166; margin:0; background:#120c08; color:var(--ink); font:16px/1.75 Arial,sans-serif; }
+.mg-page { width:100%; max-width:780px; margin:auto; overflow:hidden; background:var(--paper); }
+.megedong .invitation-opening__center { max-width:100%; }
+.megedong .invitation-opening__names,.megedong .invitation-opening__guest { overflow-wrap:anywhere; }
+.mg-demo { background:var(--panel); color:var(--ink); text-align:center; font-size:12px; padding:12px 18px; }
+.mg-hero { text-align:center; padding:64px 28px 44px; }
+.mg-eyebrow { color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.3em; margin:0; text-transform:uppercase; }
+.mg-emblem { display:block; width:150px; height:150px; margin:26px auto 18px; border-radius:50%; object-fit:cover; object-position:center 38%; border:1px solid var(--line); }
+.mg-intro { font-size:14px; letter-spacing:.16em; margin:0; text-transform:uppercase; color:var(--muted); }
+.mg-page h1 { font:500 clamp(40px,11vw,74px)/1.08 Georgia,serif; margin:16px 0; overflow-wrap:anywhere; }
+.mg-page h2 { font:500 clamp(24px,6vw,34px)/1.3 Georgia,serif; margin:10px 0; overflow-wrap:anywhere; }
+.mg-date { color:var(--accent); font-size:13px; letter-spacing:.2em; margin:0; text-transform:uppercase; }
+.mg-section { padding:46px 28px; text-align:center; overflow-wrap:anywhere; }
+.mg-greeting { background:var(--panel); }
+.mg-greeting p { max-width:560px; margin:0 auto; font:italic 17px/1.9 Georgia,serif; }
+.mg-parents { display:grid; gap:18px; margin-top:26px; }
+.mg-parent { background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:28px 18px; }
+.mg-parent img,.mg-initial { width:132px; height:132px; border-radius:50%; margin:0 auto 16px; display:block; }
+.mg-parent img { object-fit:cover; border:2px solid var(--accent); }
+.mg-initial { border:1px solid var(--accent); color:var(--accent); font:48px/130px Georgia,serif; }
+.mg-role { color:var(--accent); display:block; font-size:11px; font-weight:700; letter-spacing:.24em; text-transform:uppercase; }
+.mg-facts { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin:26px 0 0; }
+.mg-facts div { border:1px solid var(--line); border-radius:999px; padding:9px 20px; }
+.mg-facts dt { color:var(--muted); display:inline; font-size:12px; }
+.mg-facts dt::after { content:': '; }
+.mg-facts dd { display:inline; font-weight:700; margin:0; }
+.mg-event { border:1px solid var(--line); border-radius:22px; margin:8px 28px 28px; }
+.mg-details { display:grid; gap:20px; padding:18px 0 24px; }
+.mg-details span { color:var(--muted); display:block; font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+.mg-details strong { display:block; font-size:18px; }
+.mg-details p { margin:4px 0 0; }
+.mg-button { align-items:center; background:var(--accent); border:0; border-radius:999px; color:var(--on-accent); cursor:pointer; display:inline-flex; font:700 14px Arial,sans-serif; justify-content:center; max-width:100%; min-height:48px; padding:12px 24px; text-decoration:none; }
+.mg-button:focus-visible { outline:3px solid var(--ink); outline-offset:4px; }
+.mg-gallery { display:grid; gap:14px; margin-top:22px; }
+.mg-gallery img { width:100%; max-height:600px; object-fit:contain; border-radius:14px; background:var(--panel); }
+.mg-gallery figure { margin:0; }
+.mg-gallery figcaption { color:var(--muted); font-size:12px; padding:8px; }
+.mg-closing { padding-bottom:104px; }
+.mg-closing h2 { color:var(--accent); margin:22px 0; }
+.mg-family { margin:0 0 26px; }
+.mg-music { position:fixed; bottom:18px; right:18px; z-index:30; background:var(--panel); color:var(--ink); border:1px solid var(--accent); border-radius:24px; padding:8px 14px; max-width:85vw; }
+.mg-music button { background:none; color:inherit; border:0; min-height:36px; font-weight:700; cursor:pointer; }
+.mg-music span { font-size:12px; }
+
+/* Garbha Kencana: classic dark Bali with a double gold frame. */
+.megedong--kencana .mg-page { border-inline:8px double #d4ad61; }
+.megedong--kencana .mg-hero { background:repeating-linear-gradient(45deg,transparent 0 30px,#d4ad610d 31px 32px); }
+.megedong--kencana .mg-page h1 { color:#ecd19d; }
+.megedong--kencana .mg-event { border:4px double #d4ad61; border-radius:8px; }
+.megedong--kencana .mg-parent { border-radius:8px; }
+
+/* Padma Sari: soft lotus pastel. */
+.megedong.megedong--padma { --paper:#fdf3ee; --ink:#5b3a44; --muted:#8c6b75; --accent:#b65f7a; --on-accent:#fff; --panel:#fff9f6; --line:#b65f7a40; background:#f1dfd9; }
+.megedong--padma .mg-hero { background:radial-gradient(circle at 12% 14%,#f6cdd6 0 46px,transparent 47px),radial-gradient(circle at 88% 30%,#fbe2c8 0 62px,transparent 63px),radial-gradient(circle at 20% 92%,#e6d3ee 0 40px,transparent 41px); }
+.megedong--padma .mg-emblem { border:6px solid #fff; box-shadow:0 12px 30px #b65f7a33; }
+.megedong--padma .mg-page h1 { color:#b65f7a; }
+.megedong--padma .mg-parent { border:0; box-shadow:0 10px 28px #b65f7a1f; }
+.megedong--padma .mg-event { background:#b65f7a; border:0; color:#fff; }
+.megedong--padma .mg-event .mg-eyebrow,.megedong--padma .mg-event .mg-details span { color:#fbe3ea; }
+.megedong--padma .mg-event .mg-button { background:#fff; color:#8d3f59; }
+
+/* Tirta Hening: quiet sage minimal. */
+.megedong.megedong--tirta { --paper:#f6f8f4; --ink:#2c3d36; --muted:#607268; --accent:#476b59; --on-accent:#fff; --panel:#fff; --line:#476b5933; background:#e4e9e2; }
+.megedong--tirta .mg-hero { text-align:left; padding-top:72px; }
+.megedong--tirta .mg-emblem { margin-inline:0; border-radius:4px; width:118px; height:118px; }
+.megedong--tirta .mg-section { text-align:left; }
+.megedong--tirta .mg-greeting p { margin:0; }
+.megedong--tirta .mg-parent { border-radius:4px; text-align:center; }
+.megedong--tirta .mg-facts { justify-content:flex-start; }
+.megedong--tirta .mg-facts div,.megedong--tirta .mg-button { border-radius:4px; }
+.megedong--tirta .mg-event { border-radius:0; border-width:1px 0; margin:0 28px 28px; padding-inline:0; }
+.megedong--tirta .mg-closing { text-align:center; }
+
+.megedong .is-revealed { animation:mg-reveal .7s ease both; }
+@keyframes mg-reveal { from { opacity:.45; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+@media(min-width:650px) { .mg-parents { grid-template-columns:1fr 1fr; } .mg-gallery { grid-template-columns:1fr 1fr; } .mg-gallery > :first-child { grid-column:span 2; } }
+@media(max-width:360px) { .mg-section,.mg-hero { padding-inline:18px; } .mg-event { margin-inline:18px; } }
+@media(prefers-reduced-motion:reduce) { .megedong *, .megedong *::before, .megedong *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }

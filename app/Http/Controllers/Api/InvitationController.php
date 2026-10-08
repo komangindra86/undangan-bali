@@ -78,6 +78,8 @@ class InvitationController extends Controller
         $personFields = $invitation->isBirthday()
             ? ['celebrant_full_name' => 80, 'celebrant_nickname' => 18]
             : ['groom_full_name' => 80, 'groom_nickname' => 18, 'bride_full_name' => 80, 'bride_nickname' => 18];
+        // Megedong-gedongan stores the expectant father in groom_* and the mother in bride_*.
+        [$groomLabel, $brideLabel] = $invitation->isMegedong() ? ['calon ayah', 'calon ibu'] : ['mempelai pria', 'mempelai wanita'];
         $personRules = [];
         foreach ($personFields as $field => $max) {
             $personRules[$field] = ['required', 'string', 'max:'.$max, 'regex:/^[\pL\s.\'-]+$/u'];
@@ -85,7 +87,7 @@ class InvitationController extends Controller
         Validator::make($invitation->toArray(), [
             ...$personRules,
             'template_id' => ['required', Rule::exists('invitation_templates', 'id')->where('is_active', true)->where('invitation_type', $invitation->invitation_type)],
-            'event_type' => ['required', Rule::in($invitation->isBirthday() ? ['Ulang Tahun'] : ['Pawiwahan', 'Resepsi'])],
+            'event_type' => ['required', Rule::in(Invitation::EVENT_TYPES[$invitation->invitation_type] ?? Invitation::EVENT_TYPES['wedding'])],
             'event_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required'],
             'venue_name' => ['required', 'string', 'max:120', 'not_regex:/[<>]/'],
@@ -97,10 +99,10 @@ class InvitationController extends Controller
         ], [
             'celebrant_full_name' => 'nama lengkap yang berulang tahun',
             'celebrant_nickname' => 'nama panggilan yang berulang tahun',
-            'groom_full_name' => 'nama lengkap mempelai pria',
-            'groom_nickname' => 'nama panggilan mempelai pria',
-            'bride_full_name' => 'nama lengkap mempelai wanita',
-            'bride_nickname' => 'nama panggilan mempelai wanita',
+            'groom_full_name' => 'nama lengkap '.$groomLabel,
+            'groom_nickname' => 'nama panggilan '.$groomLabel,
+            'bride_full_name' => 'nama lengkap '.$brideLabel,
+            'bride_nickname' => 'nama panggilan '.$brideLabel,
             'event_type' => 'jenis acara',
             'event_date' => 'tanggal acara',
             'start_time' => 'jam mulai',
@@ -129,7 +131,7 @@ class InvitationController extends Controller
             'message' => 'Undangan berhasil dipublish.',
             'data' => $invitation->load(['template', 'music', 'giftSetting']),
             'public_url' => route('invitations.public', $invitation->slug),
-            'share_text' => 'Kepada Yth. Bapak/Ibu/Saudara/i, kami mengundang untuk hadir di '.($invitation->isBirthday() ? 'perayaan ulang tahun '.$invitation->display_name : 'acara pernikahan kami').'. Buka undangan: '.route('invitations.public', $invitation->slug),
+            'share_text' => 'Kepada Yth. Bapak/Ibu/Saudara/i, kami mengundang untuk hadir di '.$invitation->occasion_phrase.'. Buka undangan: '.route('invitations.public', $invitation->slug),
         ]);
     }
 
@@ -242,9 +244,11 @@ class InvitationController extends Controller
 
     private function uniqueSlug(Invitation $invitation): string
     {
-        $base = Str::slug($invitation->isBirthday()
-            ? 'ulang tahun '.$invitation->celebrant_nickname
-            : 'undangan '.$invitation->groom_nickname.' '.$invitation->bride_nickname);
+        $base = Str::slug(match (true) {
+            $invitation->isBirthday() => 'ulang tahun '.$invitation->celebrant_nickname,
+            $invitation->isMegedong() => 'megedong gedongan '.$invitation->bride_nickname.' '.$invitation->groom_nickname,
+            default => 'undangan '.$invitation->groom_nickname.' '.$invitation->bride_nickname,
+        });
         $slug = $base;
 
         while (Invitation::where('slug', $slug)->where('id', '!=', $invitation->id)->exists()) {

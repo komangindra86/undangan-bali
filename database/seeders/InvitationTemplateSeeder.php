@@ -75,5 +75,17 @@ class InvitationTemplateSeeder extends Seeder
                 'is_premium' => false,
             ]);
         }
+
+        foreach (['garbha-kencana' => 'Garbha Kencana', 'padma-sari' => 'Padma Sari', 'tirta-hening' => 'Tirta Hening'] as $slug => $name) {
+            InvitationTemplate::updateOrCreate(['slug' => $slug], [
+                'name' => $name,
+                'invitation_type' => 'megedong',
+                'thumbnail' => null,
+                'preview_image' => null,
+                'blade_view' => 'invitations.templates.megedong.'.$slug,
+                'is_active' => true,
+                'is_premium' => false,
+            ]);
+        }
     }
 }

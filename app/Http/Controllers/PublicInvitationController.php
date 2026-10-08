@@ -85,6 +85,18 @@ class PublicInvitationController extends Controller
                 'event_date' => now()->addMonth()->startOfDay(),
             ]);
         }
+        if ($template->invitation_type === 'megedong') {
+            $invitation->fill([
+                'invitation_type' => 'megedong',
+                'pregnancy_age' => '7 bulan',
+                'child_order' => 'Anak pertama',
+                'opening_quote' => 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara Megedong-gedongan. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.',
+                'event_type' => 'Megedong-gedongan',
+                'event_date' => now()->addMonth()->startOfDay(),
+                'venue_name' => 'Kediaman Keluarga I Made Wira',
+                'venue_address' => 'Banjar Tegal, Ubud, Gianyar, Bali',
+            ]);
+        }
         $invitation->setRelation('template', $template);
         $invitation->setRelation('giftSetting', new WeddingGiftSetting([
             'is_active' => true,

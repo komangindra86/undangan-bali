@@ -186,7 +186,7 @@ class SocialController extends Controller
         $personalizedUrl = route('invitations.public', $invitation->slug).'?'.http_build_query([
             'to' => $invitationRequest->requester_name,
         ], '', '&', PHP_QUERY_RFC3986);
-        $message = 'Kepada Yth. '.$invitationRequest->requester_name.', kami mengundang untuk hadir di '.($invitation->isBirthday() ? 'perayaan ulang tahun '.$invitation->display_name : 'acara pernikahan kami').'. Buka undangan: '.$personalizedUrl;
+        $message = 'Kepada Yth. '.$invitationRequest->requester_name.', kami mengundang untuk hadir di '.$invitation->occasion_phrase.'. Buka undangan: '.$personalizedUrl;
 
         return response()->json([
             'message' => 'Permintaan ditandai sudah dibagikan.',

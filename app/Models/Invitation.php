@@ -8,6 +8,14 @@ class Invitation extends Model
 {
     public const RETENTION_EXEMPT_SLUG_PREFIXES = ['preview-', 'demo-'];
 
+    public const TYPES = ['wedding', 'birthday', 'megedong'];
+
+    public const EVENT_TYPES = [
+        'wedding' => ['Pawiwahan', 'Resepsi'],
+        'birthday' => ['Ulang Tahun'],
+        'megedong' => ['Megedong-gedongan'],
+    ];
+
     public const MUSIC_RIGHTS_TERMS_VERSION = '2026-09-01';
 
     protected $appends = ['public_url'];
@@ -21,6 +29,8 @@ class Invitation extends Model
         'host_name',
         'event_title',
         'dress_code',
+        'pregnancy_age',
+        'child_order',
         'feed_consent_at',
         'user_id',
         'template_id',
@@ -93,16 +103,40 @@ class Invitation extends Model
         return $this->invitation_type === 'birthday';
     }
 
+    public function isMegedong(): bool
+    {
+        return $this->invitation_type === 'megedong';
+    }
+
     public function getDisplayNameAttribute(): string
     {
-        return $this->isBirthday()
-            ? ($this->celebrant_nickname ?: 'Yang berulang tahun')
-            : ($this->groom_nickname ?: 'Mempelai').' & '.($this->bride_nickname ?: 'Pasangan');
+        return match (true) {
+            $this->isBirthday() => $this->celebrant_nickname ?: 'Yang berulang tahun',
+            // The ceremony centres on the expectant mother, so her name leads.
+            $this->isMegedong() => ($this->bride_nickname ?: 'Calon Ibu').' & '.($this->groom_nickname ?: 'Calon Ayah'),
+            default => ($this->groom_nickname ?: 'Mempelai').' & '.($this->bride_nickname ?: 'Pasangan'),
+        };
     }
 
     public function getGiftLabelAttribute(): string
     {
-        return $this->isBirthday() ? 'Kado Digital' : 'Wedding Gift';
+        return match (true) {
+            $this->isBirthday() => 'Kado Digital',
+            $this->isMegedong() => 'Tanda Kasih',
+            default => 'Wedding Gift',
+        };
+    }
+
+    /**
+     * How the occasion reads inside "kami mengundang untuk hadir di ...".
+     */
+    public function getOccasionPhraseAttribute(): string
+    {
+        return match (true) {
+            $this->isBirthday() => 'perayaan ulang tahun '.$this->display_name,
+            $this->isMegedong() => 'upacara megedong-gedongan kami',
+            default => 'acara pernikahan kami',
+        };
     }
 
     public function user()

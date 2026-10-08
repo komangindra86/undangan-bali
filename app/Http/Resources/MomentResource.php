@@ -20,7 +20,11 @@ class MomentResource extends JsonResource
             'invitation_type' => $this->invitation_type,
             'groom_nickname' => $groomNickname,
             'bride_nickname' => $brideNickname,
-            'names' => $this->isBirthday() ? ($this->safeDisplayText($this->celebrant_nickname) ?: 'Yang berulang tahun') : $groomNickname.' & '.$brideNickname,
+            'names' => match (true) {
+                $this->isBirthday() => $this->safeDisplayText($this->celebrant_nickname) ?: 'Yang berulang tahun',
+                $this->isMegedong() => $brideNickname.' & '.$groomNickname,
+                default => $groomNickname.' & '.$brideNickname,
+            },
             'caption' => $this->safeDisplayText($this->moment_caption),
             'cover_photo_url' => $photoUrls->first(),
             'photo_urls' => $photoUrls,
