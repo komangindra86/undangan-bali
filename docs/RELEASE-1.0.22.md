@@ -48,6 +48,8 @@ Belum ada notifikasi email ke admin saat laporan masuk; periksa menu Laporan sec
 - Endpoint release: `https://undangan.balisantih.com/api`.
 - 8 Oktober 2026: diunggah ke jalur **internal testing** lewat `eas submit --profile internal` (service account `play-upload@undangan-pernikahan-bali.iam.gserviceaccount.com`, kunci disimpan di server EAS). Belum dipromosikan ke production dan belum dicoba di perangkat fisik.
 
+- 8 Oktober 2026: setelah dicoba pemilik di internal testing, versi 24 dipromosikan ke **production** (rollout penuh) lewat Google Play Developer API dengan teks "Apa yang baru" di atas, bahasa `id`. Jalur production kini berisi `24 (1.0.22)` menggantikan `23 (1.0.21)`. Status peninjauan Google hanya terlihat di Play Console.
+
 Rilis berikutnya dapat diunggah dengan:
 
 ```powershell
