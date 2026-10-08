@@ -46,7 +46,14 @@ Belum ada notifikasi email ke admin saat laporan masuk; periksa menu Laporan sec
 - Sertifikat upload sama dengan 1.0.17 (SHA-256 `33:C8:4A:68:…:DB:3F:3C`); `jarsigner -verify` lulus.
 - Bundle JS berisi layar baru (Pengguna Diblokir, Laporkan Moment, kartu undangan Selesai) dan endpoint production.
 - Endpoint release: `https://undangan.balisantih.com/api`.
-- Belum diunggah ke Play Console dan belum dicoba di perangkat fisik.
+- 8 Oktober 2026: diunggah ke jalur **internal testing** lewat `eas submit --profile internal` (service account `play-upload@undangan-pernikahan-bali.iam.gserviceaccount.com`, kunci disimpan di server EAS). Belum dipromosikan ke production dan belum dicoba di perangkat fisik.
+
+Rilis berikutnya dapat diunggah dengan:
+
+```powershell
+cd mobile
+npx eas-cli submit --platform android --profile internal --path android\app\build\outputs\bundle\release\<nama-file>.aab --non-interactive
+```
 
 ## Keamanan Data Play Console
 
