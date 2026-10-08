@@ -44,7 +44,19 @@ return [
     'xendit' => [
         'secret_key' => env('XENDIT_SECRET_KEY'),
         'webhook_token' => env('XENDIT_WEBHOOK_TOKEN'),
+        // Gift provider for every invitation: midtrans, xendit or ipaymu. Kept under this key for existing deployments.
         'payment_provider' => env('WEDDING_GIFT_PAYMENT_PROVIDER', 'midtrans'),
+    ],
+
+    'ipaymu' => [
+        'va' => env('IPAYMU_VA'),
+        'api_key' => env('IPAYMU_API_KEY'),
+        'sandbox' => (bool) env('IPAYMU_SANDBOX', true),
+        'qris_channel' => env('IPAYMU_QRIS_CHANNEL', 'mpm'),
+        'expiry_hours' => (int) env('IPAYMU_QRIS_EXPIRY_HOURS', 24),
+        // iPaymu requires a buyer e-mail and phone; guests only give a name, so these fill the gaps.
+        'fallback_email' => env('IPAYMU_FALLBACK_EMAIL'),
+        'fallback_phone' => env('IPAYMU_FALLBACK_PHONE', env('CUSTOM_INVITATION_WHATSAPP', '081000000000')),
     ],
 
     'google' => [

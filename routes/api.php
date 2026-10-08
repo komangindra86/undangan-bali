@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GiftPayoutAccountController;
 use App\Http\Controllers\Api\GiftPayoutRequestController;
 use App\Http\Controllers\Api\InvitationController;
+use App\Http\Controllers\Api\IpaymuNotificationController;
 use App\Http\Controllers\Api\MidtransWebhookController;
 use App\Http\Controllers\Api\ModerationController;
 use App\Http\Controllers\Api\MomentController;
@@ -34,6 +35,7 @@ Route::post('/public/invitations/{slug}/wedding-gift/create', [PublicWeddingGift
 Route::get('/public/wedding-gift/{orderId}/status', [PublicWeddingGiftController::class, 'status']);
 Route::post('/midtrans/webhook', [MidtransWebhookController::class, 'handle']);
 Route::post('/xendit/webhook', [XenditWebhookController::class, 'handle']);
+Route::post('/ipaymu/notify', [IpaymuNotificationController::class, 'handle'])->middleware('throttle:60,1');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

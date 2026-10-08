@@ -24,7 +24,7 @@ Backend Laravel untuk aplikasi pembuat undangan pernikahan Bali, ulang tahun, da
 - Upload foto mempelai dan maksimal enam foto galeri milik user; foto dummy hanya tampil pada preview template.
 - Musik dari katalog bawaan atau upload musik sendiri (MP3/WAV/M4A maksimal 10 MB, wajib persetujuan hak cipta) yang diputar saat cover undangan dibuka.
 - Pencatatan setiap view halaman publik.
-- Wedding Gift melalui Midtrans QRIS atau Xendit Invoice (`WEDDING_GIFT_PAYMENT_PROVIDER`): pembayaran hanya terjadi di halaman web undangan, sedangkan aplikasi mobile mengatur dan memonitor.
+- Wedding Gift melalui iPaymu QRIS, Midtrans QRIS, atau Xendit Invoice (`WEDDING_GIFT_PAYMENT_PROVIDER`): pembayaran hanya terjadi di halaman web undangan, sedangkan aplikasi mobile mengatur dan memonitor.
 - Tamu tidak dikenakan biaya layanan; fee platform dipotong saat pasangan mencairkan dana. Status paid hanya bersumber dari webhook terverifikasi atau Get Status API provider.
 - Wizard mobile menawarkan Wedding Gift sesudah langkah musik, sebelum konfirmasi/publish; pilihan user baru disimpan sebagai draft lokal sampai login.
 - Pencairan Wedding Gift MVP: pasangan menyimpan rekening dan mengajukan klaim di mobile; admin mentransfer manual dan mencatat referensi dari dashboard Blade (`/admin`).
@@ -192,7 +192,11 @@ Contoh payload sinkronisasi draft mobile:
 Pilih provider dan isi key Sandbox/development pada `.env`:
 
 ```dotenv
-WEDDING_GIFT_PAYMENT_PROVIDER=midtrans   # atau xendit
+WEDDING_GIFT_PAYMENT_PROVIDER=ipaymu   # atau midtrans, xendit
+
+IPAYMU_VA=0000000000000000
+IPAYMU_API_KEY=xxxxxxxx
+IPAYMU_SANDBOX=true
 
 MIDTRANS_SERVER_KEY=SB-Mid-server-xxxxxxxx
 MIDTRANS_CLIENT_KEY=SB-Mid-client-xxxxxxxx
@@ -279,13 +283,21 @@ https://DOMAIN-HTTPS-ANDA/api/midtrans/webhook
 
 Untuk Xendit, respons `create` berisi `payment_url` (halaman Invoice Xendit) alih-alih QRIS. Atur callback URL Invoice ke `https://DOMAIN-HTTPS-ANDA/api/xendit/webhook`; backend menolak callback tanpa header `x-callback-token` yang cocok dengan `XENDIT_WEBHOOK_TOKEN`.
 
+### iPaymu QRIS
+
+Production memakai iPaymu (`WEDDING_GIFT_PAYMENT_PROVIDER=ipaymu`, `IPAYMU_SANDBOX=false`). Backend membuat pembayaran QRIS langsung (`/payment/direct`, `feeDirection=MERCHANT`) sehingga tamu membayar persis nominal gift dan biaya iPaymu ditanggung platform. iPaymu mengembalikan teks QRIS; halaman undangan menggambarnya menjadi QR dengan `public/js/toqr.js`.
+
+`notifyUrl` dikirim pada setiap transaksi (`/api/ipaymu/notify`), jadi tidak ada URL yang perlu diatur di dashboard iPaymu. Isi notifikasi hanya dipakai untuk menemukan gift; status lunas selalu dibaca ulang dari API iPaymu (`/transaction`), dan `ReferenceId` serta nominal harus cocok. Tombol **Cek Status Pembayaran** memakai pemeriksaan yang sama.
+
+Kode channel QRIS dapat diganti dengan `IPAYMU_QRIS_CHANNEL` (default `mpm`). iPaymu mewajibkan email dan nomor HP pembeli; bila tamu tidak mengisinya, dipakai `IPAYMU_FALLBACK_EMAIL` dan `IPAYMU_FALLBACK_PHONE` (default: alamat `tamu@` domain aplikasi dan nomor `CUSTOM_INVITATION_WHATSAPP`).
+
 ### Catatan Play Store
 
 Aplikasi mobile tidak berisi tombol pembayaran Wedding Gift atau checkout QRIS; ia hanya mengatur dan memonitor gift. Pembayaran tamu dilakukan di web publik dan tidak membuka fitur digital. Namun, karena model ini mengenakan fee platform saat pencairan, evaluasi kebijakan Play Store kembali sebelum rilis produksi; pembelian template premium atau penghapusan watermark di dalam aplikasi tetap harus memakai Google Play Billing.
 
 ## Klaim Dan Pencairan Gift
 
-MVP memakai pencairan manual admin. Dana gift diterima merchant aplikasi melalui Midtrans atau Xendit; pasangan tidak otomatis menerima transfer saat tamu membayar.
+MVP memakai pencairan manual admin. Dana gift diterima merchant aplikasi melalui payment gateway yang aktif (iPaymu, Midtrans, atau Xendit); pasangan tidak otomatis menerima transfer saat tamu membayar.
 
 Alur pasangan:
 

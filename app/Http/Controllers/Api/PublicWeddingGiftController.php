@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreWeddingGiftRequest;
 use App\Models\Invitation;
 use App\Models\WeddingGift;
+use App\Services\IpaymuService;
 use App\Services\MidtransService;
 use App\Services\SocialNotificationService;
 use App\Services\TestLabRequestDetector;
@@ -23,6 +24,7 @@ class PublicWeddingGiftController extends Controller
         string $slug,
         MidtransService $midtrans,
         XenditService $xendit,
+        IpaymuService $ipaymu,
         TestLabRequestDetector $testLab
     ): JsonResponse {
         $invitation = Invitation::with('giftSetting')
@@ -55,7 +57,7 @@ class PublicWeddingGiftController extends Controller
             'service_fee' => 0,
             'total_amount' => $giftAmount,
             'order_id' => $this->uniqueOrderId($invitation),
-            'payment_type' => $this->paymentProvider() === 'xendit' ? 'xendit_invoice' : 'qris',
+            'payment_type' => ['xendit' => 'xendit_invoice', 'ipaymu' => 'ipaymu_qris'][$this->paymentProvider()] ?? 'qris',
             'transaction_status' => 'pending',
         ]);
         try {
@@ -64,6 +66,14 @@ class PublicWeddingGiftController extends Controller
                 $gift->update([
                     'midtrans_transaction_id' => $response['id'] ?? null,
                     'payment_url' => $response['invoice_url'] ?? null,
+                    'raw_response' => $response,
+                ]);
+            } elseif ($this->paymentProvider() === 'ipaymu') {
+                $response = $ipaymu->chargeQris($gift->load('invitation'));
+                $gift->update([
+                    'midtrans_transaction_id' => (string) $response['TransactionId'],
+                    'qr_string' => $response['QrString'] ?? null,
+                    'qr_image_url' => $response['QrImage'] ?? null,
                     'raw_response' => $response,
                 ]);
             } else {
@@ -99,6 +109,7 @@ class PublicWeddingGiftController extends Controller
         string $orderId,
         MidtransService $midtrans,
         XenditService $xendit,
+        IpaymuService $ipaymu,
         SocialNotificationService $notifications
     ): JsonResponse {
         $gift = WeddingGift::where('order_id', $orderId)->firstOrFail();
@@ -112,6 +123,12 @@ class PublicWeddingGiftController extends Controller
                         throw new \RuntimeException('Status Xendit tidak cocok dengan transaksi.');
                     }
                     $gift = $xendit->applyTrustedStatus($gift, $payload);
+                } elseif ($gift->payment_type === 'ipaymu_qris') {
+                    $payload = $ipaymu->transaction((string) $gift->midtrans_transaction_id);
+                    if (! $ipaymu->matchesGift($gift, $payload)) {
+                        throw new \RuntimeException('Status iPaymu tidak cocok dengan transaksi.');
+                    }
+                    $gift = $ipaymu->applyTrustedStatus($gift, $payload);
                 } else {
                     $payload = $midtrans->status($gift->order_id);
                     if (($payload['order_id'] ?? null) !== $gift->order_id
@@ -157,6 +174,8 @@ class PublicWeddingGiftController extends Controller
 
     private function paymentProvider(): string
     {
-        return config('services.xendit.payment_provider') === 'xendit' ? 'xendit' : 'midtrans';
+        $provider = config('services.xendit.payment_provider');
+
+        return in_array($provider, ['xendit', 'ipaymu'], true) ? $provider : 'midtrans';
     }
 }

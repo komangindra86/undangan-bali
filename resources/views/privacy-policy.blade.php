@@ -29,7 +29,7 @@
                     <li>Media yang Anda unggah: foto mempelai atau orang yang berulang tahun, foto galeri, foto Moment, dan file musik pilihan sendiri.</li>
                     <li>Data Moment dan interaksi: caption, komentar, reaksi suka/love, serta nama dan nomor WhatsApp yang Anda kirim saat meminta undangan.</li>
                     <li>Data Wedding Gift atau Kado Digital yang diatur pemilik: status aktif, nama penerima, catatan penerima, minimum gift, dan preferensi ucapan.</li>
-                    <li>Data gift dari tamu pada halaman web undangan: nama tamu, nomor HP opsional, nominal gift, biaya layanan, total bayar, ucapan opsional, order ID, status transaksi, dan respons penyedia pembayaran Xendit atau Midtrans sesuai layanan yang digunakan.</li>
+                    <li>Data gift dari tamu pada halaman web undangan: nama tamu, nomor HP opsional, nominal gift, biaya layanan, total bayar, ucapan opsional, order ID, status transaksi, dan respons penyedia pembayaran iPaymu, Xendit, atau Midtrans sesuai layanan yang digunakan.</li>
                     <li>Data pencairan: nama bank, nomor rekening, nama pemilik rekening, nominal pencairan, status, dan referensi transfer manual admin.</li>
                     <li>Data teknis: alamat IP, user agent, waktu akses, log server, dan jumlah view undangan publik.</li>
                     <li>Data notifikasi perangkat: token Firebase Cloud Messaging (FCM), platform, nama perangkat jika tersedia, versi aplikasi, dan waktu perangkat terakhir terdaftar untuk pengiriman notifikasi.</li>
@@ -69,7 +69,7 @@
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Wedding Gift, Kado Digital, Dan Pembayaran</h2>
                 <p class="mt-3">
-                    Aplikasi mobile tidak menyediakan checkout gift, QRIS pembayaran, atau pembelian fitur digital menggunakan Xendit maupun Midtrans.
+                    Aplikasi mobile tidak menyediakan checkout gift, QRIS pembayaran, atau pembelian fitur digital menggunakan iPaymu, Xendit, maupun Midtrans.
                     Untuk gift, mobile app hanya digunakan pemilik untuk mengaktifkan fitur, mengatur penerima, dan melihat dashboard transaksi serta pencairan.
                     Tamu melakukan pembayaran melalui browser pada halaman web undangan. Gift tidak membuka fitur digital dalam aplikasi.
                 </p>
@@ -82,7 +82,7 @@
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Pihak Ketiga</h2>
                 <ul class="mt-3 list-disc space-y-2 pl-6">
-                    <li>Xendit atau Midtrans untuk memproses gift dan mengirim status transaksi sesuai layanan yang digunakan.</li>
+                    <li>iPaymu, Xendit, atau Midtrans untuk memproses gift dan mengirim status transaksi sesuai layanan yang digunakan.</li>
                     <li>Google untuk Login Google yang Anda pilih, serta Firebase Cloud Messaging untuk pengiriman push notification ke perangkat. Token perangkat dan isi notifikasi yang diperlukan diteruskan ke Firebase.</li>
                     <li>Google Maps atau link peta yang Anda masukkan untuk membantu tamu membuka lokasi acara.</li>
                     <li>WhatsApp atau fitur share perangkat saat Anda memilih membagikan link undangan.</li>
@@ -102,7 +102,7 @@
             <div>
                 <h2 class="font-serif text-2xl text-amber-100">Penyimpanan Dan Keamanan</h2>
                 <p class="mt-3">
-                    Password disimpan dalam bentuk hash. Koneksi production menggunakan HTTPS. Midtrans Server Key hanya disimpan di backend Laravel; kunci rahasia Xendit, Google OAuth, dan Firebase juga tidak disematkan ke aplikasi mobile.
+                    Password disimpan dalam bentuk hash. Koneksi production menggunakan HTTPS. Kunci Midtrans dan iPaymu hanya disimpan di backend Laravel; kunci rahasia Xendit, Google OAuth, dan Firebase juga tidak disematkan ke aplikasi mobile.
                     Data draft lokal dapat tersimpan sementara di perangkat sampai Anda login, publish, atau menghapus draft.
                 </p>
                 <p class="mt-3">

@@ -2,7 +2,9 @@
     $giftSetting = $invitation->giftSetting;
     $isPreview = $isPreview ?? false;
     $isPaymentDemo = $isPaymentDemo ?? false;
-    $paymentProvider = config('services.xendit.payment_provider') === 'xendit' ? 'xendit' : 'midtrans';
+    $paymentProvider = in_array(config('services.xendit.payment_provider'), ['xendit', 'ipaymu'], true)
+        ? config('services.xendit.payment_provider')
+        : 'midtrans';
 @endphp
 <style>
     .wg-section { padding: 64px 22px; text-align: center; }
@@ -98,6 +100,9 @@
         </form>
     </div>
 </section>
+@if ($paymentProvider === 'ipaymu' && ! $isPreview)
+    <script src="{{ asset('js/toqr.js') }}"></script>
+@endif
 <script>
     (() => {
         const form = document.querySelector('[data-wedding-gift-form]');
@@ -109,6 +114,27 @@
         const isPreview = form.dataset.preview === '1';
         const paymentProvider = form.dataset.paymentProvider;
         let orderId = null;
+
+        // iPaymu returns the QRIS payload as text, so the QR image is drawn here.
+        function qrImageFromText(text) {
+            if (!text || typeof window.toQR !== 'function') return null;
+            const modules = window.toQR(text, 0);
+            const size = Math.sqrt(modules.length);
+            const quiet = 4;
+            const scale = 8;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = (size + quiet * 2) * scale;
+            const context = canvas.getContext('2d');
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = '#000000';
+            for (let row = 0; row < size; row++) {
+                for (let column = 0; column < size; column++) {
+                    if (modules[row * size + column]) context.fillRect((column + quiet) * scale, (row + quiet) * scale, scale, scale);
+                }
+            }
+            return canvas.toDataURL('image/png');
+        }
 
         function updateBreakdown() {
             const amount = Math.max(0, Number(amountInput.value || 0));
@@ -151,9 +177,12 @@
                 orderId = data.order_id;
                 const qr = form.querySelector('[data-wg-qr]');
                 const payLink = form.querySelector('[data-wg-pay-link]');
-                if (data.qr_image_url) {
-                    qr.src = data.qr_image_url;
+                const qrSource = data.qr_image_url || qrImageFromText(data.qr_string);
+                if (qrSource) {
+                    qr.src = qrSource;
                     qr.style.display = 'block';
+                } else if (data.qr_string) {
+                    throw new Error('QRIS sudah dibuat tetapi belum dapat ditampilkan. Muat ulang halaman lalu coba lagi.');
                 } else {
                     qr.style.display = 'none';
                 }
