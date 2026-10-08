@@ -132,6 +132,20 @@ class MegedongInvitationTest extends TestCase
             ->assertDontSee('Wedding Gift');
     }
 
+    public function test_event_date_is_returned_as_the_same_calendar_day(): void
+    {
+        $this->actingAs(User::factory()->create(), 'sanctum');
+        $payload = $this->payload();
+        $payload['event_data']['event_date'] = '2027-03-09';
+
+        $id = $this->postJson('/api/invitations/sync-local-draft', $payload)->assertCreated()
+            ->assertJsonPath('data.event_date', '2027-03-09')
+            ->json('data.id');
+
+        $this->getJson("/api/invitations/{$id}")->assertJsonPath('data.event_date', '2027-03-09');
+        $this->getJson('/api/invitations')->assertJsonPath('data.0.event_date', '2027-03-09');
+    }
+
     private function payload(): array
     {
         return [

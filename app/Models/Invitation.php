@@ -74,7 +74,8 @@ class Invitation extends Model
     protected function casts(): array
     {
         return [
-            'event_date' => 'date',
+            // Serialized as a plain day: an ISO timestamp is converted to UTC and lands on the previous day in WITA.
+            'event_date' => 'date:Y-m-d',
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
             'media_deleted_at' => 'datetime',
