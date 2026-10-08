@@ -95,6 +95,7 @@ async function draftFormData(draft, includeMedia, methodOverride = null) {
   form.append('selected_template', String(draft.selected_template?.id || draft.selected_template));
   form.append('invitation_type', draft.invitation_type || 'wedding');
   appendValues(form, 'birthday_data', draft.birthday_data);
+  appendValues(form, 'megedong_data', draft.megedong_data);
   appendValues(form, 'groom_data', draft.groom_data);
   appendValues(form, 'bride_data', draft.bride_data);
   appendValues(form, 'event_data', draft.event_data);

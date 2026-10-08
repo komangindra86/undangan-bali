@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
-import { invitationName, isBirthday } from '../constants/invitation';
+import { invitationName, typeLabelFor } from '../constants/invitation';
 import { useDraft } from '../context/DraftContext';
 import { colors, commonStyles, spacing } from '../theme';
 
@@ -33,7 +33,7 @@ export default function InvitationTypeScreen({ navigation }) {
         <Text style={commonStyles.body}>Pilih jenis undangan. Gratis, dan tidak perlu login untuk mulai menyusunnya.</Text>
         {draft.selected_template ? (
           <View style={styles.resume}>
-            <Text style={styles.title}>Draft {isBirthday(draft) ? 'ulang tahun' : 'pernikahan'} tersedia</Text>
+            <Text style={styles.title}>Draft {typeLabelFor(draft)} tersedia</Text>
             <Text style={styles.body}>{invitationName(draft)} · {draft.selected_template.name}</Text>
             <SecondaryButton title="Lanjutkan Draft Tersimpan" disabled={busy} onPress={openTemplates} />
           </View>
@@ -41,6 +41,7 @@ export default function InvitationTypeScreen({ navigation }) {
         {!pendingType ? [
           { type: 'wedding', icon: 'heart-outline', title: 'Pernikahan', body: 'Rangkai cerita dan undang orang tersayang di hari bahagia kalian.' },
           { type: 'birthday', icon: 'gift-outline', title: 'Ulang Tahun', body: 'Untuk anak maupun dewasa. Usia opsional, foto dan undangan tidak otomatis muncul di feed publik.' },
+          { type: 'megedong', icon: 'flower-outline', title: 'Megedong-gedongan', body: 'Undang keluarga dan kerabat untuk memberi doa restu bagi ibu dan calon buah hati.' },
         ].map((choice) => (
           <View key={choice.type} style={styles.card}>
             <Ionicons name={choice.icon} size={32} color={colors.goldLight} />

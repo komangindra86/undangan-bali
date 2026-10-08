@@ -41,6 +41,7 @@ export function DraftProvider({ children }) {
     return {
       invitation_type: nextDraft.invitation_type || 'wedding',
       birthday_data: nextDraft.birthday_data,
+      megedong_data: nextDraft.megedong_data,
       selected_template: nextDraft.selected_template?.id || nextDraft.selected_template,
       groom_data: nextDraft.groom_data,
       bride_data: nextDraft.bride_data,
@@ -185,6 +186,10 @@ function draftFromInvitation(invitation) {
       celebrant_age: invitation.celebrant_age == null ? '' : String(invitation.celebrant_age),
       celebrant_photo: remoteMedia(invitation.celebrant_photo, 'image/jpeg'),
       host_name: invitation.host_name || '',
+    },
+    megedong_data: {
+      pregnancy_age: invitation.pregnancy_age || '',
+      child_order: invitation.child_order || '',
     },
     selected_template: invitation.template || { id: invitation.template_id },
     groom_data: {

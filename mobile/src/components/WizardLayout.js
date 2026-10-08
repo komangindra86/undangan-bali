@@ -2,15 +2,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import KeyboardAwareScrollView from './KeyboardAwareScrollView';
 import { useDraft } from '../context/DraftContext';
-import { isBirthday } from '../constants/invitation';
+import { giftLabelFor, personStepLabelFor } from '../constants/invitation';
 import { colors, commonStyles, spacing } from '../theme';
 
-const labels = ['Template', 'Mempelai', 'Acara', 'Lokasi', 'Galeri', 'Musik', 'Wedding Gift', 'Konfirmasi'];
-const totalSteps = labels.length;
+const totalSteps = 8;
 
 export default function WizardLayout({ step, title, subtitle, children, footer, syncMessage }) {
   const { draft } = useDraft();
-  const stepLabels = isBirthday(draft) ? ['Template', 'Yang Berulang Tahun', 'Acara', 'Lokasi', 'Galeri', 'Musik', 'Kado Digital', 'Konfirmasi'] : labels;
+  const stepLabels = ['Template', personStepLabelFor(draft), 'Acara', 'Lokasi', 'Galeri', 'Musik', giftLabelFor(draft), 'Konfirmasi'];
   return (
     <SafeAreaView style={commonStyles.screen}>
       <KeyboardAwareScrollView contentContainerStyle={commonStyles.content}>

@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import FormField from '../components/FormField';
 import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
-import { invitationName, isBirthday } from '../constants/invitation';
+import { occasionPhraseFor } from '../constants/invitation';
 import { colors, commonStyles, spacing } from '../theme';
 
 export default function ShareScreen({ navigation, route }) {
@@ -19,7 +19,7 @@ export default function ShareScreen({ navigation, route }) {
   }, [normalizedGuestName, publication?.public_url]);
   const recipient = normalizedGuestName || 'Bapak/Ibu/Saudara/i';
   const invitation = publication?.data || publication;
-  const occasion = isBirthday(invitation) ? `perayaan ulang tahun ${invitationName(invitation)}` : 'acara pernikahan kami';
+  const occasion = occasionPhraseFor(invitation);
   const text = `Kepada Yth. ${recipient}, kami mengundang untuk hadir di ${occasion}. Buka undangan: ${url}`;
 
   function canShare() {

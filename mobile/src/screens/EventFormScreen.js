@@ -4,20 +4,18 @@ import { FooterActions } from '../components/Buttons';
 import DateTimeField from '../components/DateTimeField';
 import FormField from '../components/FormField';
 import WizardLayout from '../components/WizardLayout';
-import { isBirthday, openingQuoteFor } from '../constants/invitation';
+import { eventTypesFor, isBirthday, isMegedong, openingQuoteFor } from '../constants/invitation';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
 import { cleanText, firstError, isPastDate, todayDateString, validateRequired, validateSafeText } from '../utils/validation';
 
-const EVENT_TYPES = ['Pawiwahan', 'Resepsi'];
-
 export default function EventFormScreen({ navigation }) {
   const { draft, saveSection, syncing, syncMessage } = useDraft();
   const birthday = isBirthday(draft);
-  const eventTypes = birthday ? ['Ulang Tahun'] : EVENT_TYPES;
+  const eventTypes = eventTypesFor(draft);
   const [event, setEvent] = useState(() => ({
     ...draft.event_data,
-    event_type: eventTypes.includes(draft.event_data?.event_type) ? draft.event_data.event_type : (birthday ? 'Ulang Tahun' : null),
+    event_type: eventTypes.includes(draft.event_data?.event_type) ? draft.event_data.event_type : (eventTypes.length === 1 ? eventTypes[0] : null),
     opening_quote: draft.event_data?.opening_quote ?? openingQuoteFor(draft),
   }));
   const [formError, setFormError] = useState(null);
@@ -75,7 +73,7 @@ export default function EventFormScreen({ navigation }) {
     <WizardLayout
       step={3}
       title="Detail acara"
-      subtitle={birthday ? 'Pilih tanggal perayaan, bukan tanggal lahir. Gunakan kalender dan pemilih jam untuk jadwal acara.' : 'Pilih jenis acara, lalu gunakan kalender dan pemilih jam agar jadwal tercatat tepat.'}
+      subtitle={birthday ? 'Pilih tanggal perayaan, bukan tanggal lahir. Gunakan kalender dan pemilih jam untuk jadwal acara.' : isMegedong(draft) ? 'Isi hari baik upacara, lalu gunakan kalender dan pemilih jam agar jadwal tercatat tepat.' : 'Pilih jenis acara, lalu gunakan kalender dan pemilih jam agar jadwal tercatat tepat.'}
       syncMessage={syncMessage}
       footer={<FooterActions onBack={() => navigation.goBack()} onNext={next} loading={syncing} />}
     >

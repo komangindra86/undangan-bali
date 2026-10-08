@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
-import { giftLabelFor, invitationName, isBirthday, personScreenFor } from '../constants/invitation';
+import { giftLabelFor, invitationName, isBirthday, personScreenFor, typeIconFor } from '../constants/invitation';
 import { useAuth } from '../context/AuthContext';
 import { useDraft } from '../context/DraftContext';
 import { api } from '../services/api';
@@ -192,7 +192,7 @@ function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleF
         style={({ pressed }) => [styles.cardTop, resumable && pressed && styles.pressed]}
       >
         <View style={styles.coupleIcon}>
-          <Ionicons color={colors.goldLight} name={isBirthday(item) ? 'gift-outline' : 'heart-outline'} size={20} />
+          <Ionicons color={colors.goldLight} name={typeIconFor(item)} size={20} />
         </View>
         <View style={styles.cardIdentity}>
           <Text style={styles.name}>{invitationName(item)}</Text>

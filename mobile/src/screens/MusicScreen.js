@@ -19,7 +19,7 @@ export default function MusicScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [previewError, setPreviewError] = useState('');
-  const [category, setCategory] = useState(() => draft.invitation_type === 'birthday' ? 'ulang-tahun' : 'pernikahan');
+  const [category, setCategory] = useState(() => draft.invitation_type === 'birthday' ? 'ulang-tahun' : 'pernikahan'); // Megedong-gedongan shares the calmer wedding catalogue.
   const [visibleCount, setVisibleCount] = useState(6);
   const [rightsConfirmed, setRightsConfirmed] = useState(false);
   const player = useAudioPlayer(null, { downloadFirst: false, updateInterval: 250 });

@@ -2,7 +2,7 @@ import { Alert, ImageBackground, Linking, ScrollView, StyleSheet, Text, View } f
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { useDraft } from '../context/DraftContext';
-import { isBirthday, personScreenFor } from '../constants/invitation';
+import { isBirthday, isMegedong, MEGEDONG_TEMPLATE_COLORS, personScreenFor, typeLabelFor } from '../constants/invitation';
 import { api } from '../services/api';
 import { templateMatchesType } from '../utils/templateCatalog';
 import { colors, commonStyles, spacing } from '../theme';
@@ -11,6 +11,11 @@ export default function TemplatePreviewScreen({ navigation, route }) {
   const template = route.params?.template;
   const { draft, saveSection, syncing } = useDraft();
   const birthday = isBirthday(draft);
+  const megedong = isMegedong(draft);
+  // Types without a preview photo get a plain colour hero instead of an image.
+  const heroColor = megedong
+    ? (MEGEDONG_TEMPLATE_COLORS[template?.slug] || MEGEDONG_TEMPLATE_COLORS['garbha-kencana']).hero
+    : birthday ? (template?.slug === 'ceria-confetti' ? '#6b46a4' : template?.slug === 'ruang-putih' ? '#83796f' : '#163f36') : null;
   const matchingType = templateMatchesType(template, draft.invitation_type || 'wedding');
   const previewImage = `${api.siteUrl}/storage/${template?.preview_image}`;
 
@@ -28,7 +33,7 @@ export default function TemplatePreviewScreen({ navigation, route }) {
         <View style={styles.safe}>
           <Text style={commonStyles.title}>Pilih template yang sesuai</Text>
           <Text style={styles.description}>
-            Template ini bukan untuk undangan {birthday ? 'ulang tahun' : 'pernikahan'}. Silakan kembali dan pilih desain yang sesuai. Data yang sudah diisi tetap tersimpan.
+            Template ini bukan untuk undangan {typeLabelFor(draft)}. Silakan kembali dan pilih desain yang sesuai. Data yang sudah diisi tetap tersimpan.
           </Text>
           <SecondaryButton title="Kembali Pilih Template" onPress={() => navigation.navigate('Template')} />
         </View>
@@ -51,11 +56,11 @@ export default function TemplatePreviewScreen({ navigation, route }) {
         Data di bawah hanya contoh. Buka demo lengkap untuk melihat desain, transisi, galeri, dan musik.
       </Text>
 
-      <ImageBackground source={birthday ? undefined : { uri: previewImage }} style={[styles.hero, birthday && { backgroundColor: template.slug === 'ceria-confetti' ? '#6b46a4' : template.slug === 'ruang-putih' ? '#83796f' : '#163f36', borderRadius: 22 }]} imageStyle={styles.heroImage}>
+      <ImageBackground source={heroColor ? undefined : { uri: previewImage }} style={[styles.hero, heroColor && { backgroundColor: heroColor, borderRadius: 22 }]} imageStyle={styles.heroImage}>
         <View style={styles.overlay}>
-          <Text style={styles.smallTitle}>{birthday ? 'PERAYAAN ULANG TAHUN' : 'PAWIWAHAN ADAT BALI'}</Text>
-          <Text style={styles.couple}>{birthday ? 'Kirana' : 'Wira & Ayu'}</Text>
-          <Text style={styles.event}>{birthday ? 'Merayakan 7 tahun penuh cerita' : '18 Agustus 2026 | Bale Banjar Ubud'}</Text>
+          <Text style={styles.smallTitle}>{birthday ? 'PERAYAAN ULANG TAHUN' : megedong ? 'UPACARA MEGEDONG-GEDONGAN' : 'PAWIWAHAN ADAT BALI'}</Text>
+          <Text style={styles.couple}>{birthday ? 'Kirana' : megedong ? 'Ayu & Wira' : 'Wira & Ayu'}</Text>
+          <Text style={styles.event}>{birthday ? 'Merayakan 7 tahun penuh cerita' : megedong ? 'Doa restu untuk ibu dan calon buah hati' : '18 Agustus 2026 | Bale Banjar Ubud'}</Text>
         </View>
       </ImageBackground>
 

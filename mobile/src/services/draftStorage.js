@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DEFAULT_OPENING_QUOTE, openingQuoteFor } from '../constants/invitation';
+import { DEFAULT_OPENING_QUOTE, eventTypesFor, openingQuoteFor } from '../constants/invitation';
 
 export const DRAFT_STORAGE_KEYS = {
   invitation_type: 'invitation_type',
   birthday_data: 'birthday_data',
+  megedong_data: 'megedong_data',
   selected_template: 'selected_template',
   groom_data: 'groom_data',
   bride_data: 'bride_data',
@@ -25,6 +26,7 @@ export const SESSION_KEYS = {
 export const emptyDraft = {
   invitation_type: 'wedding',
   birthday_data: {},
+  megedong_data: {},
   selected_template: null,
   groom_data: {},
   bride_data: {},
@@ -45,7 +47,9 @@ export const emptyDraft = {
 export function createEmptyDraft(invitationType = 'wedding') {
   const draft = JSON.parse(JSON.stringify(emptyDraft));
   draft.invitation_type = invitationType;
-  draft.event_data = { opening_quote: openingQuoteFor(draft), ...(invitationType === 'birthday' ? { event_type: 'Ulang Tahun' } : {}) };
+  // Types with a single kind of event preselect it; weddings let the couple choose.
+  const eventTypes = eventTypesFor(draft);
+  draft.event_data = { opening_quote: openingQuoteFor(draft), ...(eventTypes.length === 1 ? { event_type: eventTypes[0] } : {}) };
   return draft;
 }
 

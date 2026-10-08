@@ -1,6 +1,6 @@
 # Undangan Bali Santih - Backend MVP
 
-Backend Laravel untuk aplikasi pembuat undangan pernikahan Bali dan ulang tahun. Backend menyediakan API mobile, autentikasi token, sinkronisasi draft setelah login, publish dengan slug unik, dan halaman undangan publik.
+Backend Laravel untuk aplikasi pembuat undangan pernikahan Bali, ulang tahun, dan megedong-gedongan. Backend menyediakan API mobile, autentikasi token, sinkronisasi draft setelah login, publish dengan slug unik, dan halaman undangan publik.
 
 ## Stack
 
@@ -13,13 +13,13 @@ Backend Laravel untuk aplikasi pembuat undangan pernikahan Bali dan ulang tahun.
 ## Fitur
 
 - Register, login, logout, dan profil user API.
-- Daftar template aktif (lima pernikahan, tiga ulang tahun; lihat [`docs/UNDANGAN-ULANG-TAHUN.md`](docs/UNDANGAN-ULANG-TAHUN.md)) dan katalog musik berlisensi (lihat [`docs/KATALOG-MUSIK.md`](docs/KATALOG-MUSIK.md)).
+- Daftar template aktif (lima pernikahan, tiga ulang tahun, tiga megedong-gedongan; lihat [`docs/UNDANGAN-ULANG-TAHUN.md`](docs/UNDANGAN-ULANG-TAHUN.md)) dan katalog musik berlisensi (lihat [`docs/KATALOG-MUSIK.md`](docs/KATALOG-MUSIK.md)).
 - Draft undangan milik user setelah login.
 - Endpoint `sync-local-draft` untuk menerima draft AsyncStorage dari mobile.
 - Publish hanya jika data pasangan dan acara minimum lengkap.
 - Perubahan pada undangan published mengembalikannya menjadi draft hingga dipublish ulang.
 - Slug publik unik otomatis, contoh `/u/undangan-wira-ayu`.
-- Template pernikahan: `Bali Classic`, `Pura Sunset`, `Ubud Garden`, `Royal Kamasan`, dan `Puspa Kencana` (animasi). Template ulang tahun: `Ceria Confetti`, `Ruang Putih`, dan `Bali Pradnyan`.
+- Template pernikahan: `Bali Classic`, `Pura Sunset`, `Ubud Garden`, `Royal Kamasan`, dan `Puspa Kencana` (animasi). Template ulang tahun: `Ceria Confetti`, `Ruang Putih`, dan `Bali Pradnyan`. Template megedong-gedongan: `Garbha Kencana`, `Padma Sari`, dan `Tirta Hening` (lihat [`docs/UNDANGAN-MEGEDONG.md`](docs/UNDANGAN-MEGEDONG.md)).
 - Preview dummy template sebelum dipilih, lengkap dengan foto, galeri, animasi, tombol Maps/share, dan watermark.
 - Upload foto mempelai dan maksimal enam foto galeri milik user; foto dummy hanya tampil pada preview template.
 - Musik dari katalog bawaan atau upload musik sendiri (MP3/WAV/M4A maksimal 10 MB, wajib persetujuan hak cipta) yang diputar saat cover undangan dibuka.

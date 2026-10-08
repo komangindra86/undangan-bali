@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
-import { isBirthday } from '../constants/invitation';
+import { isBirthday, isMegedong, typeLabelFor } from '../constants/invitation';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 import { feedSession } from '../utils/feedSession';
@@ -191,7 +191,7 @@ function MomentCard({ item, width, initialPhotoIndex, onPhotoChange, onPress }) 
         </View>
         <View style={styles.cardIdentity}>
           <Text numberOfLines={1} style={styles.cardNames}>{item.names}</Text>
-          <Text style={styles.cardMeta}>{isBirthday(item) ? 'Moment ulang tahun' : 'Moment pernikahan'}</Text>
+          <Text style={styles.cardMeta}>{`Moment ${typeLabelFor(item)}`}</Text>
         </View>
         <View style={styles.publicPill}>
           <Ionicons color={colors.success} name="earth-outline" size={12} />
@@ -315,7 +315,10 @@ function FeedFooter({ loading, hasMore, itemCount }) {
 }
 
 function initials(item) {
-  return (isBirthday(item) ? item.names?.slice(0, 2) : `${item.groom_nickname?.[0] || ''}${item.bride_nickname?.[0] || ''}`)?.toUpperCase() || 'UB';
+  if (isBirthday(item)) return item.names?.slice(0, 2)?.toUpperCase() || 'UB';
+  const letters = [item.groom_nickname?.[0] || '', item.bride_nickname?.[0] || ''];
+  // Megedong-gedongan shows the mother's name first, so its initials follow the same order.
+  return (isMegedong(item) ? letters.reverse() : letters).join('').toUpperCase() || 'UB';
 }
 
 const styles = StyleSheet.create({

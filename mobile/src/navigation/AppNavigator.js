@@ -10,6 +10,7 @@ import GiftSetupScreen from '../screens/GiftSetupScreen';
 import LandingScreen from '../screens/LandingScreen';
 import LocationScreen from '../screens/LocationScreen';
 import MainTabNavigator from './MainTabNavigator';
+import MegedongFormScreen from '../screens/MegedongFormScreen';
 import ManageMomentsScreen from '../screens/ManageMomentsScreen';
 import LoginScreen from '../screens/LoginScreen';
 import MomentDetailScreen from '../screens/MomentDetailScreen';
@@ -46,6 +47,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Template" component={TemplateScreen} />
       <Stack.Screen name="InvitationType" component={InvitationTypeScreen} />
       <Stack.Screen name="BirthdayForm" component={BirthdayFormScreen} />
+      <Stack.Screen name="MegedongForm" component={MegedongFormScreen} />
       <Stack.Screen name="TemplatePreview" component={TemplatePreviewScreen} />
       <Stack.Screen name="GroomBrideForm" component={GroomBrideFormScreen} />
       <Stack.Screen name="EventForm" component={EventFormScreen} />
