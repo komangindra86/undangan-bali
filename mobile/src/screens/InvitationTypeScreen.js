@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
-import { invitationName, typeLabelFor } from '../constants/invitation';
+import { INVITATION_CHOICES, invitationName, typeLabelFor } from '../constants/invitation';
 import { useDraft } from '../context/DraftContext';
 import { colors, commonStyles, spacing } from '../theme';
 
@@ -38,16 +38,12 @@ export default function InvitationTypeScreen({ navigation }) {
             <SecondaryButton title="Lanjutkan Draft Tersimpan" disabled={busy} onPress={openTemplates} />
           </View>
         ) : null}
-        {!pendingType ? [
-          { type: 'wedding', icon: 'heart-outline', title: 'Pernikahan', body: 'Rangkai cerita dan undang orang tersayang di hari bahagia kalian.' },
-          { type: 'birthday', icon: 'gift-outline', title: 'Ulang Tahun', body: 'Untuk anak maupun dewasa. Usia opsional, foto dan undangan tidak otomatis muncul di feed publik.' },
-          { type: 'megedong', icon: 'flower-outline', title: 'Megedong-gedongan', body: 'Undang keluarga dan kerabat untuk memberi doa restu bagi ibu dan calon buah hati.' },
-        ].map((choice) => (
+        {!pendingType ? INVITATION_CHOICES.map((choice) => (
           <View key={choice.type} style={styles.card}>
             <Ionicons name={choice.icon} size={32} color={colors.goldLight} />
             <Text style={styles.title}>{choice.title}</Text>
             <Text style={styles.body}>{choice.body}</Text>
-            <PrimaryButton title={`Buat Undangan ${choice.title}`} disabled={busy} onPress={() => start(choice.type)} />
+            <PrimaryButton title={`Buat Undangan ${choice.buttonTitle || choice.title}`} disabled={busy} onPress={() => start(choice.type)} />
           </View>
         )) : null}
         {pendingType ? (

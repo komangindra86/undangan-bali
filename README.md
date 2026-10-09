@@ -19,7 +19,7 @@ Backend Laravel untuk aplikasi pembuat undangan pernikahan Bali, ulang tahun, da
 - Publish hanya jika data pasangan dan acara minimum lengkap.
 - Perubahan pada undangan published mengembalikannya menjadi draft hingga dipublish ulang.
 - Slug publik unik otomatis, contoh `/u/undangan-wira-ayu`.
-- Template pernikahan: `Bali Classic`, `Pura Sunset`, `Ubud Garden`, `Royal Kamasan`, dan `Puspa Kencana` (animasi). Template ulang tahun: `Ceria Confetti`, `Ruang Putih`, dan `Bali Pradnyan`. Template megedong-gedongan: `Garbha Kencana`, `Padma Sari`, dan `Tirta Hening` (lihat [`docs/UNDANGAN-MEGEDONG.md`](docs/UNDANGAN-MEGEDONG.md)).
+- Template pernikahan: `Bali Classic`, `Pura Sunset`, `Ubud Garden`, `Royal Kamasan`, dan `Puspa Kencana` (animasi). Template ulang tahun: `Ceria Confetti`, `Ruang Putih`, dan `Bali Pradnyan`. Template megedong-gedongan: `Garbha Kencana`, `Padma Sari`, dan `Tirta Hening` (lihat [`docs/UNDANGAN-MEGEDONG.md`](docs/UNDANGAN-MEGEDONG.md)). Template abulan pitung dina: `Rare Kencana`, `Sekar Jepun`, dan `Langit Kumara` (lihat [`docs/UPACARA-ANAK.md`](docs/UPACARA-ANAK.md)).
 - Preview dummy template sebelum dipilih, lengkap dengan foto, galeri, animasi, tombol Maps/share, dan watermark.
 - Upload foto mempelai dan maksimal enam foto galeri milik user; foto dummy hanya tampil pada preview template.
 - Musik dari katalog bawaan atau upload musik sendiri (MP3/WAV/M4A maksimal 10 MB, wajib persetujuan hak cipta) yang diputar saat cover undangan dibuka.

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, spacing } from '../theme';
 
-export default function DateTimeField({ label, mode, value, onChange, optional = false, minimumDate }) {
+export default function DateTimeField({ label, mode, value, onChange, optional = false, minimumDate, maximumDate, clearLabel = 'Hapus jam selesai' }) {
   const [show, setShow] = useState(false);
   const selectedValue = parsePickerValue(value, mode);
 
@@ -24,7 +24,7 @@ export default function DateTimeField({ label, mode, value, onChange, optional =
       </Pressable>
       {optional && value ? (
         <Pressable onPress={() => onChange('')}>
-          <Text style={styles.clear}>Hapus jam selesai</Text>
+          <Text style={styles.clear}>{clearLabel}</Text>
         </Pressable>
       ) : null}
       {show ? (
@@ -34,6 +34,7 @@ export default function DateTimeField({ label, mode, value, onChange, optional =
           display="default"
           is24Hour
           minimumDate={minimumDate}
+          maximumDate={maximumDate}
           onChange={handleChange}
         />
       ) : null}

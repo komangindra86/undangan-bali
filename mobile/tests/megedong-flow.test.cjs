@@ -60,7 +60,8 @@ test('megedong helpers use their own labels and put the mother first', () => {
   assert.equal(kit.typeLabelFor(draft), 'megedong-gedongan');
   assert.deepEqual(Array.from(kit.eventTypesFor(draft)), ['Megedong-gedongan']);
   assert.equal(kit.occasionPhraseFor(draft), 'upacara megedong-gedongan kami');
-  assert.equal(Object.keys(kit.MEGEDONG_TEMPLATE_COLORS).length, 3);
+  assert.equal(kit.templateCardColorsFor({ slug: 'padma-sari' }).accent, '#b65f7a');
+  assert.equal(kit.templatePreviewFor(draft).names, 'Ayu & Wira');
 });
 
 test('existing types keep their wording and unknown types fall back to wedding', () => {

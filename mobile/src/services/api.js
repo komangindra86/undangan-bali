@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { ensureLocalFileExists } from './localMedia';
+import { isChildCeremony } from '../constants/invitation';
 import { templatesForType } from '../utils/templateCatalog';
 import { testEnvironmentHeaders } from '../utils/testEnvironment';
 
@@ -96,6 +97,7 @@ async function draftFormData(draft, includeMedia, methodOverride = null) {
   form.append('invitation_type', draft.invitation_type || 'wedding');
   appendValues(form, 'birthday_data', draft.birthday_data);
   appendValues(form, 'megedong_data', draft.megedong_data);
+  if (isChildCeremony(draft)) appendValues(form, 'child_data', draft.child_data);
   appendValues(form, 'groom_data', draft.groom_data);
   appendValues(form, 'bride_data', draft.bride_data);
   appendValues(form, 'event_data', draft.event_data);
@@ -106,6 +108,7 @@ async function draftFormData(draft, includeMedia, methodOverride = null) {
   if (includeMedia) {
     form.append('gallery_photos_changed', '1');
     await appendImage(form, 'celebrant_photo', draft.birthday_data?.celebrant_photo);
+    if (isChildCeremony(draft)) await appendImage(form, 'child_photo', draft.child_data?.child_photo);
     await appendImage(form, 'groom_photo', draft.groom_data?.groom_photo);
     await appendImage(form, 'bride_photo', draft.bride_data?.bride_photo);
     for (const photo of draft.gallery_data?.photos || []) {

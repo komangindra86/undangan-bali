@@ -42,6 +42,7 @@ export function DraftProvider({ children }) {
       invitation_type: nextDraft.invitation_type || 'wedding',
       birthday_data: nextDraft.birthday_data,
       megedong_data: nextDraft.megedong_data,
+      child_data: nextDraft.child_data,
       selected_template: nextDraft.selected_template?.id || nextDraft.selected_template,
       groom_data: nextDraft.groom_data,
       bride_data: nextDraft.bride_data,
@@ -56,6 +57,7 @@ export function DraftProvider({ children }) {
   function mediaSignature(nextDraft) {
     return JSON.stringify([
       nextDraft.birthday_data?.celebrant_photo?.uri || null,
+      nextDraft.child_data?.child_photo?.uri || null,
       nextDraft.groom_data?.groom_photo?.uri || null,
       nextDraft.bride_data?.bride_photo?.uri || null,
       ...(nextDraft.gallery_data?.photos || []).map((photo) => photo.uri),
@@ -190,6 +192,15 @@ function draftFromInvitation(invitation) {
     megedong_data: {
       pregnancy_age: invitation.pregnancy_age || '',
       child_order: invitation.child_order || '',
+    },
+    child_data: {
+      child_full_name: invitation.child_full_name || '',
+      child_nickname: invitation.child_nickname || '',
+      child_gender: invitation.child_gender || '',
+      // Megedong-gedongan keeps its own copy of child_order in megedong_data.
+      child_order: invitation.child_order || '',
+      child_birth_date: invitation.child_birth_date?.slice(0, 10) || '',
+      child_photo: remoteMedia(invitation.child_photo, 'image/jpeg'),
     },
     selected_template: invitation.template || { id: invitation.template_id },
     groom_data: {

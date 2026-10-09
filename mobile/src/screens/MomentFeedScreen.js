@@ -316,6 +316,7 @@ function FeedFooter({ loading, hasMore, itemCount }) {
 
 function initials(item) {
   if (isBirthday(item)) return item.names?.slice(0, 2)?.toUpperCase() || 'UB';
+  // Child ceremonies are titled "Putra Wira & Ayu"; their initials still come from the parents.
   const letters = [item.groom_nickname?.[0] || '', item.bride_nickname?.[0] || ''];
   // Megedong-gedongan shows the mother's name first, so its initials follow the same order.
   return (isMegedong(item) ? letters.reverse() : letters).join('').toUpperCase() || 'UB';

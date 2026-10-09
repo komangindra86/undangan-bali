@@ -2,10 +2,11 @@ import { createElement } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors, spacing } from '../theme';
 
-export default function DateTimeField({ label, mode, value, onChange, optional = false, minimumDate }) {
-  const minDate = minimumDate && mode === 'date'
-    ? `${minimumDate.getFullYear()}-${String(minimumDate.getMonth() + 1).padStart(2, '0')}-${String(minimumDate.getDate()).padStart(2, '0')}`
-    : undefined;
+export default function DateTimeField({ label, mode, value, onChange, optional = false, minimumDate, maximumDate, clearLabel = 'Hapus jam selesai' }) {
+  const inputDate = (date) => (date && mode === 'date'
+    ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    : undefined);
+  const minDate = inputDate(minimumDate);
   return (
     <View style={styles.group}>
       <Text style={styles.label}>{label}</Text>
@@ -13,6 +14,7 @@ export default function DateTimeField({ label, mode, value, onChange, optional =
         type: mode,
         value: value || '',
         min: minDate,
+        max: inputDate(maximumDate),
         onInput: (event) => onChange(event.target.value),
         onChange: (event) => onChange(event.target.value),
         style: webInputStyle,
@@ -20,7 +22,7 @@ export default function DateTimeField({ label, mode, value, onChange, optional =
       })}
       {optional && value ? (
         <Pressable onPress={() => onChange('')}>
-          <Text style={styles.clear}>Hapus jam selesai</Text>
+          <Text style={styles.clear}>{clearLabel}</Text>
         </Pressable>
       ) : null}
     </View>

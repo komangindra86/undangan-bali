@@ -5,14 +5,14 @@ import CustomInvitationCard from '../components/CustomInvitationCard';
 import WizardLayout from '../components/WizardLayout';
 import { useDraft } from '../context/DraftContext';
 import { api } from '../services/api';
-import { isBirthday, isMegedong, MEGEDONG_TEMPLATE_COLORS, personScreenFor } from '../constants/invitation';
+import { isBirthday, personScreenFor, templateCardColorsFor, templatePreviewFor } from '../constants/invitation';
 import { templateMatchesType } from '../utils/templateCatalog';
 import { colors, spacing } from '../theme';
 
 export default function TemplateScreen({ navigation }) {
   const { draft, saveSection, syncing, syncMessage } = useDraft();
   const birthday = isBirthday(draft);
-  const megedong = isMegedong(draft);
+  const cardPreview = templatePreviewFor(draft);
   const invitationType = draft.invitation_type || 'wedding';
   const [templates, setTemplates] = useState([]);
   const [choosingId, setChoosingId] = useState(null);
@@ -64,7 +64,7 @@ export default function TemplateScreen({ navigation }) {
   return (
     <WizardLayout
       step={1}
-      title={birthday ? 'Pilih suasana perayaan' : megedong ? 'Pilih nuansa upacara' : 'Pilih nuansa Bali'}
+      title={birthday ? 'Pilih suasana perayaan' : cardPreview ? 'Pilih nuansa upacara' : 'Pilih nuansa Bali'}
       subtitle="Lihat preview lengkap dengan data dummy, foto, galeri, dan animasi sebelum memutuskan desain."
       syncMessage={syncMessage}
       footer={<FooterActions onBack={() => navigation.goBack()} onNext={() => useTemplate()} loading={syncing || choosingId != null} disabled={loading || !!loadError || !selectedTemplate} />}
@@ -88,8 +88,8 @@ export default function TemplateScreen({ navigation }) {
                   <Text style={[styles.names, { color: template.slug === 'bali-pradnyan' ? '#ecd19d' : '#425d61', fontWeight: template.slug === 'ceria-confetti' ? '900' : '400' }]}>Kirana</Text>
                   <Text style={{ color: template.slug === 'bali-pradnyan' ? '#ecd19d' : '#5d4377', marginTop: 12 }}>7 tahun penuh cerita</Text>
                 </View>
-              ) : megedong ? (
-                <MegedongPreview palette={MEGEDONG_TEMPLATE_COLORS[template.slug] || MEGEDONG_TEMPLATE_COLORS['garbha-kencana']} />
+              ) : cardPreview ? (
+                <CardPreview palette={templateCardColorsFor(template)} sample={cardPreview} />
               ) : <>
                 <Image source={{ uri: imageUrl(template.thumbnail) }} style={styles.preview} />
                 <View style={styles.overlay}>
@@ -133,12 +133,12 @@ export default function TemplateScreen({ navigation }) {
   );
 }
 
-function MegedongPreview({ palette }) {
+function CardPreview({ palette, sample }) {
   return (
     <View style={[styles.birthdayPreview, { backgroundColor: palette.background }]}>
-      <Text style={[styles.ornament, { color: palette.accent }]}>OM SWASTYASTU</Text>
-      <Text style={[styles.names, { color: palette.text }]}>Ayu & Wira</Text>
-      <Text style={{ color: palette.accent, marginTop: 12 }}>Upacara Megedong-gedongan</Text>
+      <Text style={[styles.ornament, { color: palette.accent }]}>{sample.eyebrow}</Text>
+      <Text style={[styles.names, { color: palette.text }]}>{sample.names}</Text>
+      <Text style={{ color: palette.accent, marginTop: 12 }}>{sample.caption}</Text>
     </View>
   );
 }
@@ -160,6 +160,9 @@ function conceptFor(slug) {
     'garbha-kencana': 'Klasik Bali gelap, bingkai emas, dan suasana upacara yang khidmat.',
     'padma-sari': 'Lembut dan hangat, warna padma pastel untuk menyambut buah hati.',
     'tirta-hening': 'Minimalis teduh, hijau sage dan tipografi yang tenang.',
+    'rare-kencana': 'Krem hangat, aksen emas, dan anyaman janur yang khidmat.',
+    'sekar-jepun': 'Putih dan kuning lembut bernuansa bunga jepun.',
+    'langit-kumara': 'Biru-hijau muda yang tenang, bersih, dan modern.',
   }[slug] || 'Desain undangan untuk momen istimewa.';
 }
 
