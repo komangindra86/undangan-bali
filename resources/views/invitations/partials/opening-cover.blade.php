@@ -106,7 +106,7 @@
     <div class="invitation-opening__content">
         <p class="invitation-opening__eyebrow">{{ $openingTheme }}</p>
         <div class="invitation-opening__center">
-            <p class="invitation-opening__label">{{ $invitation->isBirthday() ? 'Selamat datang di perayaan' : ($invitation->isMegedong() ? 'Upacara Megedong-gedongan' : 'The Wedding of') }}</p>
+            <p class="invitation-opening__label">{{ $invitation->cover_label }}</p>
             <h1 class="invitation-opening__names" id="invitation-opening-title">{{ $openingCouple }}</h1>
             <p class="invitation-opening__date">{{ $invitation->event_date?->translatedFormat('d F Y') }}</p>
         </div>

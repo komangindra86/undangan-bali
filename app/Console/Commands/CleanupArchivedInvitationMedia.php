@@ -39,9 +39,7 @@ class CleanupArchivedInvitationMedia extends Command
                 $deletedFiles += $this->deleteInvitationFiles($invitation);
 
                 $updates = [
-                    'groom_photo' => null,
-                    'bride_photo' => null,
-                    'celebrant_photo' => null,
+                    ...array_fill_keys(Invitation::PHOTO_COLUMNS, null),
                     'gallery_photos' => null,
                     'music_file' => null,
                     'media_deleted_at' => now(),
@@ -64,13 +62,7 @@ class CleanupArchivedInvitationMedia extends Command
 
     private function deleteInvitationFiles(Invitation $invitation): int
     {
-        $files = array_values(array_filter([
-            $invitation->groom_photo,
-            $invitation->bride_photo,
-            $invitation->celebrant_photo,
-            $invitation->music_file,
-            ...($invitation->gallery_photos ?? []),
-        ]));
+        $files = $invitation->uploadedMediaPaths();
 
         foreach ($files as $file) {
             Storage::disk('public')->delete($file);

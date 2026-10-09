@@ -49,13 +49,7 @@ class DeleteExpiredDraftInvitations extends Command
 
     private function deleteInvitationFiles(Invitation $invitation): int
     {
-        $files = array_values(array_filter([
-            $invitation->groom_photo,
-            $invitation->bride_photo,
-            $invitation->celebrant_photo,
-            $invitation->music_file,
-            ...($invitation->gallery_photos ?? []),
-        ]));
+        $files = $invitation->uploadedMediaPaths();
 
         foreach ($files as $file) {
             Storage::disk('public')->delete($file);

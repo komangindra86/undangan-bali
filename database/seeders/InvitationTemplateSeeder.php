@@ -87,5 +87,17 @@ class InvitationTemplateSeeder extends Seeder
                 'is_premium' => false,
             ]);
         }
+
+        foreach (['rare-kencana' => 'Rare Kencana', 'sekar-jepun' => 'Sekar Jepun', 'langit-kumara' => 'Langit Kumara'] as $slug => $name) {
+            InvitationTemplate::updateOrCreate(['slug' => $slug], [
+                'name' => $name,
+                'invitation_type' => 'pitung_dina',
+                'thumbnail' => null,
+                'preview_image' => null,
+                'blade_view' => 'invitations.templates.upacara-anak.'.$slug,
+                'is_active' => true,
+                'is_premium' => false,
+            ]);
+        }
     }
 }

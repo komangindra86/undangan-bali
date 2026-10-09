@@ -150,7 +150,7 @@ class MomentController extends Controller
             ->whereHas('user', fn ($query) => $query->where('is_test_account', false))
             ->where(function ($query) {
                 $query->where(function ($wedding) {
-                    $wedding->whereIn('invitation_type', ['wedding', 'megedong'])->whereNotNull('groom_nickname')->whereNotNull('bride_nickname');
+                    $wedding->whereIn('invitation_type', ['wedding', 'megedong', ...array_keys(Invitation::CHILD_CEREMONIES)])->whereNotNull('groom_nickname')->whereNotNull('bride_nickname');
                 })->orWhere(function ($birthday) {
                     $birthday->where('invitation_type', 'birthday')->whereNotNull('celebrant_nickname')->whereNotNull('feed_consent_at');
                 });

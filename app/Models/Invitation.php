@@ -8,13 +8,24 @@ class Invitation extends Model
 {
     public const RETENTION_EXEMPT_SLUG_PREFIXES = ['preview-', 'demo-'];
 
-    public const TYPES = ['wedding', 'birthday', 'megedong'];
+    public const TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina'];
 
     public const EVENT_TYPES = [
         'wedding' => ['Pawiwahan', 'Resepsi'],
         'birthday' => ['Ulang Tahun'],
         'megedong' => ['Megedong-gedongan'],
+        'pitung_dina' => ['Abulan Pitung Dina'],
     ];
+
+    /**
+     * Ceremonies held for a baby or child. The father uses groom_*, the mother bride_* and the child child_*.
+     * Adding a ceremony here (plus TYPES, EVENT_TYPES and its templates) is enough for the backend.
+     */
+    public const CHILD_CEREMONIES = [
+        'pitung_dina' => ['title' => 'Abulan Pitung Dina', 'note' => '42 Hari'],
+    ];
+
+    public const PHOTO_COLUMNS = ['groom_photo', 'bride_photo', 'celebrant_photo', 'child_photo'];
 
     public const MUSIC_RIGHTS_TERMS_VERSION = '2026-09-01';
 
@@ -31,6 +42,11 @@ class Invitation extends Model
         'dress_code',
         'pregnancy_age',
         'child_order',
+        'child_full_name',
+        'child_nickname',
+        'child_gender',
+        'child_birth_date',
+        'child_photo',
         'feed_consent_at',
         'user_id',
         'template_id',
@@ -76,6 +92,7 @@ class Invitation extends Model
         return [
             // Serialized as a plain day: an ISO timestamp is converted to UTC and lands on the previous day in WITA.
             'event_date' => 'date:Y-m-d',
+            'child_birth_date' => 'date:Y-m-d',
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
             'media_deleted_at' => 'datetime',
@@ -109,10 +126,38 @@ class Invitation extends Model
         return $this->invitation_type === 'megedong';
     }
 
+    public function isChildCeremony(): bool
+    {
+        return isset(self::CHILD_CEREMONIES[$this->invitation_type]);
+    }
+
+    /**
+     * "Abulan Pitung Dina" for child ceremonies, null for other types.
+     */
+    public function getCeremonyTitleAttribute(): ?string
+    {
+        return self::CHILD_CEREMONIES[$this->invitation_type]['title'] ?? null;
+    }
+
+    public function getCeremonyNoteAttribute(): ?string
+    {
+        return self::CHILD_CEREMONIES[$this->invitation_type]['note'] ?? null;
+    }
+
+    /**
+     * How the child is referred to when the name is left out: Putra, Putri or Buah Hati.
+     */
+    public function getChildLabelAttribute(): string
+    {
+        return ['putra' => 'Putra', 'putri' => 'Putri'][$this->child_gender] ?? 'Buah Hati';
+    }
+
     public function getDisplayNameAttribute(): string
     {
         return match (true) {
             $this->isBirthday() => $this->celebrant_nickname ?: 'Yang berulang tahun',
+            // The child's name is optional, so the title names the parents: "Putra Wira & Ayu".
+            $this->isChildCeremony() => $this->child_label.' '.($this->groom_nickname ?: 'Ayah').' & '.($this->bride_nickname ?: 'Ibu'),
             // The ceremony centres on the expectant mother, so her name leads.
             $this->isMegedong() => ($this->bride_nickname ?: 'Calon Ibu').' & '.($this->groom_nickname ?: 'Calon Ayah'),
             default => ($this->groom_nickname ?: 'Mempelai').' & '.($this->bride_nickname ?: 'Pasangan'),
@@ -123,7 +168,7 @@ class Invitation extends Model
     {
         return match (true) {
             $this->isBirthday() => 'Kado Digital',
-            $this->isMegedong() => 'Tanda Kasih',
+            $this->isMegedong(), $this->isChildCeremony() => 'Tanda Kasih',
             default => 'Wedding Gift',
         };
     }
@@ -136,8 +181,44 @@ class Invitation extends Model
         return match (true) {
             $this->isBirthday() => 'perayaan ulang tahun '.$this->display_name,
             $this->isMegedong() => 'upacara megedong-gedongan kami',
+            $this->isChildCeremony() => 'upacara '.mb_strtolower($this->ceremony_title.' ('.$this->ceremony_note.')').' buah hati kami',
             default => 'acara pernikahan kami',
         };
+    }
+
+    /**
+     * Small line above the names on the opening cover.
+     */
+    public function getCoverLabelAttribute(): string
+    {
+        return match (true) {
+            $this->isBirthday() => 'Selamat datang di perayaan',
+            $this->isMegedong() => 'Upacara Megedong-gedongan',
+            $this->isChildCeremony() => 'Upacara '.$this->ceremony_title,
+            default => 'The Wedding of',
+        };
+    }
+
+    public function getGiftMessagePlaceholderAttribute(): string
+    {
+        return match (true) {
+            $this->isBirthday() => 'Doa dan ucapan ulang tahun',
+            $this->isMegedong() => 'Doa untuk ibu dan calon buah hati',
+            $this->isChildCeremony() => 'Doa untuk si buah hati',
+            default => 'Doa dan ucapan untuk mempelai',
+        };
+    }
+
+    /**
+     * Every file this invitation uploaded: photos, gallery and custom music.
+     */
+    public function uploadedMediaPaths(): array
+    {
+        return array_values(array_filter([
+            ...array_map(fn (string $column) => $this->{$column}, self::PHOTO_COLUMNS),
+            $this->music_file,
+            ...($this->gallery_photos ?? []),
+        ]));
     }
 
     public function user()

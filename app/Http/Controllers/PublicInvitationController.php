@@ -97,6 +97,22 @@ class PublicInvitationController extends Controller
                 'venue_address' => 'Banjar Tegal, Ubud, Gianyar, Bali',
             ]);
         }
+        if (isset(Invitation::CHILD_CEREMONIES[$template->invitation_type])) {
+            $ceremony = Invitation::CHILD_CEREMONIES[$template->invitation_type];
+            $invitation->fill([
+                'invitation_type' => $template->invitation_type,
+                'child_full_name' => 'I Putu Bagus Aditya',
+                'child_nickname' => 'Bagus',
+                'child_gender' => 'putra',
+                'child_order' => 'Anak pertama',
+                'child_birth_date' => now()->subDays(30)->startOfDay(),
+                'opening_quote' => 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara '.$ceremony['title'].' ('.mb_strtolower($ceremony['note']).') bagi buah hati kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.',
+                'event_type' => Invitation::EVENT_TYPES[$template->invitation_type][0],
+                'event_date' => now()->addDays(12)->startOfDay(),
+                'venue_name' => 'Kediaman Keluarga I Made Wira',
+                'venue_address' => 'Banjar Tegal, Ubud, Gianyar, Bali',
+            ]);
+        }
         $invitation->setRelation('template', $template);
         $invitation->setRelation('giftSetting', new WeddingGiftSetting([
             'is_active' => true,

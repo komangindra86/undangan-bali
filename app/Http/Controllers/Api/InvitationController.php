@@ -79,7 +79,11 @@ class InvitationController extends Controller
             ? ['celebrant_full_name' => 80, 'celebrant_nickname' => 18]
             : ['groom_full_name' => 80, 'groom_nickname' => 18, 'bride_full_name' => 80, 'bride_nickname' => 18];
         // Megedong-gedongan stores the expectant father in groom_* and the mother in bride_*.
-        [$groomLabel, $brideLabel] = $invitation->isMegedong() ? ['calon ayah', 'calon ibu'] : ['mempelai pria', 'mempelai wanita'];
+        [$groomLabel, $brideLabel] = match (true) {
+            $invitation->isMegedong() => ['calon ayah', 'calon ibu'],
+            $invitation->isChildCeremony() => ['ayah', 'ibu'],
+            default => ['mempelai pria', 'mempelai wanita'],
+        };
         $personRules = [];
         foreach ($personFields as $field => $max) {
             $personRules[$field] = ['required', 'string', 'max:'.$max, 'regex:/^[\pL\s.\'-]+$/u'];
@@ -146,11 +150,7 @@ class InvitationController extends Controller
         );
 
         $files = array_filter([
-            $invitation->groom_photo,
-            $invitation->bride_photo,
-            $invitation->celebrant_photo,
-            $invitation->music_file,
-            ...($invitation->gallery_photos ?? []),
+            ...$invitation->uploadedMediaPaths(),
             ...$invitation->moments()->pluck('photo_path')->all(),
         ]);
 
@@ -167,7 +167,7 @@ class InvitationController extends Controller
 
     private function draftAttributes(StoreInvitationRequest $request, ?Invitation $invitation = null): array
     {
-        $data = $request->safe()->except(['groom_photo', 'bride_photo', 'celebrant_photo', 'gallery_photos', 'gallery_existing_paths', 'gallery_photos_changed', 'music_file', 'music_rights_confirmed', 'gift_data']);
+        $data = $request->safe()->except([...Invitation::PHOTO_COLUMNS, 'gallery_photos', 'gallery_existing_paths', 'gallery_photos_changed', 'music_file', 'music_rights_confirmed', 'gift_data']);
         $data['status'] = 'draft';
         if ($invitation && $invitation->status === 'published') {
             $data['published_at'] = null;
@@ -178,7 +178,12 @@ class InvitationController extends Controller
             $data['music_rights_terms_version'] = Invitation::MUSIC_RIGHTS_TERMS_VERSION;
         }
 
-        foreach (($data['invitation_type'] === 'birthday' ? ['celebrant_photo'] : ['groom_photo', 'bride_photo']) as $file) {
+        $photoFields = match (true) {
+            $data['invitation_type'] === 'birthday' => ['celebrant_photo'],
+            isset(Invitation::CHILD_CEREMONIES[$data['invitation_type']]) => ['child_photo'],
+            default => ['groom_photo', 'bride_photo'],
+        };
+        foreach ($photoFields as $file) {
             if ($request->hasFile($file)) {
                 if ($invitation && $invitation->{$file}) {
                     Storage::disk('public')->delete($invitation->{$file});
@@ -247,6 +252,7 @@ class InvitationController extends Controller
         $base = Str::slug(match (true) {
             $invitation->isBirthday() => 'ulang tahun '.$invitation->celebrant_nickname,
             $invitation->isMegedong() => 'megedong gedongan '.$invitation->bride_nickname.' '.$invitation->groom_nickname,
+            $invitation->isChildCeremony() => $invitation->ceremony_title.' '.$invitation->display_name,
             default => 'undangan '.$invitation->groom_nickname.' '.$invitation->bride_nickname,
         });
         $slug = $base;

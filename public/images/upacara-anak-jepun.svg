@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700" role="img" aria-label="Ilustrasi bunga jepun">
+  <rect width="600" height="700" fill="#3b2a1a"/>
+  <circle cx="300" cy="310" r="236" fill="#4a3522"/>
+  <circle cx="300" cy="310" r="204" fill="none" stroke="#e6c98a" stroke-width="2" stroke-dasharray="2 12" stroke-linecap="round"/>
+  <g transform="translate(300 310)">
+    <g fill="#fbf1d6" stroke="#e6c98a" stroke-width="2.5" stroke-linejoin="round">
+      <path d="M0 0C-40-34-58-104-22-160 8-172 44-150 54-112 46-60 26-22 0 0Z"/>
+      <path d="M0 0C-40-34-58-104-22-160 8-172 44-150 54-112 46-60 26-22 0 0Z" transform="rotate(72)"/>
+      <path d="M0 0C-40-34-58-104-22-160 8-172 44-150 54-112 46-60 26-22 0 0Z" transform="rotate(144)"/>
+      <path d="M0 0C-40-34-58-104-22-160 8-172 44-150 54-112 46-60 26-22 0 0Z" transform="rotate(216)"/>
+      <path d="M0 0C-40-34-58-104-22-160 8-172 44-150 54-112 46-60 26-22 0 0Z" transform="rotate(288)"/>
+    </g>
+    <circle r="46" fill="#f2c452" fill-opacity=".85"/>
+    <circle r="20" fill="#e0a52c"/>
+  </g>
+  <g fill="#e6c98a">
+    <path d="m300 46 6 16 16 6-16 6-6 16-6-16-16-6 16-6z"/>
+    <circle cx="96" cy="240" r="4"/><circle cx="504" cy="240" r="4"/>
+    <circle cx="72" cy="390" r="3"/><circle cx="528" cy="390" r="3"/>
+  </g>
+  <g fill="none" stroke="#e6c98a" stroke-opacity=".5" stroke-width="2" stroke-linecap="round">
+    <path d="M70 620q115-40 230 0t230 0"/>
+    <path d="M110 656q95-30 190 0t190 0"/>
+  </g>
+</svg>

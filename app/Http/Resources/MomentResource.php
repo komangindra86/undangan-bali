@@ -23,6 +23,7 @@ class MomentResource extends JsonResource
             'names' => match (true) {
                 $this->isBirthday() => $this->safeDisplayText($this->celebrant_nickname) ?: 'Yang berulang tahun',
                 $this->isMegedong() => $brideNickname.' & '.$groomNickname,
+                $this->isChildCeremony() => $this->child_label.' '.$groomNickname.' & '.$brideNickname,
                 default => $groomNickname.' & '.$brideNickname,
             },
             'caption' => $this->safeDisplayText($this->moment_caption),
@@ -48,7 +49,11 @@ class MomentResource extends JsonResource
 
         return collect($this->gallery_photos ?? [])
             ->merge($momentPhotos)
-            ->merge($this->isBirthday() ? [$this->celebrant_photo] : [$this->groom_photo, $this->bride_photo])
+            ->merge(match (true) {
+                $this->isBirthday() => [$this->celebrant_photo],
+                $this->isChildCeremony() => [$this->child_photo],
+                default => [$this->groom_photo, $this->bride_photo],
+            })
             ->filter()
             ->unique()
             ->map(fn (string $path) => url(Storage::disk('public')->url($path)))

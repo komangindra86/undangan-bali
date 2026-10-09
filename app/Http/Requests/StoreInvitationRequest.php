@@ -18,7 +18,7 @@ class StoreInvitationRequest extends FormRequest
         $this->replace($this->trimStrings($this->all()));
 
         $nested = [];
-        $groups = ['groom_data', 'bride_data', 'birthday_data', 'megedong_data', 'event_data', 'location_data', 'music_data'];
+        $groups = ['groom_data', 'bride_data', 'birthday_data', 'megedong_data', 'child_data', 'event_data', 'location_data', 'music_data'];
 
         foreach ($groups as $group) {
             if (is_array($this->input($group))) {
@@ -88,6 +88,7 @@ class StoreInvitationRequest extends FormRequest
         $safeText = ['nullable', 'string', 'not_regex:/[<>]/'];
         $type = $this->input('invitation_type');
         $birthday = $type === 'birthday';
+        $notChildCeremony = Rule::excludeIf(! isset(Invitation::CHILD_CEREMONIES[$type]));
 
         return [
             'invitation_type' => ['required', Rule::in($this->route('invitation') ? [$this->route('invitation')->invitation_type] : Invitation::TYPES)],
@@ -103,7 +104,12 @@ class StoreInvitationRequest extends FormRequest
             'event_title' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:120'],
             'dress_code' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:80'],
             'pregnancy_age' => ['exclude_unless:invitation_type,megedong', ...$safeText, 'max:40'],
-            'child_order' => ['exclude_unless:invitation_type,megedong', ...$safeText, 'max:50'],
+            'child_order' => [Rule::excludeIf($type !== 'megedong' && ! isset(Invitation::CHILD_CEREMONIES[$type])), ...$safeText, 'max:50'],
+            'child_full_name' => [$notChildCeremony, ...$name],
+            'child_nickname' => [$notChildCeremony, ...$nickname],
+            'child_gender' => [$notChildCeremony, 'nullable', Rule::in(['putra', 'putri'])],
+            'child_birth_date' => [$notChildCeremony, 'nullable', 'date', 'before_or_equal:today'],
+            'child_photo' => [$notChildCeremony, 'nullable', 'image', 'max:4096'],
             'music_id' => [
                 'nullable',
                 'required_if:music_type,default',
@@ -164,6 +170,11 @@ class StoreInvitationRequest extends FormRequest
             'dress_code' => 'dress code',
             'pregnancy_age' => 'usia kandungan',
             'child_order' => 'anak ke',
+            'child_full_name' => 'nama lengkap buah hati',
+            'child_nickname' => 'nama panggilan buah hati',
+            'child_gender' => 'putra/putri',
+            'child_birth_date' => 'tanggal lahir',
+            'child_photo' => 'foto buah hati',
             'template_id' => 'template',
             'groom_full_name' => 'nama lengkap mempelai pria',
             'groom_nickname' => 'nama panggilan mempelai pria',
@@ -196,6 +207,7 @@ class StoreInvitationRequest extends FormRequest
             '*.regex' => ':attribute memiliki format yang tidak valid.',
             '*.not_regex' => ':attribute tidak boleh mengandung karakter < atau >.',
             'event_date.after_or_equal' => 'tanggal acara tidak boleh sebelum hari ini.',
+            'child_birth_date.before_or_equal' => 'tanggal lahir tidak boleh setelah hari ini.',
             'google_maps_url.regex' => 'link Google Maps harus berupa link Google Maps yang valid.',
             'end_time.after' => 'jam selesai harus setelah jam mulai.',
         ];
