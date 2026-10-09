@@ -50,7 +50,8 @@ class IpaymuGiftTest extends TestCase
             ]),
         ]);
 
-        $this->get("/u/{$invitation->slug}")->assertOk()->assertSee('js/toqr.js');
+        $this->get("/u/{$invitation->slug}")->assertOk()->assertSee('js/toqr.js')
+            ->assertSee('nama penerima tampil sebagai')->assertSee('Dana diteruskan kepada Wira &amp; Ayu', false);
 
         $response = $this->postJson("/api/public/invitations/{$invitation->slug}/wedding-gift/create", [
             'guest_name' => 'Komang',
@@ -141,12 +142,14 @@ class IpaymuGiftTest extends TestCase
         $gift = $this->pendingGift($invitation);
         Http::fake([
             'https://sandbox.ipaymu.com/api/v2/transaction' => Http::sequence()
-                ->push(['Status' => 200, 'Data' => ['TransactionId' => 98765, 'ReferenceId' => $gift->order_id, 'Status' => 6, 'Amount' => 100000]])
+                ->push(['Status' => 200, 'Data' => ['TransactionId' => 98765, 'ReferenceId' => $gift->order_id, 'Status' => 6, 'Amount' => 100000, 'SuccessDate' => '2026-10-09 07:33:56']])
                 ->push(['Status' => 200, 'Data' => ['TransactionId' => 98765, 'ReferenceId' => $gift->order_id, 'Status' => -2, 'Amount' => 100000]]),
         ]);
 
         $this->getJson("/api/public/wedding-gift/{$gift->order_id}/status")->assertOk()
             ->assertJsonPath('data.transaction_status', 'paid');
+        // iPaymu's SuccessDate is WIB; it is stored one hour later in the app's WITA clock.
+        $this->assertSame('2026-10-09 08:33:56', $gift->fresh()->paid_at->format('Y-m-d H:i:s'));
 
         // A later "expired" answer never takes back a payment that was already confirmed.
         $this->post('/api/ipaymu/notify', ['trx_id' => 98765, 'reference_id' => $gift->order_id])->assertOk();

@@ -126,7 +126,8 @@ class IpaymuService
         $time = $transaction['SuccessDate'] ?? $transaction['PaidAt'] ?? null;
 
         try {
-            return $time ? Carbon::parse($time) : now();
+            // iPaymu reports times in WIB (Jakarta); the app runs in WITA.
+            return $time ? Carbon::parse($time, 'Asia/Jakarta')->setTimezone(config('app.timezone')) : now();
         } catch (\Throwable) {
             return now();
         }

@@ -88,6 +88,9 @@
                     <div style="aspect-ratio:1; background:repeating-linear-gradient(45deg,#30291f 0 8px,#fff 8px 16px); border-radius:10px; display:grid; place-items:center; color:#30291f; font:700 18px Arial,sans-serif;">DEMO<br>BAYAR</div>
                 </div>
                 <img class="wg-qr" data-wg-qr alt="QRIS {{ $invitation->gift_label }}" style="{{ $isPreview ? 'display:none' : '' }}">
+                @if ($paymentProvider === 'ipaymu')
+                    <p class="wg-note">Di aplikasi pembayaran, nama penerima tampil sebagai <strong>iPaymu</strong>, mitra pembayaran resmi kami. Dana diteruskan kepada {{ $giftSetting->receiver_name }}.</p>
+                @endif
                 <a class="wg-pay-link" data-wg-pay-link target="_blank" rel="noopener">Buka QRIS Xendit</a>
                 <div class="wg-breakdown">
                     <div class="wg-line"><span>Nominal Gift</span><strong data-result-amount></strong></div>
