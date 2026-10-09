@@ -29,7 +29,13 @@ class IpaymuService
      */
     public function chargeQris(WeddingGift $gift): array
     {
+        // The merchant account is shared with other Bali Santih sales, so every label names the invitation.
+        $label = sprintf('%s %s (undangan #%d)', $gift->invitation->gift_label, $gift->invitation->display_name, $gift->invitation_id);
+
         $data = $this->post('/payment/direct', [
+            'product' => [$label],
+            'qty' => [1],
+            'price' => [$gift->total_amount],
             'name' => $gift->guest_name,
             'phone' => $gift->guest_phone ?: (string) config('services.ipaymu.fallback_phone'),
             'email' => $this->fallbackEmail(),
@@ -40,7 +46,7 @@ class IpaymuService
             'paymentChannel' => (string) config('services.ipaymu.qris_channel'),
             'feeDirection' => 'MERCHANT',
             'expired' => (int) config('services.ipaymu.expiry_hours'),
-            'comments' => $gift->invitation->gift_label.' '.$gift->invitation->display_name,
+            'comments' => $label.' /u/'.$gift->invitation->slug,
         ]);
 
         if (empty($data['TransactionId']) || (empty($data['QrString']) && empty($data['QrImage']))) {

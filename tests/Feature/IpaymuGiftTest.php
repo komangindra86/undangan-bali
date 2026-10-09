@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Invitation;
 use App\Models\InvitationTemplate;
+use App\Models\User;
 use App\Models\WeddingGift;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -75,6 +76,10 @@ class IpaymuGiftTest extends TestCase
                 && $body['amount'] === 100000
                 && $body['referenceId'] === $gift->order_id
                 && str_ends_with($body['notifyUrl'], '/api/ipaymu/notify')
+                && $body['product'] === ["Wedding Gift Wira & Ayu (undangan #{$gift->invitation_id})"]
+                && $body['qty'] === [1]
+                && $body['price'] === [100000]
+                && str_contains($body['comments'], '/u/undangan-wira-ayu')
                 && $body['name'] === 'Komang'
                 && filter_var($body['email'], FILTER_VALIDATE_EMAIL) !== false
                 && $body['phone'] !== '';
@@ -172,6 +177,28 @@ class IpaymuGiftTest extends TestCase
         ])->assertStatus(502);
 
         Http::assertNothingSent();
+    }
+
+    public function test_admin_can_trace_each_gift_to_its_invitation_and_owner(): void
+    {
+        $invitation = $this->invitationWithGift();
+        $gift = $this->pendingGift($invitation);
+        $gift->update(['transaction_status' => 'paid', 'paid_at' => now()]);
+        $admin = User::where('role', 'admin')->firstOrFail();
+
+        $this->actingAs($admin, 'web')->get('/admin/gifts')->assertOk()
+            ->assertSee($gift->order_id)
+            ->assertSee('Wira &amp; Ayu', false)
+            ->assertSee('pemilik@example.com')
+            ->assertSee('iPaymu')
+            ->assertSee('ID 98765')
+            ->assertSee('Rp100.000');
+
+        $this->actingAs($admin, 'web')->get('/admin/gifts?status=pending')->assertOk()->assertDontSee($gift->order_id);
+        $this->actingAs($admin, 'web')->get('/admin/gifts?status=all&q=98765')->assertOk()->assertSee($gift->order_id);
+        $this->actingAs($admin, 'web')->get('/admin/gifts?status=all&q=tidak-ada')->assertOk()->assertDontSee($gift->order_id);
+
+        $this->actingAs($invitation->user, 'web')->get('/admin/gifts')->assertForbidden();
     }
 
     private function invitationWithGift(): Invitation
