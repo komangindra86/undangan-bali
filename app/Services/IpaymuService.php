@@ -49,8 +49,8 @@ class IpaymuService
             'comments' => $label.' /u/'.$gift->invitation->slug,
         ]);
 
-        if (empty($data['TransactionId']) || (empty($data['QrString']) && empty($data['QrImage']))) {
-            throw new RuntimeException('Respons iPaymu tidak berisi TransactionId atau kode QR.');
+        if (empty($data['TransactionId']) || empty($data['QrString'])) {
+            throw new RuntimeException('Respons iPaymu tidak berisi TransactionId atau QrString.');
         }
 
         return $data;

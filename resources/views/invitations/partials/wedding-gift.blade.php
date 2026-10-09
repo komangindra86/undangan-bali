@@ -177,7 +177,7 @@
                 orderId = data.order_id;
                 const qr = form.querySelector('[data-wg-qr]');
                 const payLink = form.querySelector('[data-wg-pay-link]');
-                const qrSource = data.qr_image_url || qrImageFromText(data.qr_string);
+                const qrSource = qrImageFromText(data.qr_string) || data.qr_image_url;
                 if (qrSource) {
                     qr.src = qrSource;
                     qr.style.display = 'block';

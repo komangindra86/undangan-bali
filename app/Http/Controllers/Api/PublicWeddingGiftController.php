@@ -73,7 +73,8 @@ class PublicWeddingGiftController extends Controller
                 $gift->update([
                     'midtrans_transaction_id' => (string) $response['TransactionId'],
                     'qr_string' => $response['QrString'] ?? null,
-                    'qr_image_url' => $response['QrImage'] ?? null,
+                    // iPaymu's QrImage is an HTML page, not an image file, so the page draws the QR from QrString.
+                    'qr_image_url' => null,
                     'raw_response' => $response,
                 ]);
             } else {

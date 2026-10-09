@@ -40,7 +40,13 @@ class IpaymuGiftTest extends TestCase
         Http::fake([
             'https://sandbox.ipaymu.com/api/v2/payment/direct' => Http::response([
                 'Status' => 200,
-                'Data' => ['TransactionId' => 98765, 'QrString' => '000201-ipaymu-qris', 'Total' => 100000, 'Fee' => 700],
+                // Shape taken from a real production response on 2026-10-09; QrImage is an HTML page, not an image.
+                'Data' => [
+                    'TransactionId' => 98765, 'SessionId' => 'WGIFT-SESSION', 'Via' => 'QRIS', 'Channel' => 'MPM',
+                    'QrString' => '000201-ipaymu-qris', 'QrImage' => 'https://my.ipaymu.com/qris-basic/261009-1-98765-072710',
+                    'QrTemplate' => 'https://my.ipaymu.com/qris/261009-1-98765-072710',
+                    'SubTotal' => 100000, 'Total' => 100000, 'Fee' => 700, 'FeeDirection' => 'MERCHANT', 'Expired' => '2026-10-10 07:27:10',
+                ],
             ]),
         ]);
 
@@ -52,6 +58,7 @@ class IpaymuGiftTest extends TestCase
         ])->assertCreated()
             ->assertJsonPath('data.payment_type', 'ipaymu_qris')
             ->assertJsonPath('data.qr_string', '000201-ipaymu-qris')
+            ->assertJsonPath('data.qr_image_url', null)
             ->assertJsonPath('data.service_fee', 0)
             ->assertJsonPath('data.total_amount', 100000)
             ->assertJsonPath('data.transaction_status', 'pending');
