@@ -43,6 +43,7 @@ export function DraftProvider({ children }) {
       birthday_data: nextDraft.birthday_data,
       megedong_data: nextDraft.megedong_data,
       child_data: nextDraft.child_data,
+      mepandes_data: nextDraft.mepandes_data,
       selected_template: nextDraft.selected_template?.id || nextDraft.selected_template,
       groom_data: nextDraft.groom_data,
       bride_data: nextDraft.bride_data,
@@ -58,6 +59,8 @@ export function DraftProvider({ children }) {
     return JSON.stringify([
       nextDraft.birthday_data?.celebrant_photo?.uri || null,
       nextDraft.child_data?.child_photo?.uri || null,
+      // One entry per participant, so adding or removing a person also counts as a media change.
+      ...(nextDraft.mepandes_data?.participants || []).map((person) => person.photo?.uri || null),
       nextDraft.groom_data?.groom_photo?.uri || null,
       nextDraft.bride_data?.bride_photo?.uri || null,
       ...(nextDraft.gallery_data?.photos || []).map((photo) => photo.uri),
@@ -202,6 +205,19 @@ function draftFromInvitation(invitation) {
       child_birth_date: invitation.child_birth_date?.slice(0, 10) || '',
       ceremony_number: invitation.ceremony_number == null ? '' : String(invitation.ceremony_number),
       child_photo: remoteMedia(invitation.child_photo, 'image/jpeg'),
+    },
+    mepandes_data: {
+      family_mode: invitation.family_mode || 'single',
+      host_name: invitation.host_name || '',
+      participants: (invitation.participants || []).map((person) => ({
+        full_name: person.full_name || '',
+        nickname: person.nickname || '',
+        gender: person.gender || '',
+        age: person.age == null ? '' : String(person.age),
+        father_name: person.father_name || '',
+        mother_name: person.mother_name || '',
+        photo: remoteMedia(person.photo, 'image/jpeg'),
+      })),
     },
     selected_template: invitation.template || { id: invitation.template_id },
     groom_data: {

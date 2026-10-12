@@ -80,7 +80,7 @@ test('the type picker lists every invitation type once, in order', () => {
   const { load } = harness();
   const { INVITATION_CHOICES } = load('src/constants/invitation.js');
 
-  assert.deepEqual(Array.from(INVITATION_CHOICES, (choice) => choice.type), ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih', 'otonan']);
+  assert.deepEqual(Array.from(INVITATION_CHOICES, (choice) => choice.type), ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih', 'otonan', 'mepandes']);
   assert.equal(INVITATION_CHOICES[3].title, 'Abulan Pitung Dina (42 Hari)');
   assert.ok(Array.from(INVITATION_CHOICES).every((choice) => choice.icon && choice.title && choice.body));
 });

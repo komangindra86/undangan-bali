@@ -74,9 +74,14 @@ export function validateBirthdayAge(value) {
     ? null : 'Usia yang dirayakan harus angka bulat 1 sampai 150, atau kosongkan.';
 }
 
-export function validateCeremonyNumber(value, label) {
+// An optional whole number from 1 to max, such as an age or which otonan it is.
+export function validateWholeNumber(value, label, max) {
   const text = cleanText(value);
   if (!text) return null;
-  return /^\d+$/.test(text) && Number(text) >= 1 && Number(text) <= 200
-    ? null : `${label} harus angka bulat 1 sampai 200, atau kosongkan.`;
+  return /^\d+$/.test(text) && Number(text) >= 1 && Number(text) <= max
+    ? null : `${label} harus angka bulat 1 sampai ${max}, atau kosongkan.`;
+}
+
+export function validateCeremonyNumber(value, label) {
+  return validateWholeNumber(value, label, 200);
 }

@@ -10,9 +10,14 @@ export const TIGANG_SASIH_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida Sa
 
 export const OTONAN_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara Otonan bagi buah hati kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.';
 
+export const MEPANDES_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara Mepandes (potong gigi) putra-putri kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.';
+
 export const GIFT_PAYOUT_FEE_PERCENT = 1;
 
-export const INVITATION_TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih', 'otonan'];
+export const INVITATION_TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih', 'otonan', 'mepandes'];
+
+// The most people one mepandes invitation lists; the server enforces the same number.
+export const MAX_PARTICIPANTS = 10;
 
 // Megedong-gedongan and the child ceremonies keep the father in groom_data and the mother in bride_data.
 // `childCeremony` types also use child_data and share ChildCeremonyFormScreen. `childNamed` marks ceremonies
@@ -60,12 +65,20 @@ const TYPE_INFO = {
     choice: { title: 'Otonan', body: 'Hari kelahiran menurut kalender Bali, setiap 210 hari. Untuk otonan pertama maupun berikutnya; nama buah hati menjadi judul undangan.' },
     preview: { eyebrow: 'OM SWASTYASTU', names: 'Kirana', caption: 'Otonan', heroTitle: 'UPACARA OTONAN', heroCaption: 'Putri dari Wira & Ayu' },
   },
+  // Mepandes lists the people it is held for in mepandes_data.participants; see MepandesFormScreen.
+  mepandes: {
+    label: 'mepandes', giftLabel: 'Tanda Kasih', personScreen: 'MepandesForm', personStep: 'Yang Mepandes',
+    openingQuote: MEPANDES_OPENING_QUOTE, eventTypes: ['Mepandes'], icon: 'diamond-outline',
+    choice: { title: 'Mepandes (Potong Gigi)', buttonTitle: 'Mepandes', body: 'Untuk satu orang atau beberapa orang sekaligus, dari satu keluarga maupun beberapa keluarga. Tiap peserta boleh dengan atau tanpa foto.' },
+    preview: { eyebrow: 'OM SWASTYASTU', names: 'Kirana, Bagus & Dewi', caption: 'Mepandes · Potong Gigi', heroTitle: 'UPACARA MEPANDES', heroCaption: 'Putra-putri dari Wira & Ayu' },
+  },
 };
 
 const typeInfo = (invitation) => TYPE_INFO[invitation?.invitation_type] || TYPE_INFO.wedding;
 
 export const isBirthday = (invitation) => invitation?.invitation_type === 'birthday';
 export const isMegedong = (invitation) => invitation?.invitation_type === 'megedong';
+export const isMepandes = (invitation) => invitation?.invitation_type === 'mepandes';
 export const isChildCeremony = (invitation) => Boolean(TYPE_INFO[invitation?.invitation_type]?.childCeremony);
 export const requiresChildName = (invitation) => Boolean(TYPE_INFO[invitation?.invitation_type]?.childNamed);
 export const isNumberedCeremony = (invitation) => Boolean(TYPE_INFO[invitation?.invitation_type]?.numbered);
@@ -88,8 +101,20 @@ export function childLabelFor(invitation) {
   return { putra: 'Putra', putri: 'Putri' }[gender] || 'Buah Hati';
 }
 
+// A mepandes is titled by its participants' nicknames: "Kirana", "Kirana & Bagus", "Kirana, Bagus & Dewi",
+// then "Kirana, Bagus & 3 lainnya".
+export function participantNamesFor(invitation) {
+  const participants = invitation?.mepandes_data?.participants || invitation?.participants || [];
+  const names = participants.map((person) => person?.nickname).filter(Boolean);
+  if (!names.length) return 'Yang Mepandes';
+  if (names.length === 1) return names[0];
+  if (names.length <= 3) return `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`;
+  return `${names[0]}, ${names[1]} & ${names.length - 2} lainnya`;
+}
+
 export function invitationName(invitation) {
   if (isBirthday(invitation)) return invitation.birthday_data?.celebrant_nickname || invitation.celebrant_nickname || 'Yang berulang tahun';
+  if (isMepandes(invitation)) return participantNamesFor(invitation);
   const groom = invitation?.groom_data?.groom_nickname || invitation?.groom_nickname;
   const bride = invitation?.bride_data?.bride_nickname || invitation?.bride_nickname;
   if (isMegedong(invitation)) return `${bride || 'Calon Ibu'} & ${groom || 'Calon Ayah'}`;
@@ -114,6 +139,7 @@ export function ceremonyNumberLabelFor(invitation) {
 // Reads inside "kami mengundang untuk hadir di ...".
 export function occasionPhraseFor(invitation) {
   if (isBirthday(invitation)) return `perayaan ulang tahun ${invitationName(invitation)}`;
+  if (isMepandes(invitation)) return `upacara mepandes (potong gigi) ${invitationName(invitation)}`;
   const numberLabel = ceremonyNumberLabelFor(invitation);
   const occasion = numberLabel ? `upacara ${numberLabel.toLowerCase()} buah hati kami` : typeInfo(invitation).occasion || 'acara pernikahan kami';
   const child = requiresChildName(invitation) ? (invitation?.child_data?.child_nickname || invitation?.child_nickname) : null;
@@ -134,6 +160,9 @@ export const TEMPLATE_CARD_COLORS = {
   'oton-kencana': { background: '#fbf6ea', accent: '#8a5d14', text: '#4b3a26', hero: '#8a5d14' },
   'sekar-cempaka': { background: '#fff9f5', accent: '#a8456a', text: '#55323d', hero: '#a8456a' },
   'purnama-alit': { background: '#f6f4fc', accent: '#5a4fa3', text: '#2e2f5b', hero: '#3a3a78' },
+  'bale-gading': { background: '#fcf8ee', accent: '#7a5510', text: '#45371f', hero: '#7a5510' },
+  'sekar-emas': { background: '#fff9f4', accent: '#8f5226', text: '#4f3530', hero: '#8f5226' },
+  'wastra-songket': { background: '#faf6f9', accent: '#7a3f68', text: '#3f2a3a', hero: '#7a4168' },
 };
 
 // A design can be offered to several invitation types under different slugs (e.g. tigang-sasih-rare-kencana),

@@ -1,4 +1,4 @@
-const TEMPLATE_TYPE_LABELS = { wedding: 'pernikahan', birthday: 'ulang tahun', megedong: 'megedong-gedongan', pitung_dina: 'abulan pitung dina', tigang_sasih: 'tigang sasih', otonan: 'otonan' };
+const TEMPLATE_TYPE_LABELS = { wedding: 'pernikahan', birthday: 'ulang tahun', megedong: 'megedong-gedongan', pitung_dina: 'abulan pitung dina', tigang_sasih: 'tigang sasih', otonan: 'otonan', mepandes: 'mepandes' };
 
 export function templateMatchesType(template, type = 'wedding') {
   if (!template?.id || !TEMPLATE_TYPE_LABELS[type]) return false;

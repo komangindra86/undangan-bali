@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import { ensureLocalFileExists } from './localMedia';
-import { isChildCeremony } from '../constants/invitation';
+import { isChildCeremony, isMepandes } from '../constants/invitation';
 import { templatesForType } from '../utils/templateCatalog';
 import { testEnvironmentHeaders } from '../utils/testEnvironment';
 
@@ -88,6 +88,29 @@ async function appendFile(form, key, file) {
   });
 }
 
+// Mepandes: the family mode, the host and one row per participant. Every row sends its names even when
+// empty, so the rows keep their positions on the server.
+function appendParticipants(form, data = {}) {
+  appendValues(form, 'mepandes_data', data);
+  (data.participants || []).forEach((person, index) => {
+    ['full_name', 'nickname', 'gender', 'age', 'father_name', 'mother_name'].forEach((key) => {
+      form.append(`mepandes_data[participants][${index}][${key}]`, String(person[key] ?? ''));
+    });
+  });
+}
+
+// A photo already on the server is kept by naming its path; a new one is uploaded under the same index.
+async function appendParticipantPhotos(form, participants = []) {
+  form.append('participant_photos_changed', '1');
+  for (const [index, person] of participants.entries()) {
+    if (person.photo?.remotePath) {
+      form.append(`mepandes_data[participants][${index}][photo_path]`, person.photo.remotePath);
+    } else {
+      await appendImage(form, `participant_photos[${index}]`, person.photo);
+    }
+  }
+}
+
 async function draftFormData(draft, includeMedia, methodOverride = null) {
   const form = new FormData();
   if (methodOverride) {
@@ -98,6 +121,7 @@ async function draftFormData(draft, includeMedia, methodOverride = null) {
   appendValues(form, 'birthday_data', draft.birthday_data);
   appendValues(form, 'megedong_data', draft.megedong_data);
   if (isChildCeremony(draft)) appendValues(form, 'child_data', draft.child_data);
+  if (isMepandes(draft)) appendParticipants(form, draft.mepandes_data);
   appendValues(form, 'groom_data', draft.groom_data);
   appendValues(form, 'bride_data', draft.bride_data);
   appendValues(form, 'event_data', draft.event_data);
@@ -109,6 +133,7 @@ async function draftFormData(draft, includeMedia, methodOverride = null) {
     form.append('gallery_photos_changed', '1');
     await appendImage(form, 'celebrant_photo', draft.birthday_data?.celebrant_photo);
     if (isChildCeremony(draft)) await appendImage(form, 'child_photo', draft.child_data?.child_photo);
+    if (isMepandes(draft)) await appendParticipantPhotos(form, draft.mepandes_data?.participants);
     await appendImage(form, 'groom_photo', draft.groom_data?.groom_photo);
     await appendImage(form, 'bride_photo', draft.bride_data?.bride_photo);
     for (const photo of draft.gallery_data?.photos || []) {

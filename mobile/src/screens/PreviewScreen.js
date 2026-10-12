@@ -1,7 +1,7 @@
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { FooterActions, SecondaryButton } from '../components/Buttons';
 import WizardLayout from '../components/WizardLayout';
-import { ceremonyNumberLabelFor, childLabelFor, giftLabelFor, invitationName, isBirthday, isChildCeremony, isMegedong, personScreenFor } from '../constants/invitation';
+import { ceremonyNumberLabelFor, childLabelFor, giftLabelFor, invitationName, isBirthday, isChildCeremony, isMegedong, isMepandes, personScreenFor } from '../constants/invitation';
 import { useAuth } from '../context/AuthContext';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
@@ -12,6 +12,9 @@ export default function PreviewScreen({ navigation }) {
   const birthday = isBirthday(draft);
   const megedong = isMegedong(draft);
   const childCeremony = isChildCeremony(draft);
+  const mepandes = isMepandes(draft);
+  const participants = draft.mepandes_data?.participants || [];
+  const participantPhotos = participants.filter((person) => person.photo?.uri).length;
   const child = draft.child_data || {};
   const groom = draft.groom_data;
   const bride = draft.bride_data;
@@ -58,7 +61,8 @@ export default function PreviewScreen({ navigation }) {
       <Text style={styles.sectionTitle}>Data yang akan digunakan</Text>
       <View style={styles.summary}>
         <SummaryRow label="Template" value={templateName} />
-        <SummaryRow label={birthday ? 'Yang berulang tahun' : megedong ? 'Calon orang tua' : childCeremony ? 'Judul undangan' : 'Mempelai'} value={invitationName(draft)} />
+        <SummaryRow label={birthday ? 'Yang berulang tahun' : megedong ? 'Calon orang tua' : childCeremony || mepandes ? 'Judul undangan' : 'Mempelai'} value={invitationName(draft)} />
+        {mepandes ? <SummaryRow label="Yang mepandes" value={`${participants.length} orang, ${draft.mepandes_data?.family_mode === 'multi' ? 'beberapa keluarga' : 'satu keluarga'}`} subvalue={participants.map((person) => person.full_name).filter(Boolean).join(', ') || undefined} /> : null}
         {childCeremony ? <SummaryRow label="Buah hati" value={child.child_full_name || `${childLabelFor(draft)} (nama belum diisi)`} subvalue={[child.child_order, child.child_birth_date ? `Lahir ${formatDate(child.child_birth_date)}` : null].filter(Boolean).join(' · ') || undefined} optional={!child.child_full_name} /> : null}
         {ceremonyNumberLabelFor(draft) ? <SummaryRow label="Upacara" value={ceremonyNumberLabelFor(draft)} /> : null}
         {megedong && draft.megedong_data?.pregnancy_age ? <SummaryRow label="Usia kandungan" value={draft.megedong_data.pregnancy_age} /> : null}
@@ -69,19 +73,19 @@ export default function PreviewScreen({ navigation }) {
         <SummaryRow label="Waktu" value={`${event.start_time || '--:--'}${event.end_time ? ` - ${event.end_time}` : ''} WITA`} />
         <SummaryRow label="Lokasi" value={event.venue_name || '-'} subvalue={event.venue_address} />
         <SummaryRow label="Peta" value={location.google_maps_url ? 'Link Google Maps ditambahkan' : 'Belum ditambahkan'} optional={!location.google_maps_url} />
-        {childCeremony ? <SummaryRow label="Foto buah hati" value={child.child_photo?.uri ? 'Foto ditambahkan' : 'Menggunakan ilustrasi template'} optional={!child.child_photo?.uri} /> : birthday ? <SummaryRow label="Foto utama" value={draft.birthday_data?.celebrant_photo?.uri ? 'Foto ditambahkan' : 'Menggunakan ilustrasi template'} optional={!draft.birthday_data?.celebrant_photo?.uri} /> : <SummaryRow label={megedong ? 'Foto calon orang tua' : 'Foto mempelai'} value={`${couplePhotos} dari 2 foto ditambahkan`} optional={!couplePhotos} />}
+        {childCeremony ? <SummaryRow label="Foto buah hati" value={child.child_photo?.uri ? 'Foto ditambahkan' : 'Menggunakan ilustrasi template'} optional={!child.child_photo?.uri} /> : birthday ? <SummaryRow label="Foto utama" value={draft.birthday_data?.celebrant_photo?.uri ? 'Foto ditambahkan' : 'Menggunakan ilustrasi template'} optional={!draft.birthday_data?.celebrant_photo?.uri} /> : mepandes ? <SummaryRow label="Foto peserta" value={`${participantPhotos} dari ${participants.length} peserta berfoto`} optional={!participantPhotos} /> : <SummaryRow label={megedong ? 'Foto calon orang tua' : 'Foto mempelai'} value={`${couplePhotos} dari 2 foto ditambahkan`} optional={!couplePhotos} />}
         <SummaryRow label="Galeri" value={`${galleryCount} foto ditambahkan`} optional={!galleryCount} />
         <SummaryRow label="Musik" value={musicLabel} optional={draft.music_data?.music_type === 'none'} />
         <SummaryRow label={giftLabelFor(draft)} value={giftLabel} optional={!draft.gift_data?.is_active} last />
       </View>
       {birthday ? <Text style={styles.editHelp}>Undangan ulang tahun tidak otomatis tampil di Feed. Link dapat dibuka oleh siapa pun yang menerimanya, jadi bagikan hanya kepada tamu yang Anda undang.</Text> : null}
-      {megedong || childCeremony ? <Text style={styles.editHelp}>Setelah publish, undangan ini tampil di Feed Moment dengan nama panggilan dan foto {childCeremony ? 'buah hati serta galeri' : 'galeri'}. Jadwal dan alamat tidak ditampilkan di Feed. Anda dapat menyembunyikannya kapan saja dari tab Undangan.</Text> : null}
+      {megedong || childCeremony || mepandes ? <Text style={styles.editHelp}>Setelah publish, undangan ini tampil di Feed Moment dengan nama panggilan dan foto {childCeremony ? 'buah hati serta galeri' : mepandes ? 'peserta serta galeri' : 'galeri'}. Jadwal dan alamat tidak ditampilkan di Feed. Anda dapat menyembunyikannya kapan saja dari tab Undangan.</Text> : null}
 
       <Text style={styles.editTitle}>Ada yang perlu diperbaiki?</Text>
       <Text style={styles.editHelp}>Pilih bagian di bawah untuk mengubah data sebelum publish.</Text>
       <View style={styles.actions}>
         <SecondaryButton title="Template" onPress={() => navigation.navigate('Template')} style={styles.action} />
-        <SecondaryButton title={birthday ? 'Data diri' : megedong ? 'Orang tua' : childCeremony ? 'Buah hati' : 'Mempelai'} onPress={() => navigation.navigate(personScreenFor(draft))} style={styles.action} />
+        <SecondaryButton title={birthday ? 'Data diri' : megedong ? 'Orang tua' : childCeremony ? 'Buah hati' : mepandes ? 'Peserta' : 'Mempelai'} onPress={() => navigation.navigate(personScreenFor(draft))} style={styles.action} />
         <SecondaryButton title="Acara" onPress={() => navigation.navigate('EventForm')} style={styles.action} />
         <SecondaryButton title="Lokasi" onPress={() => navigation.navigate('Location')} style={styles.action} />
         <SecondaryButton title="Galeri" onPress={() => navigation.navigate('Gallery')} style={styles.action} />

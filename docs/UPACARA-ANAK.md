@@ -55,7 +55,8 @@ tanggal lahir bila diisi) beserta nama ayah dan ibu, waktu dan tempat, peta,
 galeri, Tanda Kasih, dan penutup Om Shanti, Shanti, Shanti Om.
 
 `upacara-anak/frame.blade.php` menyiapkan data, sampul pembuka, dan skrip, lalu
-memuat isi desain dari `upacara-anak/designs/<slug>.blade.php`. Gaya ada di
+memuat isi desain (kerangka ini juga dipakai undangan mepandes, lihat
+[`UNDANGAN-MEPANDES.md`](UNDANGAN-MEPANDES.md)) dari `upacara-anak/designs/<slug>.blade.php`. Gaya ada di
 `public/css/upacara-bali.css` (`.ub--<slug>`). Tiap desain menyusun bagiannya
 sendiri, jadi desain baru berarti berkas isi baru, bukan sekadar warna baru.
 Potongan yang sama di banyak desain ada di `upacara-anak/parts/` (judul, data

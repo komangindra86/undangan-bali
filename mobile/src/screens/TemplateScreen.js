@@ -169,6 +169,9 @@ function conceptFor(slug) {
     'oton-kencana': 'Candi bentar batu paras, tedung, dan banten dalam cahaya pagi.',
     'sekar-cempaka': 'Penjor dan canang sari dalam gading dan merah muda yang lembut.',
     'purnama-alit': 'Roda pawukon, purnama, awan Kamasan, dan kain poleng di langit senja.',
+    'bale-gading': 'Gading dan emas dengan bale tempat upacara mepandes.',
+    'sekar-emas': 'Mahkota bunga emas payas agung dalam nuansa sampanye yang lembut.',
+    'wastra-songket': 'Kain songket ungu-emas dengan tampilan modern.',
   }[slug] || 'Desain undangan untuk momen istimewa.';
 }
 
