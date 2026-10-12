@@ -114,6 +114,38 @@ Tampil di feed Moment setelah publish seperti pernikahan dan megedong; pemilik
 dapat menyembunyikannya. Foto buah hati ikut tampil di feed, dan layar
 konfirmasi memberi tahu hal ini sebelum publish. Gift berlabel "Tanda Kasih".
 
+## Pengingat Upacara Berikutnya
+
+Pemilik undangan upacara anak diingatkan saat upacara berikutnya mendekat,
+lewat notifikasi di tab Notifikasi dan push (`ceremony_reminder`):
+
+| Undangan yang pernah dipublish | Diingatkan untuk |
+| --- | --- |
+| Abulan pitung dina | Tigang sasih, lalu otonan pertama |
+| Tigang sasih | Otonan pertama |
+| Otonan | Otonan berikutnya, 210 hari setelah tanggal acaranya |
+
+Tanggal upacara dihitung dari tanggal lahir ditambah `age_days` upacara
+tujuan (105 dan 210 hari). Bila tanggal lahir kosong, tanggal lahir
+diperkirakan dari tanggal acara undangan itu sendiri.
+
+`php artisan invitations:send-ceremony-reminders` berjalan setiap hari pukul
+09.00 WITA (`routes/console.php`); `--dry-run` hanya menghitung. Aturannya ada
+di `App\Services\CeremonyReminderService`:
+
+- Dua pengingat per upacara: 14 hari dan 7 hari sebelumnya, masing-masing
+  sekali. Yang dipakai adalah rentang (14 sampai 8 hari, lalu 7 sampai 1
+  hari), sehingga hari yang terlewat atau undangan yang baru dipublish tetap
+  mendapat pengingatnya.
+- Tidak dikirim bila pemilik sudah punya undangan upacara itu: bertanggal
+  dekat hari upacaranya, atau draft belum bertanggal yang dibuat sesudahnya.
+- Dua undangan untuk anak yang sama (42 hari dan tigang sasih) hanya
+  menghasilkan satu rangkaian pengingat otonan.
+- Undangan yang sudah diarsipkan tetap dihitung; draft, undangan contoh, dan
+  undangan tanpa pemilik tidak.
+
+Di aplikasi, mengetuk pengingat membuka layar pilihan jenis undangan.
+
 ## Menambah Upacara Baru
 
 Backend:

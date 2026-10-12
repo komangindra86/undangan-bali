@@ -80,7 +80,7 @@ async function registerDevice(authToken) {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('social', {
       name: 'Aktivitas undangan',
-      description: 'Permintaan undangan, komentar, reaksi, dan Wedding Gift.',
+      description: 'Permintaan undangan, komentar, reaksi, Wedding Gift, dan pengingat upacara.',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 200, 250],
       lightColor: '#c59b50',

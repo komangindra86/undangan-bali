@@ -71,6 +71,7 @@ class SocialNotificationService
             'reaction' => ['Reaksi baru', $data['message'] ?? 'Ada reaksi baru pada Moment Anda.'],
             'comment' => ['Komentar baru', $data['message'] ?? 'Ada komentar baru pada Moment Anda.'],
             'wedding_gift_paid' => [$giftLabel.' diterima', $data['message'] ?? $giftLabel.' baru telah dikonfirmasi.'],
+            'ceremony_reminder' => [$data['title'] ?? 'Pengingat upacara', $data['message'] ?? 'Upacara buah hati Anda sudah dekat.'],
             default => ['Pembaruan undangan', $data['message'] ?? 'Ada pembaruan baru pada undangan Anda.'],
         };
     }

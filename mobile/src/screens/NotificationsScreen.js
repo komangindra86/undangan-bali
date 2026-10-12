@@ -58,6 +58,10 @@ export default function NotificationsScreen({ navigation, route }) {
     if (item.type === 'invitation_request' && item.invitation_id) {
       openStack('InvitationRequests', { invitation: { id: item.invitation_id } });
     }
+    // A reminder that the next ceremony is near leads to the screen where its invitation is started.
+    if (item.type === 'ceremony_reminder') {
+      openStack('InvitationType');
+    }
   }
 
   if (!authLoading && !isAuthenticated) {
@@ -71,7 +75,7 @@ export default function NotificationsScreen({ navigation, route }) {
               <Ionicons color={colors.goldLight} name="notifications-outline" size={30} />
             </View>
             <Text style={styles.authTitle}>Masuk untuk melihat aktivitas</Text>
-            <Text style={styles.authBody}>Permintaan undangan, komentar, reaksi, dan gift akan tampil di sini.</Text>
+            <Text style={styles.authBody}>Permintaan undangan, komentar, reaksi, gift, dan pengingat upacara akan tampil di sini.</Text>
             <PrimaryButton title="Masuk" onPress={() => openStack('Login', { returnTab: 'NotificationsTab' })} style={styles.authButton} />
             <SecondaryButton title="Daftar Akun" onPress={() => openStack('Register', { returnTab: 'NotificationsTab' })} style={styles.secondaryButton} />
           </View>
@@ -112,11 +116,11 @@ export default function NotificationsScreen({ navigation, route }) {
 }
 
 function labelFor(type) {
-  return ({ invitation_request: 'Permintaan Undangan', reaction: 'Reaksi Baru', comment: 'Komentar Baru', wedding_gift_paid: 'Gift Diterima' })[type] || 'Pembaruan';
+  return ({ invitation_request: 'Permintaan Undangan', reaction: 'Reaksi Baru', comment: 'Komentar Baru', wedding_gift_paid: 'Gift Diterima', ceremony_reminder: 'Pengingat Upacara' })[type] || 'Pembaruan';
 }
 
 function iconFor(type) {
-  return ({ invitation_request: 'mail-unread-outline', reaction: 'heart-outline', comment: 'chatbubble-outline', wedding_gift_paid: 'gift-outline' })[type] || 'notifications-outline';
+  return ({ invitation_request: 'mail-unread-outline', reaction: 'heart-outline', comment: 'chatbubble-outline', wedding_gift_paid: 'gift-outline', ceremony_reminder: 'calendar-outline' })[type] || 'notifications-outline';
 }
 
 const styles = StyleSheet.create({
