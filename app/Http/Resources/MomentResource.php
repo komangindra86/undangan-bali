@@ -23,6 +23,7 @@ class MomentResource extends JsonResource
             'names' => match (true) {
                 $this->isBirthday() => $this->safeDisplayText($this->celebrant_nickname) ?: 'Yang berulang tahun',
                 $this->isMegedong() => $brideNickname.' & '.$groomNickname,
+                $this->isChildCeremony() && $this->requiresChildName() && $this->safeDisplayText($this->child_nickname) => $this->safeDisplayText($this->child_nickname),
                 $this->isChildCeremony() => $this->child_label.' '.$groomNickname.' & '.$brideNickname,
                 default => $groomNickname.' & '.$brideNickname,
             },

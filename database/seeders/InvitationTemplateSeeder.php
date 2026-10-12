@@ -99,5 +99,27 @@ class InvitationTemplateSeeder extends Seeder
                 'is_premium' => false,
             ]);
         }
+
+        // Tigang sasih gets three designs of its own and also offers the three abulan pitung dina designs.
+        // A template row belongs to one invitation type, so the shared designs get their own rows and slugs.
+        $tigangSasih = [
+            'nyambutin-kencana' => ['Nyambutin Kencana', 'nyambutin-kencana'],
+            'tunjung-petak' => ['Tunjung Petak', 'tunjung-petak'],
+            'surya-alit' => ['Surya Alit', 'surya-alit'],
+            'tigang-sasih-rare-kencana' => ['Rare Kencana', 'rare-kencana'],
+            'tigang-sasih-sekar-jepun' => ['Sekar Jepun', 'sekar-jepun'],
+            'tigang-sasih-langit-kumara' => ['Langit Kumara', 'langit-kumara'],
+        ];
+        foreach ($tigangSasih as $slug => [$name, $view]) {
+            InvitationTemplate::updateOrCreate(['slug' => $slug], [
+                'name' => $name,
+                'invitation_type' => 'tigang_sasih',
+                'thumbnail' => null,
+                'preview_image' => null,
+                'blade_view' => 'invitations.templates.upacara-anak.'.$view,
+                'is_active' => true,
+                'is_premium' => false,
+            ]);
+        }
     }
 }

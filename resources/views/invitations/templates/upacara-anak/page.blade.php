@@ -13,6 +13,9 @@
         'rare' => ['#e6c98a', 'rgba(52, 35, 18, .70)'],
         'jepun' => ['#f6d36b', 'rgba(74, 58, 22, .62)'],
         'kumara' => ['#bfe4e1', 'rgba(20, 52, 60, .68)'],
+        'nyambutin' => ['#e2b65a', 'rgba(58, 12, 20, .72)'],
+        'tunjung' => ['#cfe8d3', 'rgba(24, 52, 38, .66)'],
+        'surya' => ['#ffd08a', 'rgba(84, 42, 14, .62)'],
     ][$anakTheme];
 @endphp
 <!doctype html>
@@ -49,6 +52,7 @@
             <p class="ua-intro">{{ $ceremonyName }}</p>
             @if($invitation->ceremony_note)<p class="ua-note">{{ $invitation->ceremony_note }}</p>@endif
             <h1>{{ $invitation->display_name }}</h1>
+            @if($invitation->child_relation)<p class="ua-hero-relation">{{ $invitation->child_relation }}</p>@endif
             <p class="ua-date">{{ $invitation->event_date?->translatedFormat('l, d F Y') }}</p>
         </header>
         <section class="ua-section ua-greeting" data-reveal>

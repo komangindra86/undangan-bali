@@ -8,21 +8,26 @@ class Invitation extends Model
 {
     public const RETENTION_EXEMPT_SLUG_PREFIXES = ['preview-', 'demo-'];
 
-    public const TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina'];
+    public const TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih'];
 
     public const EVENT_TYPES = [
         'wedding' => ['Pawiwahan', 'Resepsi'],
         'birthday' => ['Ulang Tahun'],
         'megedong' => ['Megedong-gedongan'],
         'pitung_dina' => ['Abulan Pitung Dina'],
+        'tigang_sasih' => ['Tigang Sasih'],
     ];
 
     /**
      * Ceremonies held for a baby or child. The father uses groom_*, the mother bride_* and the child child_*.
      * Adding a ceremony here (plus TYPES, EVENT_TYPES and its templates) is enough for the backend.
+     *
+     * child_named: the child already has a name by this ceremony, so the name is required and becomes the title.
+     * age_days: the child's age at the ceremony, used for the template preview's sample birth date.
      */
     public const CHILD_CEREMONIES = [
-        'pitung_dina' => ['title' => 'Abulan Pitung Dina', 'note' => '42 Hari'],
+        'pitung_dina' => ['title' => 'Abulan Pitung Dina', 'note' => '42 Hari', 'child_named' => false, 'age_days' => 42],
+        'tigang_sasih' => ['title' => 'Tigang Sasih', 'note' => '3 Bulanan', 'child_named' => true, 'age_days' => 105],
     ];
 
     public const PHOTO_COLUMNS = ['groom_photo', 'bride_photo', 'celebrant_photo', 'child_photo'];
@@ -145,6 +150,31 @@ class Invitation extends Model
     }
 
     /**
+     * True for ceremonies where the child is expected to have a name by then (tigang sasih onwards).
+     */
+    public function requiresChildName(): bool
+    {
+        return (bool) (self::CHILD_CEREMONIES[$this->invitation_type]['child_named'] ?? false);
+    }
+
+    private function titledByChildName(): bool
+    {
+        return $this->requiresChildName() && filled($this->child_nickname);
+    }
+
+    /**
+     * "Putri dari Wira & Ayu": shown under the title when the title is the child's own name.
+     */
+    public function getChildRelationAttribute(): ?string
+    {
+        if (! $this->titledByChildName()) {
+            return null;
+        }
+
+        return ($this->child_gender ? $this->child_label : 'Buah hati').' dari '.($this->groom_nickname ?: 'Ayah').' & '.($this->bride_nickname ?: 'Ibu');
+    }
+
+    /**
      * How the child is referred to when the name is left out: Putra, Putri or Buah Hati.
      */
     public function getChildLabelAttribute(): string
@@ -156,7 +186,8 @@ class Invitation extends Model
     {
         return match (true) {
             $this->isBirthday() => $this->celebrant_nickname ?: 'Yang berulang tahun',
-            // The child's name is optional, so the title names the parents: "Putra Wira & Ayu".
+            $this->titledByChildName() => $this->child_nickname,
+            // Without a child name the title names the parents: "Putra Wira & Ayu".
             $this->isChildCeremony() => $this->child_label.' '.($this->groom_nickname ?: 'Ayah').' & '.($this->bride_nickname ?: 'Ibu'),
             // The ceremony centres on the expectant mother, so her name leads.
             $this->isMegedong() => ($this->bride_nickname ?: 'Calon Ibu').' & '.($this->groom_nickname ?: 'Calon Ayah'),
@@ -181,7 +212,8 @@ class Invitation extends Model
         return match (true) {
             $this->isBirthday() => 'perayaan ulang tahun '.$this->display_name,
             $this->isMegedong() => 'upacara megedong-gedongan kami',
-            $this->isChildCeremony() => 'upacara '.mb_strtolower($this->ceremony_title.' ('.$this->ceremony_note.')').' buah hati kami',
+            $this->isChildCeremony() => 'upacara '.mb_strtolower($this->ceremony_title.' ('.$this->ceremony_note.')').' buah hati kami'
+                .($this->titledByChildName() ? ', '.$this->child_nickname : ''),
             default => 'acara pernikahan kami',
         };
     }

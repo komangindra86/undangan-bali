@@ -155,16 +155,81 @@ class ChildCeremonyInvitationTest extends TestCase
         Storage::disk('public')->assertMissing($path);
     }
 
-    private function payload(array $child): array
+    public function test_tigang_sasih_offers_six_templates_including_the_shared_designs(): void
+    {
+        $this->getJson('/api/templates?invitation_type=pitung_dina')->assertOk()->assertJsonCount(3, 'data');
+        $response = $this->getJson('/api/templates?invitation_type=tigang_sasih')->assertOk()->assertJsonCount(6, 'data');
+        $this->assertSame(
+            ['Nyambutin Kencana', 'Tunjung Petak', 'Surya Alit', 'Rare Kencana', 'Sekar Jepun', 'Langit Kumara'],
+            array_column($response->json('data'), 'name')
+        );
+
+        foreach (['nyambutin-kencana', 'tunjung-petak', 'surya-alit', 'tigang-sasih-rare-kencana', 'tigang-sasih-sekar-jepun', 'tigang-sasih-langit-kumara'] as $slug) {
+            $this->get('/preview/templates/'.$slug)->assertOk()
+                ->assertSee('Upacara Tigang Sasih')->assertSee('3 Bulanan')
+                ->assertSee('Putra dari Wira &amp; Ayu', false)
+                ->assertSee('I Putu Bagus Aditya')
+                ->assertDontSee('Abulan Pitung Dina');
+        }
+
+        // The shared designs keep serving abulan pitung dina under their original slugs.
+        $this->get('/preview/templates/rare-kencana')->assertOk()->assertSee('Upacara Abulan Pitung Dina');
+    }
+
+    public function test_tigang_sasih_is_titled_by_the_child_name(): void
+    {
+        $this->actingAs(User::factory()->create(), 'sanctum');
+
+        $id = $this->postJson('/api/invitations/sync-local-draft', $this->payload([
+            'child_full_name' => 'Ni Luh Kirana Dewi',
+            'child_nickname' => 'Kirana',
+            'child_gender' => 'putri',
+        ], 'tigang_sasih'))->assertCreated()->json('data.id');
+
+        $published = $this->postJson("/api/invitations/{$id}/publish")->assertOk()
+            ->assertJsonPath('data.slug', 'tigang-sasih-kirana');
+        $this->assertStringContainsString('upacara tigang sasih (3 bulanan) buah hati kami, Kirana', $published->json('share_text'));
+
+        $invitation = Invitation::findOrFail($id);
+        $this->assertSame('Kirana', $invitation->display_name);
+        $this->assertSame('Putri dari Wira & Ayu', $invitation->child_relation);
+
+        $this->get('/u/tigang-sasih-kirana')->assertOk()
+            ->assertSee('Upacara Tigang Sasih')
+            ->assertSee('Putri dari Wira &amp; Ayu', false)
+            ->assertSee('Ni Luh Kirana Dewi');
+
+        $this->getJson('/api/moments')->assertOk()
+            ->assertJsonPath('data.0.invitation_type', 'tigang_sasih')
+            ->assertJsonPath('data.0.names', 'Kirana');
+    }
+
+    public function test_tigang_sasih_cannot_be_published_without_the_child_name(): void
+    {
+        $this->actingAs(User::factory()->create(), 'sanctum');
+        $id = $this->postJson('/api/invitations/sync-local-draft', $this->payload([], 'tigang_sasih'))
+            ->assertCreated()->json('data.id');
+
+        $this->postJson("/api/invitations/{$id}/publish")->assertUnprocessable()
+            ->assertJsonValidationErrors(['child_full_name', 'child_nickname'])
+            ->assertJsonMissingValidationErrors(['groom_full_name', 'bride_full_name'])
+            ->assertJsonPath('errors.child_full_name.0', fn ($message) => str_contains($message, 'nama lengkap buah hati'));
+
+        // The draft still has a readable title while the name is missing.
+        $this->assertSame('Buah Hati Wira & Ayu', Invitation::findOrFail($id)->display_name);
+        $this->assertNull(Invitation::findOrFail($id)->child_relation);
+    }
+
+    private function payload(array $child, string $type = 'pitung_dina'): array
     {
         return [
-            'invitation_type' => 'pitung_dina',
-            'selected_template' => InvitationTemplate::where('slug', 'rare-kencana')->value('id'),
+            'invitation_type' => $type,
+            'selected_template' => InvitationTemplate::where('invitation_type', $type)->orderBy('id')->value('id'),
             'groom_data' => ['groom_full_name' => 'I Made Wira Adnyana', 'groom_nickname' => 'Wira'],
             'bride_data' => ['bride_full_name' => 'Ni Putu Ayu Lestari', 'bride_nickname' => 'Ayu'],
             'child_data' => $child,
             'event_data' => [
-                'event_type' => 'Abulan Pitung Dina',
+                'event_type' => Invitation::EVENT_TYPES[$type][0],
                 'event_date' => now()->addDays(10)->toDateString(),
                 'start_time' => '09:00',
                 'venue_name' => 'Kediaman Keluarga I Made Wira',

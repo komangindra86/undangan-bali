@@ -13,6 +13,7 @@ body.anak { --paper:#fbf3e4; --ink:#4a3421; --muted:#806a52; --accent:#a8792c; -
 .ua-note { display:inline-block; margin:10px 0 0; padding:3px 14px; border:1px solid var(--line); border-radius:999px; color:var(--accent); font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
 .ua-page h1 { font:500 clamp(34px,9.5vw,64px)/1.12 Georgia,serif; margin:18px 0 16px; overflow-wrap:anywhere; }
 .ua-page h2 { font:500 clamp(24px,6vw,34px)/1.3 Georgia,serif; margin:10px 0; overflow-wrap:anywhere; }
+.ua-hero-relation { margin:-6px 0 16px; color:var(--muted); font:italic 17px/1.5 Georgia,serif; }
 .ua-date { color:var(--accent); font-size:13px; letter-spacing:.2em; margin:0; text-transform:uppercase; }
 .ua-section { padding:44px 28px; text-align:center; overflow-wrap:anywhere; }
 .ua-greeting { background:var(--panel); }
@@ -74,6 +75,34 @@ body.anak { --paper:#fbf3e4; --ink:#4a3421; --muted:#806a52; --accent:#a8792c; -
 .anak--kumara .ua-note,.anak--kumara .ua-facts div,.anak--kumara .ua-button { border-radius:6px; }
 .anak--kumara .ua-event { border-radius:0; border-width:1px 0; margin:0 28px 28px; padding-inline:0; }
 .anak--kumara .ua-closing { text-align:center; }
+
+/* Nyambutin Kencana: ceremonial maroon and gold. */
+.anak.anak--nyambutin { --paper:#4a121b; --ink:#f6e6c8; --muted:#dcc39b; --accent:#e2b65a; --on-accent:#3a0f15; --panel:#5a1822; --line:#e2b65a66; --petal:#f6e6c8; --heart:#e2b65a; background:#2c0a10; }
+.anak--nyambutin .ua-page { border-inline:8px double #e2b65a; }
+.anak--nyambutin .ua-demo { background:#2c0a10; color:#f6e6c8; }
+.anak--nyambutin .ua-hero { background:radial-gradient(circle at 50% 0,#6a1c28 0,transparent 62%),repeating-linear-gradient(45deg,transparent 0 30px,#e2b65a0f 31px 32px); }
+.anak--nyambutin .ua-page h1 { color:#f3d08a; }
+.anak--nyambutin .ua-event { border:4px double #e2b65a; border-radius:8px; }
+.anak--nyambutin .ua-child { border-radius:8px; }
+
+/* Tunjung Petak: white and soft lotus green. */
+.anak.anak--tunjung { --paper:#f7fbf5; --ink:#2f4a3a; --muted:#607a6a; --accent:#34704d; --on-accent:#fff; --panel:#ffffff; --line:#34704d3d; --petal:#ffffff; --heart:#bfe0c6; background:#e3ede2; }
+.anak--tunjung .ua-hero { background:radial-gradient(circle at 12% 16%,#d9eedb 0 58px,transparent 59px),radial-gradient(circle at 90% 30%,#e8f4e6 0 76px,transparent 77px),radial-gradient(circle at 22% 96%,#d3ead8 0 42px,transparent 43px); }
+.anak--tunjung .ua-flower { filter:drop-shadow(0 10px 18px #34704d2e); }
+.anak--tunjung .ua-page h1 { color:#34704d; }
+.anak--tunjung .ua-child { border:0; box-shadow:0 12px 30px #34704d1f; }
+.anak--tunjung .ua-event { background:#34704d; border:0; color:#fff; }
+.anak--tunjung .ua-event .ua-eyebrow,.anak--tunjung .ua-event .ua-details span { color:#d9eedb; }
+.anak--tunjung .ua-event .ua-button { background:#fff; color:#27563b; }
+
+/* Surya Alit: warm morning orange, modern with a rising-sun hero. */
+.anak.anak--surya { --paper:#fff6ec; --ink:#5a3520; --muted:#86604a; --accent:#ad4f17; --on-accent:#fff; --panel:#ffffff; --line:#ad4f1738; --petal:#ffffff; --heart:#f6a65a; background:#f6e3cf; }
+.anak--surya .ua-hero { background:radial-gradient(circle at 50% 108%,#ffc27a 0 34%,#ffdcae 35% 52%,transparent 53%),linear-gradient(180deg,#fff6ec,#ffe9cf); padding-bottom:76px; }
+.anak--surya .ua-page h1 { color:#ad4f17; font-weight:700; }
+.anak--surya .ua-note,.anak--surya .ua-facts div { border-radius:8px; }
+.anak--surya .ua-child { border-radius:14px; border-color:transparent; box-shadow:0 10px 26px #ad4f1722; }
+.anak--surya .ua-event { border-radius:14px; background:#fff; border-color:#ad4f1738; }
+.anak--surya .ua-button { border-radius:12px; }
 
 .anak .is-revealed { animation:ua-reveal .7s ease both; }
 @keyframes ua-reveal { from { opacity:.45; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }

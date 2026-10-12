@@ -78,6 +78,9 @@ class InvitationController extends Controller
         $personFields = $invitation->isBirthday()
             ? ['celebrant_full_name' => 80, 'celebrant_nickname' => 18]
             : ['groom_full_name' => 80, 'groom_nickname' => 18, 'bride_full_name' => 80, 'bride_nickname' => 18];
+        if ($invitation->requiresChildName()) {
+            $personFields += ['child_full_name' => 80, 'child_nickname' => 18];
+        }
         // Megedong-gedongan stores the expectant father in groom_* and the mother in bride_*.
         [$groomLabel, $brideLabel] = match (true) {
             $invitation->isMegedong() => ['calon ayah', 'calon ibu'],
@@ -107,6 +110,8 @@ class InvitationController extends Controller
             'groom_nickname' => 'nama panggilan '.$groomLabel,
             'bride_full_name' => 'nama lengkap '.$brideLabel,
             'bride_nickname' => 'nama panggilan '.$brideLabel,
+            'child_full_name' => 'nama lengkap buah hati',
+            'child_nickname' => 'nama panggilan buah hati',
             'event_type' => 'jenis acara',
             'event_date' => 'tanggal acara',
             'start_time' => 'jam mulai',
