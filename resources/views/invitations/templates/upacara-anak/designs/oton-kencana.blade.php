@@ -1,5 +1,9 @@
-{{-- Oton Kencana: symmetric and ceremonial. The date stands in a candi bentar flanked by tedung, on prada cloth. --}}
+{{-- Oton Kencana: symmetric, in warm morning light. The date stands in a paras stone candi bentar flanked by tedung. --}}
 <header class="ub-hero">
+    @include($ornaments.'bayang')
+    @include($ornaments.'jepun', ['class' => 'is-a'])
+    @include($ornaments.'jepun', ['class' => 'is-b'])
+    @include($ornaments.'jepun', ['class' => 'is-c'])
     <div class="ub-ider" aria-hidden="true"></div>
     <p class="ub-eyebrow">Om Swastyastu</p>
     @include($ornaments.'banten')

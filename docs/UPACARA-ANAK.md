@@ -69,20 +69,28 @@ sendiri, jadi desain baru berarti berkas isi baru, bukan sekadar warna baru.
 
 | Desain | Tata letak | Ornamen |
 | --- | --- | --- |
-| Oton Kencana | Simetris; tanggal berdiri di antara candi bentar | Candi bentar, tedung, banten, ider-ider, kain prada, patra |
-| Sekar Cempaka | Asimetris rata kiri; foto dan tanggal berbentuk lengkung | Penjor dengan sampian dan sanggah, canang sari |
-| Purnama Alit | Garis waktu; galeri geser | Roda pawukon, purnama, awan Kamasan, kain poleng |
+| Oton Kencana | Simetris, cahaya pagi di atas gading; tanggal berdiri di antara candi bentar | Candi bentar batu paras, tedung, banten, bunga jepun, bayangan daun, ider-ider, kain prada, patra |
+| Sekar Cempaka | Asimetris rata kiri, merah muda lembut; foto dan tanggal berbentuk lengkung | Penjor dengan sampian dan sanggah, canang sari, bunga jepun |
+| Purnama Alit | Langit senja di atas halaman terang; garis waktu; galeri geser | Roda pawukon, purnama, awan Kamasan, kain poleng |
 
-Ornamen digambar sebagai SVG di `upacara-anak/ornaments/` dan mengambil warna
-dari variabel CSS desainnya (`--orn`, `--orn-cloth`, dan seterusnya). Benang
-tridatu dan kain poleng dibuat dengan CSS (`.ub-tridatu`, `.ub-poleng`).
+Semuanya bernuansa lembut: latar terang, ornamen berisi gradasi dan bayangan
+halus alih-alih garis tegas, kartu putih berbayang.
+
+Ornamen digambar sebagai SVG di `upacara-anak/ornaments/`. Gradasi, filter
+bayangan, dan kelopak jepun yang dipakai bersama ada di
+`upacara-anak/parts/defs.blade.php`; ornamen merujuknya lewat atribut
+(`fill="url(#ub-stone)"`), bukan lewat CSS, supaya berlaku di semua browser.
+Benang tridatu dan kain poleng dibuat dengan CSS (`.ub-tridatu`, `.ub-poleng`).
 
 Ciri upacara: `CHILD_CEREMONIES[...]['meaning']` berisi satu kalimat tentang
 upacaranya, ditampilkan bersama benang tridatu; Purnama Alit juga menulis
 `30 wuku × 7 hari = 210 hari`.
 
 Sampul pembuka memakai foto buah hati bila ada; bila tidak, ilustrasi
-`public/images/otonan-*.svg` dengan bayangan yang lebih tipis.
+`public/images/otonan-*.svg` dengan warna teks dan lapisan sendiri
+(`artText`, `artAccent`, `artShade` pada berkas desain). Ilustrasi itu disusun
+dari gambar ornamen yang sama, jadi bila ornamen diubah, buat ulang sampulnya
+dengan `python scripts/build-otonan-covers.py`.
 
 ## Feed dan Gift
 

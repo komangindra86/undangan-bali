@@ -1,13 +1,18 @@
-{{-- Banten otonan: a tumpeng with fruit and a canang on a dulang, with a janur fan behind. --}}
-<svg class="orn orn-banten {{ $class ?? '' }}" viewBox="0 0 120 120" aria-hidden="true">
-    <path class="orn-line" d="M60 84L22 40M60 84L32 28M60 84L44 20M60 84V14M60 84L76 20M60 84L88 28M60 84L98 40"/>
-    <path class="orn-line" d="M22 40q5-10 10-12q4-8 12-8q6-8 16-6q10-2 16 6q8 0 12 8q5 2 10 12"/>
-    <path class="orn-cloth" d="M60 30L80 84H40Z"/>
-    <path class="orn-line" d="M52 52h16M47 66h26"/>
-    <circle class="orn-fruit" cx="29" cy="76" r="9"/><circle class="orn-fruit" cx="91" cy="76" r="9"/>
-    <circle class="orn-fruit" cx="42" cy="80" r="6"/><circle class="orn-fruit" cx="78" cy="80" r="6"/>
-    <path class="orn-line" d="M29 67v-5M91 67v-5"/>
-    <path class="orn-stone" d="M12 86H108L98 98H22Z"/><path class="orn-stone" d="M40 98H80L86 114H34Z"/>
-    <path class="orn-line" d="M22 92h76M38 108h44"/>
-    <circle class="orn-dot" cx="60" cy="26" r="5"/>
+{{-- Banten otonan: a tumpeng with fruit and a flower on a dulang, with a janur fan behind. --}}
+<svg class="orn orn-banten {{ $class ?? '' }}" viewBox="0 0 120 124" aria-hidden="true">
+    <g filter="url(#ub-soft)">
+        <g transform="translate(60 88)" fill="url(#ub-janur)" stroke="#b9ae5c" stroke-width=".5">
+            <path transform="rotate(-57)" d="M0 0C-5-22-4-48 0-66C4-48 5-22 0 0Z"/><path transform="rotate(-38)" d="M0 0C-5-22-4-48 0-70C4-48 5-22 0 0Z"/>
+            <path transform="rotate(-19)" d="M0 0C-5-22-4-48 0-74C4-48 5-22 0 0Z"/><path d="M0 0C-5-22-4-48 0-76C4-48 5-22 0 0Z"/>
+            <path transform="rotate(19)" d="M0 0C-5-22-4-48 0-74C4-48 5-22 0 0Z"/><path transform="rotate(38)" d="M0 0C-5-22-4-48 0-70C4-48 5-22 0 0Z"/>
+            <path transform="rotate(57)" d="M0 0C-5-22-4-48 0-66C4-48 5-22 0 0Z"/>
+        </g>
+        <path d="M60 32L81 88H39Z" fill="url(#ub-cloth)" stroke="#d9ccb0" stroke-width=".6" stroke-linejoin="round"/>
+        <circle cx="28" cy="78" r="10.5" fill="url(#ub-fruit-orange)"/><circle cx="92" cy="78" r="10.5" fill="url(#ub-fruit-red)"/>
+        <circle cx="43" cy="82" r="7.5" fill="url(#ub-fruit-green)"/><circle cx="77" cy="82" r="7.5" fill="url(#ub-fruit-orange)"/>
+        <path d="M12 88H108L98 100H22Z" fill="url(#ub-gold)"/><path d="M40 100H80L86 116H34Z" fill="url(#ub-gold)"/>
+        <path d="M13 88.7H107" stroke="#fff6d6" stroke-width="1.3" opacity=".85"/>
+        <path d="M24 100H96" stroke="#8a6a26" stroke-width="1" opacity=".35"/>
+        <use href="#ub-jepun" transform="translate(60 30) scale(.2)"/>
+    </g>
 </svg>

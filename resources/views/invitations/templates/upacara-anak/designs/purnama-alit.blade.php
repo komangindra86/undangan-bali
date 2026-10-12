@@ -1,11 +1,13 @@
-{{-- Purnama Alit: night and modern. The pawukon wheel turns around the full moon among Kamasan clouds, edged in poleng. --}}
+{{-- Purnama Alit: dusk and modern. The pawukon wheel turns around the full moon among Kamasan clouds, edged in poleng. --}}
 <header class="ub-hero">
-    <div class="ub-poleng" aria-hidden="true"></div>
-    <p class="ub-eyebrow">Om Swastyastu</p>
-    <div class="ub-sky" aria-hidden="true">
-        @include($ornaments.'pawukon')
-        @include($ornaments.'awan', ['class' => 'is-left'])
-        @include($ornaments.'awan', ['class' => 'is-right'])
+    <div class="ub-dusk">
+        <div class="ub-poleng" aria-hidden="true"></div>
+        <p class="ub-eyebrow">Om Swastyastu</p>
+        <div class="ub-sky" aria-hidden="true">
+            @include($ornaments.'pawukon')
+            @include($ornaments.'awan', ['class' => 'is-left'])
+            @include($ornaments.'awan', ['class' => 'is-right'])
+        </div>
     </div>
     <p class="ub-intro">{{ $ceremonyName }}</p>
     @if($invitation->ceremony_note)<p class="ub-note">{{ $invitation->ceremony_note }}</p>@endif

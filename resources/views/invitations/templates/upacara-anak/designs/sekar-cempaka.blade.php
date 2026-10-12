@@ -11,6 +11,8 @@
     </div>
 </header>
 <section class="ub-section ub-greeting" data-reveal>
+    @include($ornaments.'jepun', ['class' => 'is-a'])
+    @include($ornaments.'jepun', ['class' => 'is-b'])
     @include($ornaments.'canang')
     <p>{{ $greeting }}</p>
     @if($invitation->ceremony_meaning)

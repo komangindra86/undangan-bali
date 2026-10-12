@@ -1,9 +1,61 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1000" preserveAspectRatio="xMidYMid slice"><style>.l{fill:none;stroke:#fbe3ea;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.d{fill:#fbe3ea}.c{fill:#f8cdd7;stroke:#fbe3ea;stroke-width:1.6;stroke-linejoin:round}.s{fill:#f3e3c2;stroke:#fbe3ea;stroke-width:1.6;stroke-linejoin:round}.b{fill:none;stroke:#e9c98a;stroke-width:5;stroke-linecap:round}.j{fill:none;stroke:#f1e3a0;stroke-width:2.4;stroke-linecap:round}.w{fill:#e9c98a;stroke:#7a2f1f;stroke-width:1.8;stroke-linejoin:round}.wl{fill:none;stroke:#7a2f1f;stroke-width:1.8;stroke-linecap:round}</style><defs><linearGradient id="g" x2="0" y2="1"><stop offset="0" stop-color="#b56f89"/><stop offset="1" stop-color="#7d2f4d"/></linearGradient><g id="k">
-    <path class="b" d="M172 620C172 520 171 440 170 380C168 260 164 160 130 90C108 46 60 30 34 70"/>
-    <path class="j" d="M172 590q-16 4-20 18M172 590q16 4 20 18M171 480q-16 4-20 18M171 480q16 4 20 18M170 420q-16 4-20 18M170 420q16 4 20 18M170 360q-16 4-20 18M170 360q16 4 20 18M168 300q-16 4-20 18M168 300q16 4 20 18M165 240q-16 3-21 17M165 240q16 5 18 20M159 185q-16 2-23 15M159 185q15 7 15 21M149 135q-16 1-25 12M149 135q13 9 11 23M134 98q-15-2-26 7M134 98q10 11 6 24M112 68q-14-4-26 4M112 68q8 12 3 24M84 52q-12-8-25-3M84 52q5 13-2 24M58 50q-9-10-22-9M58 50q2 13-7 22"/>
-    <path class="l" d="M34 70V96"/>
-    <path class="c" d="M34 96l13 17-13 17-13-17z"/>
-    <path class="j" d="M25 134v22M34 130v32M43 134v22M34 106v14M28 113h12"/>
-    <path class="s" d="M152 548h40v-16h-40z"/><path class="s" d="M146 532l26-15 26 15z"/>
-    <path class="l" d="M160 548v-9h8v9"/>
-</g></defs><rect width="600" height="1000" fill="url(#g)"/><circle cx="300" cy="1000" r="260" fill="#fbdde4" fill-opacity=".14"/><use href="#k" transform="translate(262 40) scale(1.5)"/><use href="#k" transform="translate(338 40) scale(-1.5 1.5)"/><path class="b" d="M520 960V1000M80 960V1000"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1000" preserveAspectRatio="xMidYMid slice"><defs>
+        <radialGradient id="ub-petal" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="52">
+            <stop offset="0" stop-color="#f0a41c"/><stop offset=".26" stop-color="#fbd864"/><stop offset=".6" stop-color="#fffbea"/><stop offset="1" stop-color="#ffffff"/>
+        </radialGradient>
+        <path id="ub-jepun-petal" d="M0 2C-13-7-22-30-9-47C0-56 17-48 18-32C19-18 9-6 0 2Z" fill="url(#ub-petal)" stroke="#e6d9bb" stroke-width=".7"/>
+        <g id="ub-jepun">
+            <use href="#ub-jepun-petal"/><use href="#ub-jepun-petal" transform="rotate(72)"/><use href="#ub-jepun-petal" transform="rotate(144)"/><use href="#ub-jepun-petal" transform="rotate(216)"/><use href="#ub-jepun-petal" transform="rotate(288)"/>
+        </g>
+        <linearGradient id="ub-stone" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0" stop-color="#f4ebd9"/><stop offset=".55" stop-color="#e2d3b8"/><stop offset="1" stop-color="#c7b392"/>
+        </linearGradient>
+        <linearGradient id="ub-cloth" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#fbf3df"/><stop offset="1" stop-color="#e6d6b4"/>
+        </linearGradient>
+        <linearGradient id="ub-gold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f8e8b0"/><stop offset=".5" stop-color="#d7b05a"/><stop offset="1" stop-color="#a47c2c"/>
+        </linearGradient>
+        <linearGradient id="ub-janur" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f6f0b4"/><stop offset="1" stop-color="#c9bf63"/>
+        </linearGradient>
+        <linearGradient id="ub-bamboo" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#e9d6a4"/><stop offset="1" stop-color="#b3945a"/>
+        </linearGradient>
+        <linearGradient id="ub-cloud" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#ecd3b3"/>
+        </linearGradient>
+        <radialGradient id="ub-moon" cx=".4" cy=".36" r=".72">
+            <stop offset="0" stop-color="#fffef4"/><stop offset=".6" stop-color="#fbf0c2"/><stop offset="1" stop-color="#ecd592"/>
+        </radialGradient>
+        <radialGradient id="ub-glow">
+            <stop offset=".45" stop-color="#fff2c2" stop-opacity=".55"/><stop offset="1" stop-color="#fff2c2" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="ub-fruit-orange" cx=".36" cy=".32" r=".8"><stop offset="0" stop-color="#ffd9a0"/><stop offset=".55" stop-color="#ee9638"/><stop offset="1" stop-color="#bf661c"/></radialGradient>
+        <radialGradient id="ub-fruit-red" cx=".36" cy=".32" r=".8"><stop offset="0" stop-color="#ffb3a3"/><stop offset=".55" stop-color="#d9523f"/><stop offset="1" stop-color="#9a2a1c"/></radialGradient>
+        <radialGradient id="ub-fruit-green" cx=".36" cy=".32" r=".8"><stop offset="0" stop-color="#e3f0b0"/><stop offset=".55" stop-color="#9dbb57"/><stop offset="1" stop-color="#67862f"/></radialGradient>
+        <linearGradient id="ub-flower-white" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e9e2d2"/></linearGradient>
+        <linearGradient id="ub-flower-red" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f58a7b"/><stop offset="1" stop-color="#bf3327"/></linearGradient>
+        <linearGradient id="ub-flower-yellow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe98f"/><stop offset="1" stop-color="#e5a90c"/></linearGradient>
+        <linearGradient id="ub-flower-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9b8ee"/><stop offset="1" stop-color="#5063b3"/></linearGradient>
+        <radialGradient id="ub-tray"><stop offset="0" stop-color="#fcf8da"/><stop offset="1" stop-color="#e6db95"/></radialGradient>
+        <clipPath id="ub-gapura-clip"><path d="M150 320H38V304H50V282H44V270H60V246H54V234H70V208H64V196H80V168H74V156H90V128H85V118H100V92H96V82H112V60H108V52H126V34H134V20H150Z"/></clipPath>
+        <filter id="ub-soft" x="-25%" y="-25%" width="150%" height="160%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3.2"/><feOffset dy="4"/><feComponentTransfer><feFuncA type="linear" slope=".2"/></feComponentTransfer>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="ub-haze" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2"/></filter>
+    <linearGradient id="bg" x2="0" y2="1"><stop offset="0" stop-color="#fbe3e8"/><stop offset="1" stop-color="#fff7f2"/></linearGradient><radialGradient id="bokeh"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><radialGradient id="blush"><stop offset="0" stop-color="#f9c9d4" stop-opacity=".7"/><stop offset="1" stop-color="#f9c9d4" stop-opacity="0"/></radialGradient><g id="penjor">
+    <g filter="url(#ub-soft)" fill="none" stroke-linecap="round">
+        <path d="M172 620C172 520 171 440 170 380C168 260 164 160 130 90C108 46 60 30 34 70" stroke="#b99a5e" stroke-width="5.5"/>
+        <path d="M172 620C172 520 171 440 170 380C168 260 164 160 130 90C108 46 60 30 34 70" stroke="#ecdcae" stroke-width="1.6"/>
+        <path d="M172 590q-16 4-20 18M172 590q16 4 20 18M171 480q-16 4-20 18M171 480q16 4 20 18M170 420q-16 4-20 18M170 420q16 4 20 18M170 360q-16 4-20 18M170 360q16 4 20 18M168 300q-16 4-20 18M168 300q16 4 20 18M165 240q-16 3-21 17M165 240q16 5 18 20M159 185q-16 2-23 15M159 185q15 7 15 21M149 135q-16 1-25 12M149 135q13 9 11 23M134 98q-15-2-26 7M134 98q10 11 6 24M112 68q-14-4-26 4M112 68q8 12 3 24M84 52q-12-8-25-3M84 52q5 13-2 24M58 50q-9-10-22-9M58 50q2 13-7 22" stroke="#cfc56c" stroke-width="3.6"/>
+        <path d="M172 590q-16 4-20 18M172 590q16 4 20 18M171 480q-16 4-20 18M171 480q16 4 20 18M170 420q-16 4-20 18M170 420q16 4 20 18M170 360q-16 4-20 18M170 360q16 4 20 18M168 300q-16 4-20 18M168 300q16 4 20 18M165 240q-16 3-21 17M165 240q16 5 18 20M159 185q-16 2-23 15M159 185q15 7 15 21M149 135q-16 1-25 12M149 135q13 9 11 23M134 98q-15-2-26 7M134 98q10 11 6 24M112 68q-14-4-26 4M112 68q8 12 3 24M84 52q-12-8-25-3M84 52q5 13-2 24M58 50q-9-10-22-9M58 50q2 13-7 22" stroke="#f6f1bd" stroke-width="1.3"/>
+        <path d="M34 70V98" stroke="#cfc56c" stroke-width="1.6"/>
+        <path d="M34 96l14 18-14 18-14-18z" fill="url(#ub-janur)" stroke="#b9ae5c" stroke-width=".7" stroke-linejoin="round"/>
+        <path d="M34 104v20M27 114h14" stroke="#b9ae5c" stroke-width=".8"/>
+        <path d="M24 136v24M34 132v36M44 136v24M29 134v30M39 134v30" stroke="#d9cf7a" stroke-width="2.6"/>
+        <path d="M152 548h40v-16h-40z" fill="#eedfb6" stroke="#b99a5e" stroke-width=".8"/>
+        <path d="M144 533l28-16 28 16z" fill="url(#ub-bamboo)" stroke="#a88a52" stroke-width=".8" stroke-linejoin="round"/>
+        <path d="M162 548v-9h8v9" stroke="#a88a52" stroke-width=".9"/>
+    </g>
+</g></defs><rect width="600" height="1000" fill="url(#bg)"/><circle cx="150" cy="240" r="120" fill="url(#bokeh)"/><circle cx="430" cy="560" r="170" fill="url(#blush)"/><circle cx="190" cy="760" r="140" fill="url(#bokeh)"/><circle cx="470" cy="150" r="90" fill="url(#bokeh)"/><use href="#penjor" transform="translate(262 40) scale(1.5)"/><use href="#penjor" transform="translate(338 40) scale(-1.5 1.5)"/><path d="M520 960V1000M80 960V1000" stroke="#b99a5e" stroke-width="8" stroke-linecap="round"/><g transform="translate(300 930) scale(.9)"><g filter="url(#ub-soft)"><use href="#ub-jepun"/></g></g><g transform="translate(236 958) rotate(40) scale(.6)"><g filter="url(#ub-soft)"><use href="#ub-jepun"/></g></g><g transform="translate(366 962) rotate(-30) scale(.66)"><g filter="url(#ub-soft)"><use href="#ub-jepun"/></g></g></svg>

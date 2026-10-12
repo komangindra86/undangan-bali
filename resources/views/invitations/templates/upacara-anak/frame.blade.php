@@ -1,7 +1,7 @@
 @php
     // Frame for the designs that have their own layout and Balinese ornaments. $design names the body under
-    // designs/, $cover holds the opening cover's fallback illustration, accent, and the shade over a photo and
-    // over the illustration (which is dark enough to need less).
+    // designs/. $cover styles the opening cover: accent and shade go over a photo; art, artAccent, artText and
+    // artShade describe the illustration shown when the invitation has no photo.
     $isPreview = $isPreview ?? false;
     $childPhoto = $invitation->child_photo ? Storage::url($invitation->child_photo) : null;
     $musicPath = $invitation->music_type === 'default' ? $invitation->music?->file_path : ($invitation->music_type === 'upload' ? $invitation->music_file : null);
@@ -26,14 +26,16 @@
     <title>{{ $isPreview ? 'Preview '.$invitation->template->name : $invitation->ceremony_title.' '.$invitation->display_name }}</title>
     <link rel="stylesheet" href="{{ asset('css/upacara-bali.css') }}">
 </head>
-<body class="ub ub--{{ $design }}">
+<body class="ub ub--{{ $design }}{{ $coverPhoto ? '' : ' ub-cover-art' }}">
     @include('invitations.partials.opening-cover', [
         'openingTheme' => 'Om Swastyastu',
-        'openingImage' => $coverPhoto ?: asset('images/'.$cover[0]),
-        'openingAccent' => $cover[1],
-        'openingShade' => $cover[$coverPhoto ? 2 : 3],
+        'openingImage' => $coverPhoto ?: asset('images/'.$cover['art']),
+        'openingAccent' => $coverPhoto ? $cover['accent'] : $cover['artAccent'],
+        'openingShade' => $coverPhoto ? $cover['shade'] : $cover['artShade'],
+        'openingText' => $coverPhoto ? '#fff8e8' : $cover['artText'],
         'openingHasMusic' => (bool) $musicPath,
     ])
+    @include($parts.'defs')
     <main class="ub-page">
         @if($isPreview)
             <aside class="ub-demo">Preview {{ $invitation->template->name }} · Data contoh, bukan undangan asli</aside>
