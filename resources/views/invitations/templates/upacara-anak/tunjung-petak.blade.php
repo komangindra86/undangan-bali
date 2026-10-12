@@ -1,1 +1,1 @@
-@include('invitations.templates.upacara-anak.page', ['anakTheme' => 'tunjung'])
+@include('invitations.templates.upacara-anak.frame', ['design' => 'tunjung-petak'])

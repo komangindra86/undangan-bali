@@ -15,13 +15,10 @@
     @if($invitation->child_relation)<p class="ub-relation">{{ $invitation->child_relation }}</p>@endif
     <p class="ub-date">{{ $invitation->event_date?->translatedFormat('l, d F Y') }}</p>
 </header>
-@if($invitation->ceremony_meaning)
-    <div class="ub-meaning" data-reveal>
-        <p class="ub-wuku">30 wuku × 7 hari = 210 hari</p>
-        <span class="ub-tridatu" aria-hidden="true"></span>
-        <p><strong>{{ $invitation->ceremony_title }}</strong> · {{ $invitation->ceremony_meaning }}</p>
-    </div>
-@endif
+<div class="ub-wuku" data-reveal>
+    <p>30 wuku × 7 hari = 210 hari</p>
+    @include($parts.'meaning')
+</div>
 <section class="ub-section ub-greeting" data-reveal>
     <p>{{ $greeting }}</p>
 </section>

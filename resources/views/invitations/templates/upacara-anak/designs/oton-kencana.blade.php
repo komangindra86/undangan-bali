@@ -24,12 +24,7 @@
 <section class="ub-section ub-greeting" data-reveal>
     @include($ornaments.'patra')
     <p>{{ $greeting }}</p>
-    @if($invitation->ceremony_meaning)
-        <div class="ub-meaning">
-            <span class="ub-tridatu" aria-hidden="true"></span>
-            <p><strong>{{ $invitation->ceremony_title }}</strong> · {{ $invitation->ceremony_meaning }}</p>
-        </div>
-    @endif
+    @include($parts.'meaning')
 </section>
 <section class="ub-section" data-reveal>
     <p class="ub-eyebrow">Buah hati kami</p>

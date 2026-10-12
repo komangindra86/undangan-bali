@@ -1,5 +1,5 @@
 {{-- Half of a candi bentar (split gate) in paras stone with a tedung behind it; mirror it for the other side. --}}
-<svg class="orn orn-gapura {{ $class ?? '' }}" viewBox="0 0 150 320" aria-hidden="true">
+<svg class="orn orn-gapura {{ $class ?? '' }}" {!! $attrs ?? '' !!} viewBox="0 0 150 320" aria-hidden="true">
     <g filter="url(#ub-soft)">
         <rect x="28.4" y="74" width="3.2" height="246" fill="url(#ub-gold)"/>
         <path d="M14 46Q30 22 46 46Z" fill="url(#ub-cloth)" stroke="#d9c79c" stroke-width=".6"/>

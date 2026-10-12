@@ -1,1 +1,1 @@
-@include('invitations.templates.upacara-anak.page', ['anakTheme' => 'surya'])
+@include('invitations.templates.upacara-anak.frame', ['design' => 'surya-alit'])

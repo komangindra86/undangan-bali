@@ -160,15 +160,15 @@ function conceptFor(slug) {
     'garbha-kencana': 'Klasik Bali gelap, bingkai emas, dan suasana upacara yang khidmat.',
     'padma-sari': 'Lembut dan hangat, warna padma pastel untuk menyambut buah hati.',
     'tirta-hening': 'Minimalis teduh, hijau sage dan tipografi yang tenang.',
-    'rare-kencana': 'Krem hangat, aksen emas, dan anyaman janur yang khidmat.',
-    'sekar-jepun': 'Putih dan kuning lembut bernuansa bunga jepun.',
-    'langit-kumara': 'Biru-hijau muda yang tenang, bersih, dan modern.',
-    'nyambutin-kencana': 'Merah marun dan emas dengan suasana upacara yang khidmat.',
-    'tunjung-petak': 'Putih dan hijau lembut bernuansa bunga tunjung.',
-    'surya-alit': 'Jingga pagi yang hangat dengan tampilan modern.',
-    'oton-kencana': 'Candi bentar, tedung, dan banten di atas kain prada hijau-emas.',
+    'rare-kencana': 'Krem dan emas di antara dua lamak janur yang menjuntai.',
+    'sekar-jepun': 'Serba bundar, dengan foto di tengah karangan bunga jepun.',
+    'langit-kumara': 'Langit biru lembut dengan layangan bebean dan awan.',
+    'nyambutin-kencana': 'Gebogan dan umbul-umbul di atas tembok bata merah yang hangat.',
+    'tunjung-petak': 'Kolam tunjung putih yang tenang dalam hijau lembut.',
+    'surya-alit': 'Matahari terbit di samping Gunung Agung, meru, dan sawah.',
+    'oton-kencana': 'Candi bentar batu paras, tedung, dan banten dalam cahaya pagi.',
     'sekar-cempaka': 'Penjor dan canang sari dalam gading dan merah muda yang lembut.',
-    'purnama-alit': 'Roda pawukon, purnama, awan Kamasan, dan kain poleng di langit malam.',
+    'purnama-alit': 'Roda pawukon, purnama, awan Kamasan, dan kain poleng di langit senja.',
   }[slug] || 'Desain undangan untuk momen istimewa.';
 }
 

@@ -1,5 +1,5 @@
 {{-- Roda pawukon around the full moon: 30 wuku on the rim and the seven-day week inside; 30 x 7 = 210 days, one oton. --}}
-<svg class="orn orn-pawukon {{ $class ?? '' }}" viewBox="-112 -112 224 224" aria-hidden="true">
+<svg class="orn orn-pawukon {{ $class ?? '' }}" {!! $attrs ?? '' !!} viewBox="-112 -112 224 224" aria-hidden="true">
     <circle r="110" fill="url(#ub-glow)"/>
     <g class="orn-wheel">
         <circle class="orn-line" r="97"/><circle class="orn-line" r="82"/>

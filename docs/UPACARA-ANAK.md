@@ -49,26 +49,28 @@ lebih dari satu upacara mendapat baris sendiri dengan slug berbeda dan
 
 ## Halaman
 
-Ada dua generasi desain. Tiga desain otonan (Oton Kencana, Sekar Cempaka,
-Purnama Alit) punya tata letak sendiri dengan ornamen Bali: lihat
-[Desain Berornamen](#desain-berornamen). Enam desain lainnya masih memakai
-satu halaman bersama yang hanya berbeda warna:
-
-`resources/views/invitations/templates/upacara-anak/page.blade.php` dengan
-`public/css/upacara-anak.css`. Isi: Om Swastyastu, nama upacara dan
-keterangannya, kata pembuka, buah hati (foto, nama, putra/putri, anak ke-,
+Isi tiap undangan: Om Swastyastu, nama upacara dan keterangannya, kata
+pembuka, simbol dan arti upacara, buah hati (foto, nama, putra/putri, anak ke-,
 tanggal lahir bila diisi) beserta nama ayah dan ibu, waktu dan tempat, peta,
 galeri, Tanda Kasih, dan penutup Om Shanti, Shanti, Shanti Om.
-
-## Desain Berornamen
 
 `upacara-anak/frame.blade.php` menyiapkan data, sampul pembuka, dan skrip, lalu
 memuat isi desain dari `upacara-anak/designs/<slug>.blade.php`. Gaya ada di
 `public/css/upacara-bali.css` (`.ub--<slug>`). Tiap desain menyusun bagiannya
 sendiri, jadi desain baru berarti berkas isi baru, bukan sekadar warna baru.
+Potongan yang sama di banyak desain ada di `upacara-anak/parts/` (judul, data
+buah hati, rincian acara, galeri, penutup).
+
+## Desain
 
 | Desain | Tata letak | Ornamen |
 | --- | --- | --- |
+| Rare Kencana | Simetris, krem dan emas; kartu bertepi ider-ider | Dua lamak janur menjuntai, bunga jepun, patra |
+| Sekar Jepun | Serba bundar, putih dan kuning; foto di tengah karangan | Karangan bunga dan daun jepun |
+| Langit Kumara | Rata kiri, langit biru lembut; kotak waktu dua kolom | Layangan bebean dengan ekornya, awan |
+| Nyambutin Kencana | Simetris, terakota hangat; waktu dalam tiga lajur | Gebogan, umbul-umbul, tembok bata merah |
+| Tunjung Petak | Tenang dan lapang, putih-hijau; bagian naik seperti riak | Kolam tunjung putih |
+| Surya Alit | Judul rata kiri, jingga pagi; tanggal dalam lingkaran matahari | Matahari terbit di samping Gunung Agung, meru, pohon kelapa, sawah |
 | Oton Kencana | Simetris, cahaya pagi di atas gading; tanggal berdiri di antara candi bentar | Candi bentar batu paras, tedung, banten, bunga jepun, bayangan daun, ider-ider, kain prada, patra |
 | Sekar Cempaka | Asimetris rata kiri, merah muda lembut; foto dan tanggal berbentuk lengkung | Penjor dengan sampian dan sanggah, canang sari, bunga jepun |
 | Purnama Alit | Langit senja di atas halaman terang; garis waktu; galeri geser | Roda pawukon, purnama, awan Kamasan, kain poleng |
@@ -77,20 +79,34 @@ Semuanya bernuansa lembut: latar terang, ornamen berisi gradasi dan bayangan
 halus alih-alih garis tegas, kartu putih berbayang.
 
 Ornamen digambar sebagai SVG di `upacara-anak/ornaments/`. Gradasi, filter
-bayangan, dan kelopak jepun yang dipakai bersama ada di
+bayangan, serta kelopak jepun dan tunjung yang dipakai bersama ada di
 `upacara-anak/parts/defs.blade.php`; ornamen merujuknya lewat atribut
 (`fill="url(#ub-stone)"`), bukan lewat CSS, supaya berlaku di semua browser.
 Benang tridatu dan kain poleng dibuat dengan CSS (`.ub-tridatu`, `.ub-poleng`).
 
-Ciri upacara: `CHILD_CEREMONIES[...]['meaning']` berisi satu kalimat tentang
-upacaranya, ditampilkan bersama benang tridatu; Purnama Alit juga menulis
-`30 wuku × 7 hari = 210 hari`.
+## Simbol Upacara
 
-Sampul pembuka memakai foto buah hati bila ada; bila tidak, ilustrasi
-`public/images/otonan-*.svg` dengan warna teks dan lapisan sendiri
-(`artText`, `artAccent`, `artShade` pada berkas desain). Ilustrasi itu disusun
-dari gambar ornamen yang sama, jadi bila ornamen diubah, buat ulang sampulnya
-dengan `python scripts/build-otonan-covers.py`.
+Desain dipakai bersama oleh beberapa upacara, jadi ciri upacara datang dari
+konfigurasi, bukan dari desain. `CHILD_CEREMONIES[...]['meaning']` berisi satu
+kalimat tentang upacaranya dan `['emblem']` menunjuk gambar
+`ornaments/emblem-<nama>.blade.php`; keduanya ditampilkan oleh
+`parts/meaning.blade.php` di setiap desain.
+
+| Upacara | Simbol | Kalimat |
+| --- | --- | --- |
+| Abulan pitung dina | `tirta`: sangku berisi tirta dan bunga jepun | Penyucian ibu dan buah hati pada umur 42 hari |
+| Tigang sasih | `tapak`: dua tapak kaki mungil | Umur tiga bulan Bali (105 hari), pertama kali menapak Ibu Pertiwi |
+| Otonan | `tridatu`: benang merah, putih, hitam | Hari kelahiran menurut pawukon, setiap 210 hari |
+
+Purnama Alit, yang khusus otonan, juga menulis `30 wuku × 7 hari = 210 hari`.
+
+## Sampul Pembuka
+
+Sampul memakai foto buah hati (atau foto galeri pertama) bila ada. Bila tidak,
+`frame.blade.php` merender `upacara-anak/covers/<slug>.blade.php`, yaitu
+ilustrasi dari ornamen yang sama dengan halamannya, dan menyisipkannya sebagai
+data URI. Warna teks dan lapisan untuk kedua keadaan ada di daftar pada awal
+`frame.blade.php`.
 
 ## Feed dan Gift
 
@@ -104,10 +120,14 @@ Backend:
 
 1. `Invitation::TYPES`, `Invitation::EVENT_TYPES`, dan
    `Invitation::CHILD_CEREMONIES` (`title`, `note`, `child_named`,
-   `age_days`, `numbered`).
+   `age_days`, `numbered`, `meaning`, `emblem`).
 2. Template pada `InvitationTemplateSeeder` dengan `invitation_type` baru.
-   Tema baru menambah berkas `upacara-anak/<slug>.blade.php` dan aturan
-   `.anak--<tema>` di CSS.
+3. Simbolnya: `meaning` dan `emblem` pada konfigurasi, serta gambar
+   `ornaments/emblem-<nama>.blade.php`.
+
+Desain baru: berkas `upacara-anak/<slug>.blade.php` (satu baris yang memuat
+`frame`), isi di `designs/`, sampul di `covers/`, aturan `.ub--<slug>` di CSS,
+dan warna sampul pada daftar di `frame.blade.php`.
 
 Mobile, semuanya di `mobile/src/constants/invitation.js`:
 

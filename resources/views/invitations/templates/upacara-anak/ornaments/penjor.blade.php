@@ -1,5 +1,5 @@
 {{-- Penjor: the curved bamboo pole with janur, its sampian hanging from the tip and the sanggah near the base. --}}
-<svg class="orn orn-penjor {{ $class ?? '' }}" viewBox="0 0 200 620" aria-hidden="true">
+<svg class="orn orn-penjor {{ $class ?? '' }}" {!! $attrs ?? '' !!} viewBox="0 0 200 620" aria-hidden="true">
     <g filter="url(#ub-soft)" fill="none" stroke-linecap="round">
         <path d="M172 620C172 520 171 440 170 380C168 260 164 160 130 90C108 46 60 30 34 70" stroke="#b99a5e" stroke-width="5.5"/>
         <path d="M172 620C172 520 171 440 170 380C168 260 164 160 130 90C108 46 60 30 34 70" stroke="#ecdcae" stroke-width="1.6"/>

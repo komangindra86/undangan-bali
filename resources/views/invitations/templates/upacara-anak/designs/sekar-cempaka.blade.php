@@ -15,12 +15,7 @@
     @include($ornaments.'jepun', ['class' => 'is-b'])
     @include($ornaments.'canang')
     <p>{{ $greeting }}</p>
-    @if($invitation->ceremony_meaning)
-        <div class="ub-meaning">
-            <span class="ub-tridatu" aria-hidden="true"></span>
-            <p><strong>{{ $invitation->ceremony_title }}</strong> · {{ $invitation->ceremony_meaning }}</p>
-        </div>
-    @endif
+    @include($parts.'meaning')
 </section>
 <section class="ub-section ub-child" data-reveal>
     @if($childPhoto)

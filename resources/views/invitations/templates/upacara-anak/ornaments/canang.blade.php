@@ -1,5 +1,5 @@
 {{-- Canang sari seen from above: flowers of four colours on a janur tray, shredded pandan in the middle. --}}
-<svg class="orn orn-canang {{ $class ?? '' }}" viewBox="-74 -74 148 148" aria-hidden="true">
+<svg class="orn orn-canang {{ $class ?? '' }}" {!! $attrs ?? '' !!} viewBox="-74 -74 148 148" aria-hidden="true">
     <g filter="url(#ub-soft)">
         <rect x="-60" y="-60" width="120" height="120" rx="14" fill="url(#ub-janur)" stroke="#b5aa58" stroke-width="1"/>
         <path d="M-60-22L-22-60M-60 18L18-60M-60 58L58-60M-22 60L60-22M18 60L60 18" fill="none" stroke="#a79c4e" stroke-width="1" opacity=".35"/>

@@ -1,5 +1,5 @@
 {{-- Banten otonan: a tumpeng with fruit and a flower on a dulang, with a janur fan behind. --}}
-<svg class="orn orn-banten {{ $class ?? '' }}" viewBox="0 0 120 124" aria-hidden="true">
+<svg class="orn orn-banten {{ $class ?? '' }}" {!! $attrs ?? '' !!} viewBox="0 0 120 124" aria-hidden="true">
     <g filter="url(#ub-soft)">
         <g transform="translate(60 88)" fill="url(#ub-janur)" stroke="#b9ae5c" stroke-width=".5">
             <path transform="rotate(-57)" d="M0 0C-5-22-4-48 0-66C4-48 5-22 0 0Z"/><path transform="rotate(-38)" d="M0 0C-5-22-4-48 0-70C4-48 5-22 0 0Z"/>

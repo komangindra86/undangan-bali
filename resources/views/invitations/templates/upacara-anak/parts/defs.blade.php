@@ -39,6 +39,32 @@
         <linearGradient id="ub-flower-yellow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe98f"/><stop offset="1" stop-color="#e5a90c"/></linearGradient>
         <linearGradient id="ub-flower-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9b8ee"/><stop offset="1" stop-color="#5063b3"/></linearGradient>
         <radialGradient id="ub-tray"><stop offset="0" stop-color="#fcf8da"/><stop offset="1" stop-color="#e6db95"/></radialGradient>
+        <linearGradient id="ub-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e6f5f8"/><stop offset="1" stop-color="#abd6e3"/></linearGradient>
+        <linearGradient id="ub-earth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ddb98a"/><stop offset="1" stop-color="#b98a58"/></linearGradient>
+        <linearGradient id="ub-leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#bcd99d"/><stop offset="1" stop-color="#6f9d58"/></linearGradient>
+        <linearGradient id="ub-lotus" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".7" stop-color="#fbfdf6"/><stop offset="1" stop-color="#dfecd0"/></linearGradient>
+        <radialGradient id="ub-sun"><stop offset="0" stop-color="#fffbe6"/><stop offset=".6" stop-color="#ffe2a3"/><stop offset="1" stop-color="#fbbf6a"/></radialGradient>
+        <radialGradient id="ub-sunglow"><stop offset=".3" stop-color="#ffdca0" stop-opacity=".7"/><stop offset="1" stop-color="#ffdca0" stop-opacity="0"/></radialGradient>
+        <linearGradient id="ub-mount" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b3a6cf"/><stop offset="1" stop-color="#e3d2dc"/></linearGradient>
+        <linearGradient id="ub-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".55" stop-color="#fff" stop-opacity=".8"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+        <linearGradient id="ub-hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8dca8"/><stop offset="1" stop-color="#9dbf7e"/></linearGradient>
+        <linearGradient id="ub-mega" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e1eef7"/></linearGradient>
+        <linearGradient id="ub-umbul" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7da"/><stop offset=".5" stop-color="#f8dd94"/><stop offset="1" stop-color="#eab95e"/></linearGradient>
+        <linearGradient id="ub-sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></linearGradient>
+        <g id="ub-tunjung" stroke="#cfdcc2" stroke-width=".7" stroke-linejoin="round">
+            <g fill="url(#ub-lotus)">
+                <path transform="rotate(-68)" d="M0 0C-13-20-12-54 0-78C12-54 13-20 0 0Z"/><path transform="rotate(68)" d="M0 0C-13-20-12-54 0-78C12-54 13-20 0 0Z"/>
+                <path transform="rotate(-45)" d="M0 0C-13-20-12-54 0-80C12-54 13-20 0 0Z"/><path transform="rotate(45)" d="M0 0C-13-20-12-54 0-80C12-54 13-20 0 0Z"/>
+                <path transform="rotate(-22)" d="M0 0C-13-20-12-54 0-82C12-54 13-20 0 0Z"/><path transform="rotate(22)" d="M0 0C-13-20-12-54 0-82C12-54 13-20 0 0Z"/>
+                <path d="M0 0C-13-20-12-54 0-84C12-54 13-20 0 0Z"/>
+            </g>
+            <ellipse cy="-20" rx="10" ry="6" fill="#f3d968" stroke="#d9b93e"/>
+            <g fill="#ffffff">
+                <path transform="rotate(-34) scale(.8)" d="M0 0C-13-20-12-54 0-78C12-54 13-20 0 0Z"/><path transform="rotate(34) scale(.8)" d="M0 0C-13-20-12-54 0-78C12-54 13-20 0 0Z"/>
+                <path transform="rotate(-12) scale(.74)" d="M0 0C-13-20-12-54 0-78C12-54 13-20 0 0Z"/><path transform="rotate(12) scale(.74)" d="M0 0C-13-20-12-54 0-78C12-54 13-20 0 0Z"/>
+            </g>
+        </g>
+        <clipPath id="ub-kite-clip"><path d="M0-58C34-50 62-20 60 14C42 8 20 22 12 44L0 30L-12 44C-20 22-42 8-60 14C-62-20-34-50 0-58Z"/></clipPath>
         <clipPath id="ub-gapura-clip"><path d="M150 320H38V304H50V282H44V270H60V246H54V234H70V208H64V196H80V168H74V156H90V128H85V118H100V92H96V82H112V60H108V52H126V34H134V20H150Z"/></clipPath>
         <filter id="ub-soft" x="-25%" y="-25%" width="150%" height="160%">
             <feGaussianBlur in="SourceAlpha" stdDeviation="3.2"/><feOffset dy="4"/><feComponentTransfer><feFuncA type="linear" slope=".2"/></feComponentTransfer>

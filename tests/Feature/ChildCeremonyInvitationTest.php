@@ -59,7 +59,8 @@ class ChildCeremonyInvitationTest extends TestCase
             ->assertSee('Buah Hati Wira &amp; Ayu', false)
             ->assertSee('I Made Wira Adnyana')->assertSee('Ni Putu Ayu Lestari')
             ->assertSee('Buah Hati dari pasangan')
-            ->assertSee('upacara-anak.css')
+            ->assertSee('upacara-bali.css')
+            ->assertSee('penyucian bagi ibu dan buah hati')->assertSee('orn-emblem')
             ->assertDontSee('Lahir');
     }
 
@@ -247,7 +248,45 @@ class ChildCeremonyInvitationTest extends TestCase
                 ->assertSee('kalender pawukon Bali')
                 ->assertSee('Tanda Kasih')->assertSee('Om Shanti, Shanti, Shanti Om');
         }
-        $this->get('/preview/templates/otonan-rare-kencana')->assertOk()->assertSee('upacara-anak.css')->assertDontSee('orn-gapura');
+        $this->get('/preview/templates/otonan-rare-kencana')->assertOk()->assertSee('ub--rare-kencana')->assertDontSee('orn-gapura');
+    }
+
+    public function test_every_design_has_its_own_ornament_and_shows_the_ceremony_emblem(): void
+    {
+        $designs = [
+            'rare-kencana' => 'orn-lamak', 'sekar-jepun' => 'orn-karangan', 'langit-kumara' => 'orn-layangan',
+            'nyambutin-kencana' => 'orn-gebogan', 'tunjung-petak' => 'orn-kolam', 'surya-alit' => 'orn-fajar',
+        ];
+        foreach ($designs as $slug => $ornament) {
+            // Without a photo the opening cover is the design's own illustration, embedded in the page.
+            $this->get('/preview/templates/'.$slug)->assertOk()
+                ->assertSee('ub--'.$slug)->assertSee($ornament)
+                ->assertSee('ub-cover-art')->assertSee('data:image/svg+xml;base64,', false)
+                ->assertSee('Tanda Kasih')->assertSee('Om Shanti, Shanti, Shanti Om');
+            foreach (array_diff($designs, [$ornament]) as $other) {
+                $this->get('/preview/templates/'.$slug)->assertDontSee($other);
+            }
+        }
+
+        // The emblem and the line about the ceremony follow the ceremony, whichever design is chosen.
+        $this->get('/preview/templates/rare-kencana')->assertSee('satu bulan Bali ditambah tujuh hari')->assertDontSee('ub-tridatu');
+        $this->get('/preview/templates/tigang-sasih-rare-kencana')->assertSee('menapak Ibu Pertiwi')->assertDontSee('ub-tridatu');
+        $this->get('/preview/templates/otonan-rare-kencana')->assertSee('kalender pawukon Bali')->assertSee('ub-tridatu');
+    }
+
+    public function test_a_child_photo_becomes_the_opening_cover(): void
+    {
+        Storage::fake('public');
+        $this->actingAs(User::factory()->create(), 'sanctum');
+        $id = $this->post('/api/invitations/sync-local-draft', $this->payload([]) + [
+            'child_photo' => UploadedFile::fake()->image('bayi.jpg'),
+        ], ['Accept' => 'application/json'])->assertCreated()->json('data.id');
+        $slug = $this->postJson("/api/invitations/{$id}/publish")->assertOk()->json('data.slug');
+
+        $this->get('/u/'.$slug)->assertOk()
+            ->assertSee(Invitation::findOrFail($id)->child_photo)
+            ->assertSee('ub-child-photo')
+            ->assertDontSee('ub-cover-art')->assertDontSee('data:image/svg+xml;base64,', false);
     }
 
     public function test_otonan_is_titled_by_the_child_name_and_may_carry_its_number(): void

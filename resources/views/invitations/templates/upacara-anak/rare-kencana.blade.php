@@ -1,1 +1,1 @@
-@include('invitations.templates.upacara-anak.page', ['anakTheme' => 'rare'])
+@include('invitations.templates.upacara-anak.frame', ['design' => 'rare-kencana'])

@@ -72,7 +72,7 @@ test('abulan pitung dina uses its own labels', () => {
   assert.deepEqual(Array.from(kit.eventTypesFor(draft)), ['Abulan Pitung Dina']);
   assert.equal(kit.occasionPhraseFor(draft), 'upacara abulan pitung dina (42 hari) buah hati kami');
   assert.equal(kit.templatePreviewFor(draft).names, 'Putra Wira & Ayu');
-  assert.equal(kit.templateCardColorsFor({ slug: 'langit-kumara' }).accent, '#236f77');
+  assert.equal(kit.templateCardColorsFor({ slug: 'langit-kumara' }).accent, '#1f6f78');
   assert.equal(kit.templatePreviewFor({ invitation_type: 'wedding' }), undefined);
 });
 
@@ -181,7 +181,7 @@ test('a design shared between ceremonies keeps its colours under another slug', 
 
   assert.equal(kit.templateDesignKey(shared), 'rare-kencana');
   assert.equal(kit.templateCardColorsFor(shared).accent, kit.templateCardColorsFor({ slug: 'rare-kencana' }).accent);
-  assert.equal(kit.templateCardColorsFor({ slug: 'surya-alit', blade_view: 'invitations.templates.upacara-anak.surya-alit' }).accent, '#ad4f17');
+  assert.equal(kit.templateCardColorsFor({ slug: 'surya-alit', blade_view: 'invitations.templates.upacara-anak.surya-alit' }).accent, '#a34a12');
   // Older servers that do not send blade_view still resolve by slug.
   assert.equal(kit.templateDesignKey({ slug: 'tunjung-petak' }), 'tunjung-petak');
 });
@@ -241,8 +241,8 @@ test('a new otonan draft preselects its event, and sync sends the number', async
   const draft = createEmptyDraft('otonan');
   assert.equal(draft.event_data.event_type, 'Otonan');
   assert.equal(draft.event_data.opening_quote, OTONAN_OPENING_QUOTE);
-  assert.equal(templateCardColorsFor({ slug: 'otonan-rare-kencana', blade_view: 'invitations.templates.upacara-anak.rare-kencana' }).accent, '#a8792c');
-  assert.equal(templateCardColorsFor({ slug: 'purnama-alit', blade_view: 'invitations.templates.upacara-anak.purnama-alit' }).accent, '#f3dc92');
+  assert.equal(templateCardColorsFor({ slug: 'otonan-rare-kencana', blade_view: 'invitations.templates.upacara-anak.rare-kencana' }).accent, '#8a5f1c');
+  assert.equal(templateCardColorsFor({ slug: 'purnama-alit', blade_view: 'invitations.templates.upacara-anak.purnama-alit' }).accent, '#5a4fa3');
 
   const templates = await api.templates('otonan');
   assert.match(requests[0].url, /invitation_type=otonan/);
