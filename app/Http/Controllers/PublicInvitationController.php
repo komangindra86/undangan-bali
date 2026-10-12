@@ -115,6 +115,22 @@ class PublicInvitationController extends Controller
                 'venue_address' => 'Banjar Tegal, Ubud, Gianyar, Bali',
             ]);
         }
+        if ($template->invitation_type === 'mepandes') {
+            $invitation->fill([
+                'invitation_type' => 'mepandes',
+                'family_mode' => 'single',
+                'participants' => [
+                    ['full_name' => 'Ni Luh Kirana Dewi', 'nickname' => 'Kirana', 'gender' => 'putri', 'age' => 19],
+                    ['full_name' => 'I Made Bagus Aditya', 'nickname' => 'Bagus', 'gender' => 'putra', 'age' => 17],
+                    ['full_name' => 'Ni Komang Dewi Lestari', 'nickname' => 'Dewi', 'gender' => 'putri', 'age' => 15],
+                ],
+                'opening_quote' => 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara Mepandes (potong gigi) putra-putri kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.',
+                'event_type' => 'Mepandes',
+                'event_date' => now()->addMonth()->startOfDay(),
+                'venue_name' => 'Kediaman Keluarga I Made Wira',
+                'venue_address' => 'Banjar Tegal, Ubud, Gianyar, Bali',
+            ]);
+        }
         $invitation->setRelation('template', $template);
         $invitation->setRelation('giftSetting', new WeddingGiftSetting([
             'is_active' => true,

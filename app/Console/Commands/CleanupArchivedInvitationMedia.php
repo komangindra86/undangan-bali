@@ -41,6 +41,7 @@ class CleanupArchivedInvitationMedia extends Command
                 $updates = [
                     ...array_fill_keys(Invitation::PHOTO_COLUMNS, null),
                     'gallery_photos' => null,
+                    'participants' => $invitation->participantsWithoutPhotos(),
                     'music_file' => null,
                     'media_deleted_at' => now(),
                 ];

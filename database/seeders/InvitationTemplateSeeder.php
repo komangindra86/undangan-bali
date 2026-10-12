@@ -145,5 +145,18 @@ class InvitationTemplateSeeder extends Seeder
                 'is_premium' => false,
             ]);
         }
+
+        // Mepandes has designs of its own, drawn for young adults rather than babies; they use the ceremony frame.
+        foreach (['bale-gading' => 'Bale Gading', 'sekar-emas' => 'Sekar Emas', 'wastra-songket' => 'Wastra Songket'] as $slug => $name) {
+            InvitationTemplate::updateOrCreate(['slug' => $slug], [
+                'name' => $name,
+                'invitation_type' => 'mepandes',
+                'thumbnail' => null,
+                'preview_image' => null,
+                'blade_view' => 'invitations.templates.upacara-anak.'.$slug,
+                'is_active' => true,
+                'is_premium' => false,
+            ]);
+        }
     }
 }

@@ -8,7 +8,7 @@ class Invitation extends Model
 {
     public const RETENTION_EXEMPT_SLUG_PREFIXES = ['preview-', 'demo-'];
 
-    public const TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih', 'otonan'];
+    public const TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih', 'otonan', 'mepandes'];
 
     public const EVENT_TYPES = [
         'wedding' => ['Pawiwahan', 'Resepsi'],
@@ -17,6 +17,7 @@ class Invitation extends Model
         'pitung_dina' => ['Abulan Pitung Dina'],
         'tigang_sasih' => ['Tigang Sasih'],
         'otonan' => ['Otonan'],
+        'mepandes' => ['Mepandes'],
     ];
 
     /**
@@ -47,6 +48,21 @@ class Invitation extends Model
         ],
     ];
 
+    /**
+     * Mepandes (potong gigi) is held for one or several people, listed in `participants`: each has full_name,
+     * nickname, gender, age and photo. With family_mode "single" they share the parents in groom_* and bride_*;
+     * with "multi" each participant carries father_name and mother_name, and host_name says who invites.
+     */
+    public const MEPANDES = [
+        'title' => 'Mepandes', 'note' => 'Potong Gigi',
+        'meaning' => 'Upacara potong gigi sebagai tanda beranjak dewasa, lambang mengendalikan enam musuh dalam diri (sad ripu).',
+        'emblem' => 'sadripu',
+    ];
+
+    public const FAMILY_MODES = ['single', 'multi'];
+
+    public const MAX_PARTICIPANTS = 10;
+
     public const PHOTO_COLUMNS = ['groom_photo', 'bride_photo', 'celebrant_photo', 'child_photo'];
 
     public const MUSIC_RIGHTS_TERMS_VERSION = '2026-09-01';
@@ -70,6 +86,8 @@ class Invitation extends Model
         'child_birth_date',
         'child_photo',
         'ceremony_number',
+        'family_mode',
+        'participants',
         'feed_consent_at',
         'user_id',
         'template_id',
@@ -123,6 +141,7 @@ class Invitation extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'gallery_photos' => 'array',
+            'participants' => 'array',
             'is_hidden_from_feed' => 'boolean',
             'celebrant_age' => 'integer',
             'ceremony_number' => 'integer',
@@ -155,12 +174,30 @@ class Invitation extends Model
         return isset(self::CHILD_CEREMONIES[$this->invitation_type]);
     }
 
+    public function isMepandes(): bool
+    {
+        return $this->invitation_type === 'mepandes';
+    }
+
+    public function isMultiFamily(): bool
+    {
+        return $this->family_mode === 'multi';
+    }
+
     /**
-     * "Abulan Pitung Dina" for child ceremonies, null for other types.
+     * Title, note, meaning and emblem of the ceremony, for the types rendered by the ceremony pages.
+     */
+    private function ceremony(): ?array
+    {
+        return $this->isMepandes() ? self::MEPANDES : (self::CHILD_CEREMONIES[$this->invitation_type] ?? null);
+    }
+
+    /**
+     * "Abulan Pitung Dina" or "Mepandes"; null for types that are not a ceremony.
      */
     public function getCeremonyTitleAttribute(): ?string
     {
-        return self::CHILD_CEREMONIES[$this->invitation_type]['title'] ?? null;
+        return $this->ceremony()['title'] ?? null;
     }
 
     /**
@@ -169,7 +206,7 @@ class Invitation extends Model
     public function getCeremonyNoteAttribute(): ?string
     {
         if (! $this->isNumberedCeremony()) {
-            return self::CHILD_CEREMONIES[$this->invitation_type]['note'] ?? null;
+            return $this->ceremony()['note'] ?? null;
         }
 
         return match (true) {
@@ -181,12 +218,12 @@ class Invitation extends Model
 
     public function getCeremonyMeaningAttribute(): ?string
     {
-        return self::CHILD_CEREMONIES[$this->invitation_type]['meaning'] ?? null;
+        return $this->ceremony()['meaning'] ?? null;
     }
 
     public function getCeremonyEmblemAttribute(): ?string
     {
-        return self::CHILD_CEREMONIES[$this->invitation_type]['emblem'] ?? null;
+        return $this->ceremony()['emblem'] ?? null;
     }
 
     /**
@@ -202,7 +239,7 @@ class Invitation extends Model
      */
     public function getCeremonyPhraseAttribute(): ?string
     {
-        if (! $this->isChildCeremony()) {
+        if (! $this->ceremony()) {
             return null;
         }
 
@@ -230,6 +267,10 @@ class Invitation extends Model
      */
     public function getChildRelationAttribute(): ?string
     {
+        if ($this->isMepandes()) {
+            return $this->participantRelation();
+        }
+
         if (! $this->titledByChildName()) {
             return null;
         }
@@ -245,10 +286,64 @@ class Invitation extends Model
         return ['putra' => 'Putra', 'putri' => 'Putri'][$this->child_gender] ?? 'Buah Hati';
     }
 
+    /**
+     * The people a mepandes is held for, in the order they were entered.
+     */
+    public function getParticipantListAttribute(): array
+    {
+        return array_values($this->participants ?? []);
+    }
+
+    /**
+     * Their nicknames as a title: "Kirana", "Kirana & Bagus", "Kirana, Bagus & Dewi", then "Kirana, Bagus & 3 lainnya".
+     */
+    private function participantNames(): string
+    {
+        $names = array_values(array_filter(array_column($this->participant_list, 'nickname')));
+
+        return match (true) {
+            $names === [] => 'Yang Mepandes',
+            count($names) === 1 => $names[0],
+            count($names) <= 3 => implode(', ', array_slice($names, 0, -1)).' & '.end($names),
+            default => $names[0].', '.$names[1].' & '.(count($names) - 2).' lainnya',
+        };
+    }
+
+    /**
+     * Under a mepandes title: "Putra-putri dari Wira & Ayu" for one family, the host's name for several.
+     */
+    private function participantRelation(): ?string
+    {
+        if ($this->isMultiFamily()) {
+            return $this->host_name;
+        }
+
+        $genders = array_unique(array_column($this->participant_list, 'gender'));
+        $label = match (true) {
+            $genders === ['putra'] => 'Putra',
+            $genders === ['putri'] => 'Putri',
+            count($this->participant_list) > 1 => 'Putra-putri',
+            default => 'Ananda',
+        };
+
+        return $label.' dari '.($this->groom_nickname ?: 'Ayah').' & '.($this->bride_nickname ?: 'Ibu');
+    }
+
+    /**
+     * The participants with their photos removed, for when an archived invitation's media is cleaned up.
+     */
+    public function participantsWithoutPhotos(): ?array
+    {
+        return $this->participants === null
+            ? null
+            : array_map(fn (array $participant) => ['photo' => null] + $participant, $this->participant_list);
+    }
+
     public function getDisplayNameAttribute(): string
     {
         return match (true) {
             $this->isBirthday() => $this->celebrant_nickname ?: 'Yang berulang tahun',
+            $this->isMepandes() => $this->participantNames(),
             $this->titledByChildName() => $this->child_nickname,
             // Without a child name the title names the parents: "Putra Wira & Ayu".
             $this->isChildCeremony() => $this->child_label.' '.($this->groom_nickname ?: 'Ayah').' & '.($this->bride_nickname ?: 'Ibu'),
@@ -262,7 +357,7 @@ class Invitation extends Model
     {
         return match (true) {
             $this->isBirthday() => 'Kado Digital',
-            $this->isMegedong(), $this->isChildCeremony() => 'Tanda Kasih',
+            $this->isMegedong(), $this->isChildCeremony(), $this->isMepandes() => 'Tanda Kasih',
             default => 'Wedding Gift',
         };
     }
@@ -275,6 +370,7 @@ class Invitation extends Model
         return match (true) {
             $this->isBirthday() => 'perayaan ulang tahun '.$this->display_name,
             $this->isMegedong() => 'upacara megedong-gedongan kami',
+            $this->isMepandes() => 'upacara '.$this->ceremony_phrase.' '.$this->display_name,
             $this->isChildCeremony() => 'upacara '.$this->ceremony_phrase.' buah hati kami'
                 .($this->titledByChildName() ? ', '.$this->child_nickname : ''),
             default => 'acara pernikahan kami',
@@ -289,7 +385,7 @@ class Invitation extends Model
         return match (true) {
             $this->isBirthday() => 'Selamat datang di perayaan',
             $this->isMegedong() => 'Upacara Megedong-gedongan',
-            $this->isChildCeremony() => 'Upacara '.$this->ceremony_title,
+            $this->isChildCeremony(), $this->isMepandes() => 'Upacara '.$this->ceremony_title,
             default => 'The Wedding of',
         };
     }
@@ -300,12 +396,13 @@ class Invitation extends Model
             $this->isBirthday() => 'Doa dan ucapan ulang tahun',
             $this->isMegedong() => 'Doa untuk ibu dan calon buah hati',
             $this->isChildCeremony() => 'Doa untuk si buah hati',
+            $this->isMepandes() => 'Doa untuk yang mepandes',
             default => 'Doa dan ucapan untuk mempelai',
         };
     }
 
     /**
-     * Every file this invitation uploaded: photos, gallery and custom music.
+     * Every file this invitation uploaded: photos, gallery, participants' photos and custom music.
      */
     public function uploadedMediaPaths(): array
     {
@@ -313,6 +410,7 @@ class Invitation extends Model
             ...array_map(fn (string $column) => $this->{$column}, self::PHOTO_COLUMNS),
             $this->music_file,
             ...($this->gallery_photos ?? []),
+            ...array_column($this->participant_list, 'photo'),
         ]));
     }
 

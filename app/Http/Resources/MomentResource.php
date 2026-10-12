@@ -23,6 +23,7 @@ class MomentResource extends JsonResource
             'names' => match (true) {
                 $this->isBirthday() => $this->safeDisplayText($this->celebrant_nickname) ?: 'Yang berulang tahun',
                 $this->isMegedong() => $brideNickname.' & '.$groomNickname,
+                $this->isMepandes() => $this->safeDisplayText($this->display_name) ?: 'Yang Mepandes',
                 $this->isChildCeremony() && $this->requiresChildName() && $this->safeDisplayText($this->child_nickname) => $this->safeDisplayText($this->child_nickname),
                 $this->isChildCeremony() => $this->child_label.' '.$groomNickname.' & '.$brideNickname,
                 default => $groomNickname.' & '.$brideNickname,
@@ -53,6 +54,7 @@ class MomentResource extends JsonResource
             ->merge(match (true) {
                 $this->isBirthday() => [$this->celebrant_photo],
                 $this->isChildCeremony() => [$this->child_photo],
+                $this->isMepandes() => array_column($this->participant_list, 'photo'),
                 default => [$this->groom_photo, $this->bride_photo],
             })
             ->filter()

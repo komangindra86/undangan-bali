@@ -1,16 +1,18 @@
 @php
-    // Frame for every child ceremony design: $design names the body under designs/ and the cover under covers/.
+    // Frame for every ceremony design (child ceremonies and mepandes): $design names the body under designs/
+    // and the cover under covers/.
     $isPreview = $isPreview ?? false;
     $childPhoto = $invitation->child_photo ? Storage::url($invitation->child_photo) : null;
     $musicPath = $invitation->music_type === 'default' ? $invitation->music?->file_path : ($invitation->music_type === 'upload' ? $invitation->music_file : null);
     $gallery = $invitation->gallery_photos ?? [];
     $ceremonyName = 'Upacara '.$invitation->ceremony_title;
     $shareText = 'Kepada Yth. Bapak/Ibu/Saudara/i, kami mengundang untuk hadir di '.$invitation->occasion_phrase.'. Buka undangan: '.url()->full();
-    $parents = $invitation->groom_nickname.' & '.$invitation->bride_nickname;
-    $greeting = $invitation->opening_quote ?: 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan '.mb_strtolower($ceremonyName).' bagi buah hati kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.';
+    // Who signs the closing: the parents, or with several families the host named for the mepandes.
+    $parents = $invitation->isMultiFamily() ? $invitation->host_name : $invitation->groom_nickname.' & '.$invitation->bride_nickname;
+    $greeting = $invitation->opening_quote ?: 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan '.mb_strtolower($ceremonyName).($invitation->isMepandes() ? ' putra-putri kami' : ' bagi buah hati kami').'. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.';
     $timeText = substr((string) $invitation->start_time, 0, 5).($invitation->end_time ? ' - '.substr($invitation->end_time, 0, 5) : '').' WITA';
     $childLine = $invitation->child_label.($invitation->child_order ? ' · '.$invitation->child_order : '').' dari pasangan';
-    $galleryLabel = $invitation->isNumberedCeremony() ? 'Momen berharga' : 'Hari-hari pertama';
+    $galleryLabel = $invitation->isChildCeremony() && ! $invitation->isNumberedCeremony() ? 'Hari-hari pertama' : 'Momen berharga';
     $ornaments = 'invitations.templates.upacara-anak.ornaments.';
     $parts = 'invitations.templates.upacara-anak.parts.';
 
@@ -26,8 +28,12 @@
         'oton-kencana' => ['#e9c877', 'rgba(52, 36, 14, .56)', '#7a5210', '#4b3a26', 'rgba(255, 250, 238, .16)'],
         'sekar-cempaka' => ['#f8cdd7', 'rgba(72, 28, 46, .56)', '#a8456a', '#55323d', 'rgba(255, 246, 247, .16)'],
         'purnama-alit' => ['#f6e6ad', 'rgba(22, 22, 56, .58)', '#f6e6ad', '#fffaf0', 'rgba(22, 22, 56, .2)'],
+        'bale-gading' => ['#ecd08a', 'rgba(48, 36, 14, .6)', '#7a5510', '#45371f', 'rgba(255, 251, 240, .14)'],
+        'sekar-emas' => ['#f3d9a4', 'rgba(60, 32, 24, .58)', '#8f5226', '#4f3530', 'rgba(255, 248, 242, .16)'],
+        'wastra-songket' => ['#ecd08a', 'rgba(46, 22, 40, .6)', '#7a3f68', '#3f2a3a', 'rgba(250, 244, 248, .16)'],
     ][$design];
-    $coverPhoto = $childPhoto ?: (count($gallery) ? Storage::url($gallery[0]) : null);
+    $firstPhoto = $invitation->child_photo ?: (collect($invitation->participant_list)->pluck('photo')->filter()->first() ?: ($gallery[0] ?? null));
+    $coverPhoto = $firstPhoto ? Storage::url($firstPhoto) : null;
     $coverArt = $coverPhoto ? null : 'data:image/svg+xml;base64,'.base64_encode(view('invitations.templates.upacara-anak.covers.'.$design, compact('ornaments', 'parts'))->render());
 @endphp
 <!doctype html>

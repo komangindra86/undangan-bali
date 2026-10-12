@@ -18,7 +18,7 @@ class StoreInvitationRequest extends FormRequest
         $this->replace($this->trimStrings($this->all()));
 
         $nested = [];
-        $groups = ['groom_data', 'bride_data', 'birthday_data', 'megedong_data', 'child_data', 'event_data', 'location_data', 'music_data'];
+        $groups = ['groom_data', 'bride_data', 'birthday_data', 'megedong_data', 'child_data', 'mepandes_data', 'event_data', 'location_data', 'music_data'];
 
         foreach ($groups as $group) {
             if (is_array($this->input($group))) {
@@ -88,6 +88,7 @@ class StoreInvitationRequest extends FormRequest
         $safeText = ['nullable', 'string', 'not_regex:/[<>]/'];
         $type = $this->input('invitation_type');
         $birthday = $type === 'birthday';
+        $mepandes = $type === 'mepandes';
         $notChildCeremony = Rule::excludeIf(! isset(Invitation::CHILD_CEREMONIES[$type]));
 
         return [
@@ -100,7 +101,7 @@ class StoreInvitationRequest extends FormRequest
             'celebrant_nickname' => ['exclude_unless:invitation_type,birthday', ...$nickname],
             'celebrant_age' => ['exclude_unless:invitation_type,birthday', 'nullable', 'integer', 'between:1,150'],
             'celebrant_photo' => ['exclude_unless:invitation_type,birthday', 'nullable', 'image', 'max:4096'],
-            'host_name' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:80'],
+            'host_name' => [Rule::excludeIf(! $birthday && ! $mepandes), ...$safeText, 'max:80'],
             'event_title' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:120'],
             'dress_code' => ['exclude_unless:invitation_type,birthday', ...$safeText, 'max:80'],
             'pregnancy_age' => ['exclude_unless:invitation_type,megedong', ...$safeText, 'max:40'],
@@ -111,6 +112,21 @@ class StoreInvitationRequest extends FormRequest
             'child_birth_date' => [$notChildCeremony, 'nullable', 'date', 'before_or_equal:today'],
             'child_photo' => [$notChildCeremony, 'nullable', 'image', 'max:4096'],
             'ceremony_number' => [Rule::excludeIf(! (Invitation::CHILD_CEREMONIES[$type]['numbered'] ?? false)), 'nullable', 'integer', 'between:1,200'],
+            // Mepandes: who it is held for. Other types never store these.
+            'family_mode' => [Rule::excludeIf(! $mepandes), 'nullable', Rule::in(Invitation::FAMILY_MODES)],
+            'participants' => [Rule::excludeIf(! $mepandes), 'nullable', 'array', 'max:'.Invitation::MAX_PARTICIPANTS],
+            ...($mepandes ? [
+                'participants.*.full_name' => $name,
+                'participants.*.nickname' => $nickname,
+                'participants.*.gender' => ['nullable', Rule::in(['putra', 'putri'])],
+                'participants.*.age' => ['nullable', 'integer', 'between:1,120'],
+                'participants.*.father_name' => $name,
+                'participants.*.mother_name' => $name,
+                'participants.*.photo_path' => ['nullable', 'string', 'max:255'],
+                'participant_photos' => ['nullable', 'array'],
+                'participant_photos.*' => ['image', 'max:4096'],
+                'participant_photos_changed' => ['nullable', 'boolean'],
+            ] : []),
             'music_id' => [
                 'nullable',
                 'required_if:music_type,default',
@@ -176,6 +192,15 @@ class StoreInvitationRequest extends FormRequest
             'child_gender' => 'putra/putri',
             'child_birth_date' => 'tanggal lahir',
             'child_photo' => 'foto buah hati',
+            'family_mode' => 'pilihan keluarga',
+            'participants' => 'daftar yang mepandes',
+            'participants.*.full_name' => 'nama lengkap yang mepandes',
+            'participants.*.nickname' => 'nama panggilan yang mepandes',
+            'participants.*.gender' => 'putra/putri',
+            'participants.*.age' => 'usia',
+            'participants.*.father_name' => 'nama ayah',
+            'participants.*.mother_name' => 'nama ibu',
+            'participant_photos.*' => 'foto yang mepandes',
             'ceremony_number' => 'urutan upacara',
             'template_id' => 'template',
             'groom_full_name' => 'nama lengkap mempelai pria',

@@ -309,6 +309,64 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .ub--surya-alit .ub-closing { padding-top:0; }
 .ub--surya-alit .orn-fajar.is-closing { width:calc(100% + 56px); max-width:none; margin:0 -28px 24px; }
 
+/* Mepandes: the people it is held for, shared by its three designs. */
+.ub-people { display:grid; gap:16px; margin:22px 0 0; padding:0; list-style:none; }
+.ub-person h3 { margin:0; font:500 20px/1.35 Georgia,serif; overflow-wrap:anywhere; }
+.ub-person-line,.ub-person-parents { margin:4px 0 0; color:var(--muted); font-size:14px; line-height:1.55; }
+.ub-person-photo { display:grid; place-items:center; flex:none; object-fit:cover; background:linear-gradient(160deg,var(--panel),var(--tint)); color:var(--accent); font:500 34px/1 Georgia,serif; }
+.ub-people-parents { display:grid; margin:26px 0 0; font:18px/1.55 Georgia,serif; }
+.ub-people-parents span { color:var(--muted); font:14px/1.6 Arial,sans-serif; }
+.ub-people-parents strong { font-weight:500; }
+.ub-people-parents em { color:var(--accent); font-style:normal; }
+
+/* Bale Gading: ivory and gold, symmetric; the bale where the mepandes is held stands under the title. */
+.ub--bale-gading { --out:#efe7d2; --bg:#fcf8ee; --panel:#fffdf8; --tint:#f6ecd2; --ink:#45371f; --muted:#6b5b40; --accent:#7a5510; --on-accent:#fff; --line:#b98d3a4d; --orn:#c2a05a; --shadow:#8a5d1424; }
+.ub--bale-gading .ub-hero { position:relative; text-align:center; padding:62px 24px 0; overflow:hidden; background:radial-gradient(ellipse at 50% 22%,#fffef9 0,#fbf2dd 58%,#f0dfb9 100%); }
+.ub--bale-gading .orn-bayang { position:absolute; top:-30px; right:-90px; width:300px; color:#7a6238; opacity:.12; filter:blur(5px); transform:scaleX(-1); }
+.ub--bale-gading .ub-hero > p,.ub--bale-gading .ub-hero > h1 { position:relative; }
+.ub--bale-gading .ub-hero .orn-bale { position:relative; width:min(330px,92%); margin:26px auto 0; }
+.ub--bale-gading .ub-page h1 { color:#6f4c0e; }
+.ub--bale-gading .ub-greeting { background:var(--panel); }
+.ub--bale-gading .ub-meaning { padding-top:26px; border-top:1px solid var(--line); }
+.ub--bale-gading .ub-person { padding:26px 18px; background:var(--panel); border:1px solid var(--line); border-radius:24px; box-shadow:0 16px 40px var(--shadow); }
+.ub--bale-gading .ub-person-photo { width:124px; height:124px; margin:0 auto 16px; border-radius:50%; border:4px solid #fff; box-shadow:0 0 0 1px var(--line),0 12px 26px var(--shadow); }
+.ub--bale-gading .ub-event { padding:32px 20px 36px; }
+.ub--bale-gading .orn-bale.is-closing { width:170px; margin:0 auto 20px; }
+
+/* Sekar Emas: champagne and bronze, soft and festive; a crown of golden flowers fans out over the title. */
+.ub--sekar-emas { --out:#f1e3da; --bg:#fff9f4; --panel:#ffffff; --tint:#fbe9dc; --ink:#4f3530; --muted:#775850; --accent:#8f5226; --on-accent:#fff; --line:#c9925a4d; --orn:#d7b05a; --shadow:#8f52261f; }
+.ub--sekar-emas .ub-hero { text-align:center; padding:58px 24px 50px; background:radial-gradient(circle at 12% 14%,#ffffffd9 0,#ffffff00 90px),radial-gradient(circle at 88% 58%,#fbdcc4b3 0,#fbdcc400 120px),linear-gradient(180deg,#fbe6d6,#fff9f4 80%); }
+.ub--sekar-emas .ub-hero .orn-sekar-emas { width:min(310px,88%); margin:22px auto 18px; }
+.ub--sekar-emas .ub-page h1 { color:var(--accent); }
+.ub--sekar-emas .ub-meaning { padding:24px 22px; border-radius:28px; background:#fdf0e6; }
+.ub--sekar-emas .ub-people { grid-template-columns:1fr 1fr; gap:14px; }
+.ub--sekar-emas .ub-people > :last-child:nth-child(odd) { grid-column:1/-1; justify-self:center; width:calc(50% - 7px); }
+.ub--sekar-emas .ub-person { padding:10px 10px 18px; background:var(--panel); border-radius:90px 90px 22px 22px; box-shadow:0 14px 34px var(--shadow); }
+.ub--sekar-emas .ub-person-photo { width:100%; aspect-ratio:3/4; margin-bottom:12px; border-radius:80px 80px 14px 14px; }
+.ub--sekar-emas .ub-person h3 { font-size:17px; }
+.ub--sekar-emas .ub-person-line,.ub--sekar-emas .ub-person-parents { font-size:13px; }
+.ub--sekar-emas .ub-gallery img,.ub--sekar-emas .ub-placeholder { border-radius:28px; }
+.ub--sekar-emas .orn-sekar-emas.is-closing { width:190px; margin:0 auto 18px; }
+
+/* Wastra Songket: plum and gold, left-aligned and modern; bands of songket cloth frame the page. */
+.ub--wastra-songket { --out:#e9dfe6; --bg:#faf6f9; --panel:#ffffff; --tint:#f1e2ec; --ink:#3f2a3a; --muted:#6a5262; --accent:#7a3f68; --on-accent:#fff; --line:#7a3f6833; --orn:#c9a04e; --shadow:#7a3f681f; }
+/* Songket: gold diamonds woven into plum cloth, shaded like a fold, with a gold selvedge. */
+.ub-songket { height:132px; border-bottom:7px solid #e9c877; background:linear-gradient(90deg,#ffffff00,#ffffff38 20%,#00000024 45%,#ffffff29 70%,#0000001a),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%237a4168'/%3E%3Cg fill='none' stroke='%23e9c877' stroke-width='1.2'%3E%3Cpath d='M20 6l14 14-14 14-14-14z'/%3E%3Cpath d='M20 13l7 7-7 7-7-7z'/%3E%3C/g%3E%3Cg fill='%23e9c877'%3E%3Ccircle cx='20' cy='20' r='1.6'/%3E%3Ccircle r='2'/%3E%3Ccircle cx='40' r='2'/%3E%3Ccircle cy='40' r='2'/%3E%3Ccircle cx='40' cy='40' r='2'/%3E%3C/g%3E%3C/svg%3E"); }
+.ub-songket.is-foot { height:64px; border-bottom:0; border-top:7px solid #e9c877; }
+.ub--wastra-songket .ub-hero { background:linear-gradient(180deg,#f3e6ef,#faf6f9); }
+.ub--wastra-songket .ub-hero-text { padding:40px 28px 44px; text-align:left; }
+.ub--wastra-songket .ub-page h1 { color:var(--accent); }
+.ub--wastra-songket .ub-section { text-align:left; }
+.ub--wastra-songket .ub-greeting > p { margin:0; }
+.ub--wastra-songket .ub-meaning { display:flex; gap:16px; align-items:center; max-width:none; padding:18px; border-radius:18px; background:var(--tint); }
+.ub--wastra-songket .ub-meaning .orn-emblem { flex:none; width:64px; margin:0; }
+.ub--wastra-songket .ub-people { gap:12px; }
+.ub--wastra-songket .ub-person { display:flex; gap:16px; align-items:center; padding:14px 16px; background:var(--panel); border-left:5px solid #b98aa8; border-radius:8px 22px 22px 8px; box-shadow:0 12px 30px var(--shadow); }
+.ub--wastra-songket .ub-person-photo { width:82px; height:82px; border-radius:20px; }
+.ub--wastra-songket .ub-button { border-radius:12px; }
+.ub--wastra-songket .ub-closing { text-align:center; padding-bottom:70px; }
+.ub--wastra-songket .ub-closing .orn-emblem { width:78px; margin:0 auto 16px; }
+
 .ub .is-revealed { animation:ub-reveal .7s ease both; }
 @keyframes ub-reveal { from { opacity:.45; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
 @media(max-width:360px) { .ub-section { padding-inline:18px; } .ub-timeline { margin-inline:26px 18px; } }

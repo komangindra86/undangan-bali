@@ -151,6 +151,9 @@ class MomentController extends Controller
             ->where(function ($query) {
                 $query->where(function ($wedding) {
                     $wedding->whereIn('invitation_type', ['wedding', 'megedong', ...array_keys(Invitation::CHILD_CEREMONIES)])->whereNotNull('groom_nickname')->whereNotNull('bride_nickname');
+                })->orWhere(function ($mepandes) {
+                    // Several families have no shared parents, so a mepandes is listed by its participants.
+                    $mepandes->where('invitation_type', 'mepandes')->whereNotNull('participants');
                 })->orWhere(function ($birthday) {
                     $birthday->where('invitation_type', 'birthday')->whereNotNull('celebrant_nickname')->whereNotNull('feed_consent_at');
                 });

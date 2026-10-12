@@ -50,6 +50,7 @@
         <linearGradient id="ub-hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8dca8"/><stop offset="1" stop-color="#9dbf7e"/></linearGradient>
         <linearGradient id="ub-mega" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e1eef7"/></linearGradient>
         <linearGradient id="ub-umbul" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff7da"/><stop offset=".5" stop-color="#f8dd94"/><stop offset="1" stop-color="#eab95e"/></linearGradient>
+        <linearGradient id="ub-thatch" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3c690"/><stop offset="1" stop-color="#b08a52"/></linearGradient>
         <linearGradient id="ub-sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></linearGradient>
         <g id="ub-tunjung" stroke="#cfdcc2" stroke-width=".7" stroke-linejoin="round">
             <g fill="url(#ub-lotus)">
