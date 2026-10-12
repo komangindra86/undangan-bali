@@ -6,7 +6,7 @@ const { test } = require('node:test');
 const { transformSync } = require('@babel/core');
 
 function harness(responseFor = (url) => ({ data: url.includes('/templates?') ? [
-  { id: 1, invitation_type: 'wedding' }, { id: 6, invitation_type: 'birthday' }, { id: 9, invitation_type: 'megedong' }, { id: 12, invitation_type: 'pitung_dina' },
+  { id: 1, invitation_type: 'wedding' }, { id: 6, invitation_type: 'birthday' }, { id: 9, invitation_type: 'megedong' }, { id: 12, invitation_type: 'pitung_dina' }, { id: 15, invitation_type: 'tigang_sasih' },
 ] : { id: 42 } })) {
   const storage = new Map();
   const requests = [];
@@ -80,7 +80,7 @@ test('the type picker lists every invitation type once, in order', () => {
   const { load } = harness();
   const { INVITATION_CHOICES } = load('src/constants/invitation.js');
 
-  assert.deepEqual(Array.from(INVITATION_CHOICES, (choice) => choice.type), ['wedding', 'birthday', 'megedong', 'pitung_dina']);
+  assert.deepEqual(Array.from(INVITATION_CHOICES, (choice) => choice.type), ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih']);
   assert.equal(INVITATION_CHOICES[3].title, 'Abulan Pitung Dina (42 Hari)');
   assert.ok(Array.from(INVITATION_CHOICES).every((choice) => choice.icon && choice.title && choice.body));
 });
@@ -144,4 +144,53 @@ test('abulan pitung dina template catalog is requested and filtered by its own t
     legacy.load('src/services/api.js').api.templates('pitung_dina'),
     /Template abulan pitung dina belum tersedia di server/,
   );
+});
+
+test('tigang sasih is titled by the child name and falls back to the parents', () => {
+  const { load } = harness();
+  const kit = load('src/constants/invitation.js');
+  const parents = { invitation_type: 'tigang_sasih', groom_data: { groom_nickname: 'Wira' }, bride_data: { bride_nickname: 'Ayu' } };
+
+  assert.equal(kit.requiresChildName(parents), true);
+  assert.equal(kit.requiresChildName({ invitation_type: 'pitung_dina' }), false);
+  assert.equal(kit.invitationName({ ...parents, child_data: { child_nickname: 'Kirana', child_gender: 'putri' } }), 'Kirana');
+  assert.equal(kit.invitationName({ ...parents, child_data: { child_gender: 'putri' } }), 'Putri Wira & Ayu');
+  assert.equal(kit.invitationName({ invitation_type: 'tigang_sasih', child_nickname: 'Kirana', groom_nickname: 'Wira', bride_nickname: 'Ayu' }), 'Kirana');
+  // Abulan pitung dina keeps the parents-based title even when a nickname was entered.
+  assert.equal(kit.invitationName({ ...parents, invitation_type: 'pitung_dina', child_data: { child_nickname: 'Kirana' } }), 'Buah Hati Wira & Ayu');
+});
+
+test('tigang sasih uses its own labels and names the child in the share text', () => {
+  const { load } = harness();
+  const kit = load('src/constants/invitation.js');
+  const draft = { invitation_type: 'tigang_sasih', child_data: { child_nickname: 'Kirana' } };
+
+  assert.equal(kit.giftLabelFor(draft), 'Tanda Kasih');
+  assert.equal(kit.personScreenFor(draft), 'ChildCeremonyForm');
+  assert.equal(kit.typeLabelFor(draft), 'tigang sasih');
+  assert.deepEqual(Array.from(kit.eventTypesFor(draft)), ['Tigang Sasih']);
+  assert.equal(kit.occasionPhraseFor(draft), 'upacara tigang sasih (3 bulanan) buah hati kami, Kirana');
+  assert.equal(kit.occasionPhraseFor({ invitation_type: 'tigang_sasih' }), 'upacara tigang sasih (3 bulanan) buah hati kami');
+  assert.equal(kit.templatePreviewFor(draft).names, 'Kirana');
+});
+
+test('a design shared between ceremonies keeps its colours under another slug', () => {
+  const { load } = harness();
+  const kit = load('src/constants/invitation.js');
+  const shared = { slug: 'tigang-sasih-rare-kencana', blade_view: 'invitations.templates.upacara-anak.rare-kencana' };
+
+  assert.equal(kit.templateDesignKey(shared), 'rare-kencana');
+  assert.equal(kit.templateCardColorsFor(shared).accent, kit.templateCardColorsFor({ slug: 'rare-kencana' }).accent);
+  assert.equal(kit.templateCardColorsFor({ slug: 'surya-alit', blade_view: 'invitations.templates.upacara-anak.surya-alit' }).accent, '#ad4f17');
+  // Older servers that do not send blade_view still resolve by slug.
+  assert.equal(kit.templateDesignKey({ slug: 'tunjung-petak' }), 'tunjung-petak');
+});
+
+test('tigang sasih template catalog is requested and filtered by its own type', async () => {
+  const { load, requests } = harness();
+  const { api } = load('src/services/api.js');
+
+  const templates = await api.templates('tigang_sasih');
+  assert.match(requests[0].url, /invitation_type=tigang_sasih/);
+  assert.deepEqual(Array.from(templates.data, (template) => template.id), [15]);
 });

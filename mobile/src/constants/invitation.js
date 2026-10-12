@@ -6,12 +6,15 @@ export const MEGEDONG_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida Sang H
 
 export const PITUNG_DINA_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara Abulan Pitung Dina (42 hari) bagi buah hati kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.';
 
+export const TIGANG_SASIH_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara Tigang Sasih (3 bulanan) bagi buah hati kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.';
+
 export const GIFT_PAYOUT_FEE_PERCENT = 1;
 
-export const INVITATION_TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina'];
+export const INVITATION_TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih'];
 
 // Megedong-gedongan and the child ceremonies keep the father in groom_data and the mother in bride_data.
-// `childCeremony` types also use child_data and share ChildCeremonyFormScreen.
+// `childCeremony` types also use child_data and share ChildCeremonyFormScreen. `childNamed` marks ceremonies
+// where the child already has a name: it is required and becomes the title.
 const TYPE_INFO = {
   wedding: {
     label: 'pernikahan', giftLabel: 'Wedding Gift', personScreen: 'GroomBrideForm', personStep: 'Mempelai',
@@ -38,6 +41,14 @@ const TYPE_INFO = {
     choice: { title: 'Abulan Pitung Dina (42 Hari)', buttonTitle: 'Abulan Pitung Dina', body: 'Upacara saat buah hati berumur 42 hari. Cukup isi nama ayah dan ibu; nama dan foto bayi boleh menyusul.' },
     preview: { eyebrow: 'OM SWASTYASTU', names: 'Putra Wira & Ayu', caption: 'Abulan Pitung Dina · 42 Hari', heroTitle: 'UPACARA ABULAN PITUNG DINA', heroCaption: '42 hari buah hati kami' },
   },
+  tigang_sasih: {
+    childCeremony: true, childNamed: true,
+    label: 'tigang sasih', giftLabel: 'Tanda Kasih', personScreen: 'ChildCeremonyForm', personStep: 'Buah Hati & Orang Tua',
+    openingQuote: TIGANG_SASIH_OPENING_QUOTE, eventTypes: ['Tigang Sasih'], icon: 'sunny-outline',
+    occasion: 'upacara tigang sasih (3 bulanan) buah hati kami',
+    choice: { title: 'Tigang Sasih (3 Bulanan)', buttonTitle: 'Tigang Sasih', body: 'Upacara saat buah hati berumur tiga bulan Bali (105 hari). Nama buah hati menjadi judul undangan.' },
+    preview: { eyebrow: 'OM SWASTYASTU', names: 'Kirana', caption: 'Tigang Sasih · 3 Bulanan', heroTitle: 'UPACARA TIGANG SASIH', heroCaption: 'Putri dari Wira & Ayu' },
+  },
 };
 
 const typeInfo = (invitation) => TYPE_INFO[invitation?.invitation_type] || TYPE_INFO.wedding;
@@ -45,6 +56,7 @@ const typeInfo = (invitation) => TYPE_INFO[invitation?.invitation_type] || TYPE_
 export const isBirthday = (invitation) => invitation?.invitation_type === 'birthday';
 export const isMegedong = (invitation) => invitation?.invitation_type === 'megedong';
 export const isChildCeremony = (invitation) => Boolean(TYPE_INFO[invitation?.invitation_type]?.childCeremony);
+export const requiresChildName = (invitation) => Boolean(TYPE_INFO[invitation?.invitation_type]?.childNamed);
 export const typeLabelFor = (invitation) => typeInfo(invitation).label;
 export const typeIconFor = (invitation) => typeInfo(invitation).icon;
 export const giftLabelFor = (invitation) => typeInfo(invitation).giftLabel;
@@ -69,7 +81,11 @@ export function invitationName(invitation) {
   const groom = invitation?.groom_data?.groom_nickname || invitation?.groom_nickname;
   const bride = invitation?.bride_data?.bride_nickname || invitation?.bride_nickname;
   if (isMegedong(invitation)) return `${bride || 'Calon Ibu'} & ${groom || 'Calon Ayah'}`;
-  // The child's name is optional, so the title names the parents: "Putra Wira & Ayu".
+  if (requiresChildName(invitation)) {
+    const child = invitation?.child_data?.child_nickname || invitation?.child_nickname;
+    if (child) return child;
+  }
+  // Without a child name the title names the parents: "Putra Wira & Ayu".
   if (isChildCeremony(invitation)) return `${childLabelFor(invitation)} ${groom || 'Ayah'} & ${bride || 'Ibu'}`;
   return `${groom || 'Mempelai'} & ${bride || 'Pasangan'}`;
 }
@@ -77,7 +93,9 @@ export function invitationName(invitation) {
 // Reads inside "kami mengundang untuk hadir di ...".
 export function occasionPhraseFor(invitation) {
   if (isBirthday(invitation)) return `perayaan ulang tahun ${invitationName(invitation)}`;
-  return typeInfo(invitation).occasion || 'acara pernikahan kami';
+  const occasion = typeInfo(invitation).occasion || 'acara pernikahan kami';
+  const child = requiresChildName(invitation) ? (invitation?.child_data?.child_nickname || invitation?.child_nickname) : null;
+  return child ? `${occasion}, ${child}` : occasion;
 }
 
 // Templates without a preview photo are drawn as a colour card that matches each theme.
@@ -88,6 +106,15 @@ export const TEMPLATE_CARD_COLORS = {
   'rare-kencana': { background: '#fbf3e4', accent: '#a8792c', text: '#4a3421', hero: '#6f4d1c' },
   'sekar-jepun': { background: '#fffdf6', accent: '#9c6b00', text: '#55482f', hero: '#b98a1a' },
   'langit-kumara': { background: '#eef6f6', accent: '#236f77', text: '#23434a', hero: '#236f77' },
+  'nyambutin-kencana': { background: '#4a121b', accent: '#e2b65a', text: '#f6e6c8', hero: '#4a121b' },
+  'tunjung-petak': { background: '#f7fbf5', accent: '#34704d', text: '#2f4a3a', hero: '#34704d' },
+  'surya-alit': { background: '#fff6ec', accent: '#ad4f17', text: '#5a3520', hero: '#c2631f' },
 };
 
-export const templateCardColorsFor = (template) => TEMPLATE_CARD_COLORS[template?.slug] || TEMPLATE_CARD_COLORS['garbha-kencana'];
+// A design can be offered to several invitation types under different slugs (e.g. tigang-sasih-rare-kencana),
+// so the design is identified by the last part of its blade view, falling back to the slug.
+export const templateDesignKey = (template) => String(template?.blade_view || '').split('.').pop() || template?.slug;
+
+export const templateCardColorsFor = (template) => TEMPLATE_CARD_COLORS[templateDesignKey(template)]
+  || TEMPLATE_CARD_COLORS[template?.slug]
+  || TEMPLATE_CARD_COLORS['garbha-kencana'];

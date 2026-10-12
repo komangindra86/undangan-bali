@@ -68,17 +68,17 @@ export default function MegedongFormScreen({ navigation }) {
       {formError ? <Text accessibilityRole="alert" style={styles.error}>{formError}</Text> : null}
       <Text style={styles.section}>Calon Ibu</Text>
       <PhotoField label="Foto calon ibu (opsional)" photo={mother.bride_photo} onPick={() => selectPhoto('mother')} />
-      <FormField label="Nama lengkap *" maxLength={80} value={mother.bride_full_name} onChangeText={(value) => setMother({ ...mother, bride_full_name: value })} />
-      <FormField label="Nama panggilan *" maxLength={MAX_NICKNAME_LENGTH} helperText={`Maksimal ${MAX_NICKNAME_LENGTH} karakter agar desain tetap rapi.`} value={mother.bride_nickname} onChangeText={(value) => setMother({ ...mother, bride_nickname: value })} />
+      <FormField label="Nama lengkap *" maxLength={80} value={mother.bride_full_name} onChangeText={(value) => setMother((current) => ({ ...current, bride_full_name: value }))} />
+      <FormField label="Nama panggilan *" maxLength={MAX_NICKNAME_LENGTH} helperText={`Maksimal ${MAX_NICKNAME_LENGTH} karakter agar desain tetap rapi.`} value={mother.bride_nickname} onChangeText={(value) => setMother((current) => ({ ...current, bride_nickname: value }))} />
 
       <Text style={[styles.section, styles.spaced]}>Calon Ayah</Text>
       <PhotoField label="Foto calon ayah (opsional)" photo={father.groom_photo} onPick={() => selectPhoto('father')} />
-      <FormField label="Nama lengkap *" maxLength={80} value={father.groom_full_name} onChangeText={(value) => setFather({ ...father, groom_full_name: value })} />
-      <FormField label="Nama panggilan *" maxLength={MAX_NICKNAME_LENGTH} helperText={`Maksimal ${MAX_NICKNAME_LENGTH} karakter agar desain tetap rapi.`} value={father.groom_nickname} onChangeText={(value) => setFather({ ...father, groom_nickname: value })} />
+      <FormField label="Nama lengkap *" maxLength={80} value={father.groom_full_name} onChangeText={(value) => setFather((current) => ({ ...current, groom_full_name: value }))} />
+      <FormField label="Nama panggilan *" maxLength={MAX_NICKNAME_LENGTH} helperText={`Maksimal ${MAX_NICKNAME_LENGTH} karakter agar desain tetap rapi.`} value={father.groom_nickname} onChangeText={(value) => setFather((current) => ({ ...current, groom_nickname: value }))} />
 
       <Text style={[styles.section, styles.spaced]}>Kehamilan</Text>
-      <FormField label="Usia kandungan (opsional)" maxLength={40} placeholder="Contoh: 7 bulan" value={details.pregnancy_age} onChangeText={(value) => setDetails({ ...details, pregnancy_age: value })} />
-      <FormField label="Anak ke- (opsional)" maxLength={50} placeholder="Contoh: Anak pertama" value={details.child_order} onChangeText={(value) => setDetails({ ...details, child_order: value })} />
+      <FormField label="Usia kandungan (opsional)" maxLength={40} placeholder="Contoh: 7 bulan" value={details.pregnancy_age} onChangeText={(value) => setDetails((current) => ({ ...current, pregnancy_age: value }))} />
+      <FormField label="Anak ke- (opsional)" maxLength={50} placeholder="Contoh: Anak pertama" value={details.child_order} onChangeText={(value) => setDetails((current) => ({ ...current, child_order: value }))} />
     </WizardLayout>
   );
 }

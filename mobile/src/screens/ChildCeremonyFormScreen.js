@@ -5,7 +5,7 @@ import DateTimeField from '../components/DateTimeField';
 import FormField from '../components/FormField';
 import PhotoField from '../components/PhotoField';
 import WizardLayout from '../components/WizardLayout';
-import { invitationName } from '../constants/invitation';
+import { invitationName, requiresChildName } from '../constants/invitation';
 import { useDraft } from '../context/DraftContext';
 import { pickProfilePhoto } from '../services/imageService';
 import { colors, spacing } from '../theme';
@@ -21,6 +21,8 @@ export default function ChildCeremonyFormScreen({ navigation }) {
   const [mother, setMother] = useState(draft.bride_data || {});
   const [child, setChild] = useState(draft.child_data || {});
   const [formError, setFormError] = useState(null);
+  const nameRequired = requiresChildName(draft);
+  const optionalMark = nameRequired ? ' *' : ' (opsional)';
   const title = invitationName({ ...draft, groom_data: father, bride_data: mother, child_data: child });
 
   async function choosePhoto() {
@@ -39,8 +41,8 @@ export default function ChildCeremonyFormScreen({ navigation }) {
       validateName(father.groom_nickname, 'Nama panggilan ayah', { required: true, max: MAX_NICKNAME_LENGTH }),
       validateName(mother.bride_full_name, 'Nama lengkap ibu', { required: true }),
       validateName(mother.bride_nickname, 'Nama panggilan ibu', { required: true, max: MAX_NICKNAME_LENGTH }),
-      validateName(child.child_full_name, 'Nama lengkap buah hati'),
-      validateName(child.child_nickname, 'Nama panggilan buah hati', { max: MAX_NICKNAME_LENGTH }),
+      validateName(child.child_full_name, 'Nama lengkap buah hati', { required: nameRequired }),
+      validateName(child.child_nickname, 'Nama panggilan buah hati', { required: nameRequired, max: MAX_NICKNAME_LENGTH }),
       validateSafeText(child.child_order, 'Anak ke-', { max: 50 }),
     ]);
 
@@ -73,20 +75,22 @@ export default function ChildCeremonyFormScreen({ navigation }) {
     <WizardLayout
       step={2}
       title="Buah hati dan orang tua"
-      subtitle="Nama ayah dan ibu wajib diisi. Data buah hati boleh dikosongkan bila belum ada, misalnya nama yang belum diresmikan."
+      subtitle={nameRequired
+        ? 'Nama ayah, ibu, dan buah hati wajib diisi. Nama panggilan buah hati menjadi judul undangan.'
+        : 'Nama ayah dan ibu wajib diisi. Data buah hati boleh dikosongkan bila belum ada, misalnya nama yang belum diresmikan.'}
       syncMessage={syncMessage}
       footer={<FooterActions onBack={() => navigation.goBack()} onNext={next} loading={syncing} />}
     >
       {formError ? <Text accessibilityRole="alert" style={styles.error}>{formError}</Text> : null}
       <Text style={styles.section}>Ayah</Text>
-      <FormField label="Nama lengkap ayah *" maxLength={80} value={father.groom_full_name} onChangeText={(value) => setFather({ ...father, groom_full_name: value })} />
-      <FormField label="Nama panggilan ayah *" maxLength={MAX_NICKNAME_LENGTH} helperText={`Maksimal ${MAX_NICKNAME_LENGTH} karakter agar desain tetap rapi.`} value={father.groom_nickname} onChangeText={(value) => setFather({ ...father, groom_nickname: value })} />
+      <FormField label="Nama lengkap ayah *" maxLength={80} value={father.groom_full_name} onChangeText={(value) => setFather((current) => ({ ...current, groom_full_name: value }))} />
+      <FormField label="Nama panggilan ayah *" maxLength={MAX_NICKNAME_LENGTH} helperText={`Maksimal ${MAX_NICKNAME_LENGTH} karakter agar desain tetap rapi.`} value={father.groom_nickname} onChangeText={(value) => setFather((current) => ({ ...current, groom_nickname: value }))} />
 
       <Text style={[styles.section, styles.spaced]}>Ibu</Text>
-      <FormField label="Nama lengkap ibu *" maxLength={80} value={mother.bride_full_name} onChangeText={(value) => setMother({ ...mother, bride_full_name: value })} />
-      <FormField label="Nama panggilan ibu *" maxLength={MAX_NICKNAME_LENGTH} helperText={`Maksimal ${MAX_NICKNAME_LENGTH} karakter agar desain tetap rapi.`} value={mother.bride_nickname} onChangeText={(value) => setMother({ ...mother, bride_nickname: value })} />
+      <FormField label="Nama lengkap ibu *" maxLength={80} value={mother.bride_full_name} onChangeText={(value) => setMother((current) => ({ ...current, bride_full_name: value }))} />
+      <FormField label="Nama panggilan ibu *" maxLength={MAX_NICKNAME_LENGTH} helperText={`Maksimal ${MAX_NICKNAME_LENGTH} karakter agar desain tetap rapi.`} value={mother.bride_nickname} onChangeText={(value) => setMother((current) => ({ ...current, bride_nickname: value }))} />
 
-      <Text style={[styles.section, styles.spaced]}>Buah hati (opsional)</Text>
+      <Text style={[styles.section, styles.spaced]}>{nameRequired ? 'Buah hati' : 'Buah hati (opsional)'}</Text>
       <Text style={styles.label}>Putra atau putri</Text>
       <View style={styles.chips}>
         {GENDERS.map((gender) => {
@@ -96,7 +100,7 @@ export default function ChildCeremonyFormScreen({ navigation }) {
               accessibilityRole="button"
               accessibilityState={{ selected }}
               key={gender.value}
-              onPress={() => setChild({ ...child, child_gender: selected ? '' : gender.value })}
+              onPress={() => setChild((current) => ({ ...current, child_gender: selected ? '' : gender.value }))}
               style={[styles.chip, selected && styles.chipSelected]}
             >
               <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{gender.label}</Text>
@@ -106,10 +110,10 @@ export default function ChildCeremonyFormScreen({ navigation }) {
       </View>
       <Text style={styles.titlePreview}>Judul undangan: {title}</Text>
       <PhotoField label="Foto buah hati (opsional)" photo={child.child_photo} onPick={choosePhoto} />
-      <FormField label="Nama lengkap buah hati (opsional)" maxLength={80} value={child.child_full_name} onChangeText={(value) => setChild({ ...child, child_full_name: value })} />
-      <FormField label="Nama panggilan buah hati (opsional)" maxLength={MAX_NICKNAME_LENGTH} value={child.child_nickname} onChangeText={(value) => setChild({ ...child, child_nickname: value })} />
-      <FormField label="Anak ke- (opsional)" maxLength={50} placeholder="Contoh: Anak pertama" value={child.child_order} onChangeText={(value) => setChild({ ...child, child_order: value })} />
-      <DateTimeField label="Tanggal lahir (opsional)" mode="date" optional clearLabel="Hapus tanggal lahir" maximumDate={new Date()} value={child.child_birth_date} onChange={(value) => setChild({ ...child, child_birth_date: value })} />
+      <FormField label={`Nama lengkap buah hati${optionalMark}`} maxLength={80} value={child.child_full_name} onChangeText={(value) => setChild((current) => ({ ...current, child_full_name: value }))} />
+      <FormField label={`Nama panggilan buah hati${optionalMark}`} maxLength={MAX_NICKNAME_LENGTH} helperText={nameRequired ? 'Menjadi judul undangan.' : undefined} value={child.child_nickname} onChangeText={(value) => setChild((current) => ({ ...current, child_nickname: value }))} />
+      <FormField label="Anak ke- (opsional)" maxLength={50} placeholder="Contoh: Anak pertama" value={child.child_order} onChangeText={(value) => setChild((current) => ({ ...current, child_order: value }))} />
+      <DateTimeField label="Tanggal lahir (opsional)" mode="date" optional clearLabel="Hapus tanggal lahir" maximumDate={new Date()} value={child.child_birth_date} onChange={(value) => setChild((current) => ({ ...current, child_birth_date: value }))} />
     </WizardLayout>
   );
 }

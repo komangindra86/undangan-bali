@@ -5,7 +5,7 @@ import CustomInvitationCard from '../components/CustomInvitationCard';
 import WizardLayout from '../components/WizardLayout';
 import { useDraft } from '../context/DraftContext';
 import { api } from '../services/api';
-import { isBirthday, personScreenFor, templateCardColorsFor, templatePreviewFor } from '../constants/invitation';
+import { isBirthday, personScreenFor, templateCardColorsFor, templateDesignKey, templatePreviewFor } from '../constants/invitation';
 import { templateMatchesType } from '../utils/templateCatalog';
 import { colors, spacing } from '../theme';
 
@@ -100,7 +100,7 @@ export default function TemplateScreen({ navigation }) {
             </Pressable>
             <View style={styles.meta}>
               <Text style={styles.name}>{template.name}</Text>
-              <Text style={styles.concept}>{conceptFor(template.slug)}</Text>
+              <Text style={styles.concept}>{conceptFor(templateDesignKey(template))}</Text>
               <Text style={styles.detail}>{template.is_premium ? 'Premium' : 'Gratis'} | Foto, animasi, galeri</Text>
               <View style={styles.actions}>
                 <Pressable
@@ -163,6 +163,9 @@ function conceptFor(slug) {
     'rare-kencana': 'Krem hangat, aksen emas, dan anyaman janur yang khidmat.',
     'sekar-jepun': 'Putih dan kuning lembut bernuansa bunga jepun.',
     'langit-kumara': 'Biru-hijau muda yang tenang, bersih, dan modern.',
+    'nyambutin-kencana': 'Merah marun dan emas dengan suasana upacara yang khidmat.',
+    'tunjung-petak': 'Putih dan hijau lembut bernuansa bunga tunjung.',
+    'surya-alit': 'Jingga pagi yang hangat dengan tampilan modern.',
   }[slug] || 'Desain undangan untuk momen istimewa.';
 }
 
