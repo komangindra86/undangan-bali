@@ -107,7 +107,8 @@ class PublicInvitationController extends Controller
                 'child_order' => 'Anak pertama',
                 // The sample ceremony is 12 days away, on the day the child reaches the ceremony's age.
                 'child_birth_date' => now()->addDays(12 - $ceremony['age_days'])->startOfDay(),
-                'opening_quote' => 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara '.$ceremony['title'].' ('.mb_strtolower($ceremony['note']).') bagi buah hati kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.',
+                'ceremony_number' => $ceremony['numbered'] ? 1 : null,
+                'opening_quote' => 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara '.$ceremony['title'].($ceremony['note'] ? ' ('.mb_strtolower($ceremony['note']).')' : '').' bagi buah hati kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.',
                 'event_type' => Invitation::EVENT_TYPES[$template->invitation_type][0],
                 'event_date' => now()->addDays(12)->startOfDay(),
                 'venue_name' => 'Kediaman Keluarga I Made Wira',

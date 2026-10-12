@@ -110,6 +110,7 @@ class StoreInvitationRequest extends FormRequest
             'child_gender' => [$notChildCeremony, 'nullable', Rule::in(['putra', 'putri'])],
             'child_birth_date' => [$notChildCeremony, 'nullable', 'date', 'before_or_equal:today'],
             'child_photo' => [$notChildCeremony, 'nullable', 'image', 'max:4096'],
+            'ceremony_number' => [Rule::excludeIf(! (Invitation::CHILD_CEREMONIES[$type]['numbered'] ?? false)), 'nullable', 'integer', 'between:1,200'],
             'music_id' => [
                 'nullable',
                 'required_if:music_type,default',
@@ -175,6 +176,7 @@ class StoreInvitationRequest extends FormRequest
             'child_gender' => 'putra/putri',
             'child_birth_date' => 'tanggal lahir',
             'child_photo' => 'foto buah hati',
+            'ceremony_number' => 'urutan upacara',
             'template_id' => 'template',
             'groom_full_name' => 'nama lengkap mempelai pria',
             'groom_nickname' => 'nama panggilan mempelai pria',

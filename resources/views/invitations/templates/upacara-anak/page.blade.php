@@ -16,6 +16,9 @@
         'nyambutin' => ['#e2b65a', 'rgba(58, 12, 20, .72)'],
         'tunjung' => ['#cfe8d3', 'rgba(24, 52, 38, .66)'],
         'surya' => ['#ffd08a', 'rgba(84, 42, 14, .62)'],
+        'oton' => ['#e0b95b', 'rgba(8, 34, 25, .72)'],
+        'cempaka' => ['#f6c3d0', 'rgba(78, 34, 50, .64)'],
+        'purnama' => ['#f3dc92', 'rgba(16, 20, 46, .72)'],
     ][$anakTheme];
 @endphp
 <!doctype html>
@@ -90,7 +93,7 @@
         </section>
         @if(count($gallery) || $isPreview)
             <section class="ua-section" data-reveal>
-                <p class="ua-eyebrow">Hari-hari pertama</p><h2>Galeri</h2>
+                <p class="ua-eyebrow">{{ $invitation->isNumberedCeremony() ? 'Momen berharga' : 'Hari-hari pertama' }}</p><h2>Galeri</h2>
                 <div class="ua-gallery">
                     @foreach($gallery as $image)
                         <img src="{{ Storage::url($image) }}" alt="Foto {{ $invitation->display_name }} {{ $loop->iteration }}" loading="lazy" decoding="async">

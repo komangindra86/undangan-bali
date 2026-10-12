@@ -220,6 +220,76 @@ class ChildCeremonyInvitationTest extends TestCase
         $this->assertNull(Invitation::findOrFail($id)->child_relation);
     }
 
+    public function test_otonan_offers_nine_templates_with_its_own_designs_first(): void
+    {
+        $response = $this->getJson('/api/templates?invitation_type=otonan')->assertOk()->assertJsonCount(9, 'data');
+        $this->assertSame(
+            ['Oton Kencana', 'Sekar Cempaka', 'Purnama Alit', 'Nyambutin Kencana', 'Tunjung Petak', 'Surya Alit', 'Rare Kencana', 'Sekar Jepun', 'Langit Kumara'],
+            array_column($response->json('data'), 'name')
+        );
+        $this->getJson('/api/templates?invitation_type=tigang_sasih')->assertOk()->assertJsonCount(6, 'data');
+
+        foreach (['oton-kencana', 'sekar-cempaka', 'purnama-alit', 'otonan-nyambutin-kencana', 'otonan-tunjung-petak', 'otonan-surya-alit', 'otonan-rare-kencana', 'otonan-sekar-jepun', 'otonan-langit-kumara'] as $slug) {
+            $this->get('/preview/templates/'.$slug)->assertOk()
+                ->assertSee('Upacara Otonan')->assertSee('Otonan Pertama')
+                ->assertSee('upacara Otonan bagi buah hati kami')
+                ->assertSee('Putra dari Wira &amp; Ayu', false)
+                ->assertSee('I Putu Bagus Aditya')
+                ->assertSee('Momen berharga')
+                ->assertDontSee('Tigang Sasih')->assertDontSee('Hari-hari pertama');
+        }
+    }
+
+    public function test_otonan_is_titled_by_the_child_name_and_may_carry_its_number(): void
+    {
+        $this->actingAs(User::factory()->create(), 'sanctum');
+        $child = ['child_full_name' => 'Ni Luh Kirana Dewi', 'child_nickname' => 'Kirana', 'child_gender' => 'putri'];
+
+        $third = $this->postJson('/api/invitations/sync-local-draft', $this->payload($child + ['ceremony_number' => 3], 'otonan'))
+            ->assertCreated()->assertJsonPath('data.ceremony_number', 3)->json('data.id');
+        $published = $this->postJson("/api/invitations/{$third}/publish")->assertOk()
+            ->assertJsonPath('data.slug', 'otonan-ke-3-kirana');
+        $this->assertStringContainsString('upacara otonan ke-3 buah hati kami, Kirana', $published->json('share_text'));
+        $this->get('/u/otonan-ke-3-kirana')->assertOk()
+            ->assertSee('Upacara Otonan')->assertSee('Otonan ke-3')
+            ->assertSee('Putri dari Wira &amp; Ayu', false)
+            ->assertSee('Ni Luh Kirana Dewi');
+
+        $first = $this->postJson('/api/invitations/sync-local-draft', $this->payload($child + ['ceremony_number' => 1], 'otonan'))
+            ->assertCreated()->json('data.id');
+        $this->postJson("/api/invitations/{$first}/publish")->assertOk()->assertJsonPath('data.slug', 'otonan-pertama-kirana');
+        $this->assertSame('Otonan Pertama', Invitation::findOrFail($first)->ceremony_note);
+
+        // The number is optional: without it the invitation simply says "Otonan".
+        $plain = $this->postJson('/api/invitations/sync-local-draft', $this->payload($child + ['ceremony_number' => ''], 'otonan'))
+            ->assertCreated()->assertJsonPath('data.ceremony_number', null)->json('data.id');
+        $published = $this->postJson("/api/invitations/{$plain}/publish")->assertOk()->assertJsonPath('data.slug', 'otonan-kirana');
+        $this->assertStringContainsString('upacara otonan buah hati kami, Kirana', $published->json('share_text'));
+        $this->get('/u/otonan-kirana')->assertOk()->assertSee('Upacara Otonan')->assertDontSee('Otonan ke-')->assertDontSee('Otonan Pertama');
+
+        $this->getJson('/api/moments')->assertOk()->assertJsonCount(3, 'data')
+            ->assertJsonPath('data.0.invitation_type', 'otonan')
+            ->assertJsonPath('data.0.names', 'Kirana');
+    }
+
+    public function test_otonan_requires_the_child_name_and_a_sensible_number(): void
+    {
+        $this->actingAs(User::factory()->create(), 'sanctum');
+        $id = $this->postJson('/api/invitations/sync-local-draft', $this->payload([], 'otonan'))->assertCreated()->json('data.id');
+        $this->postJson("/api/invitations/{$id}/publish")->assertUnprocessable()
+            ->assertJsonValidationErrors(['child_full_name', 'child_nickname']);
+
+        foreach ([0, 201, 'tiga'] as $number) {
+            $this->postJson('/api/invitations/sync-local-draft', $this->payload(['ceremony_number' => $number], 'otonan'))
+                ->assertUnprocessable()->assertJsonValidationErrors('ceremony_number');
+        }
+
+        // Ceremonies held once ignore the number and keep their fixed note.
+        $tigangSasih = $this->postJson('/api/invitations/sync-local-draft', $this->payload(['ceremony_number' => 5], 'tigang_sasih'))
+            ->assertCreated()->assertJsonPath('data.ceremony_number', null)->json('data.id');
+        $this->assertSame('3 Bulanan', Invitation::findOrFail($tigangSasih)->ceremony_note);
+    }
+
     private function payload(array $child, string $type = 'pitung_dina'): array
     {
         return [

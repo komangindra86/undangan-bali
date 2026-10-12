@@ -121,5 +121,29 @@ class InvitationTemplateSeeder extends Seeder
                 'is_premium' => false,
             ]);
         }
+
+        // Otonan: three designs of its own, then every earlier child ceremony design.
+        $otonan = [
+            'oton-kencana' => ['Oton Kencana', 'oton-kencana'],
+            'sekar-cempaka' => ['Sekar Cempaka', 'sekar-cempaka'],
+            'purnama-alit' => ['Purnama Alit', 'purnama-alit'],
+            'otonan-nyambutin-kencana' => ['Nyambutin Kencana', 'nyambutin-kencana'],
+            'otonan-tunjung-petak' => ['Tunjung Petak', 'tunjung-petak'],
+            'otonan-surya-alit' => ['Surya Alit', 'surya-alit'],
+            'otonan-rare-kencana' => ['Rare Kencana', 'rare-kencana'],
+            'otonan-sekar-jepun' => ['Sekar Jepun', 'sekar-jepun'],
+            'otonan-langit-kumara' => ['Langit Kumara', 'langit-kumara'],
+        ];
+        foreach ($otonan as $slug => [$name, $view]) {
+            InvitationTemplate::updateOrCreate(['slug' => $slug], [
+                'name' => $name,
+                'invitation_type' => 'otonan',
+                'thumbnail' => null,
+                'preview_image' => null,
+                'blade_view' => 'invitations.templates.upacara-anak.'.$view,
+                'is_active' => true,
+                'is_premium' => false,
+            ]);
+        }
     }
 }

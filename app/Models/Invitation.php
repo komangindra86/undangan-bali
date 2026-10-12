@@ -8,7 +8,7 @@ class Invitation extends Model
 {
     public const RETENTION_EXEMPT_SLUG_PREFIXES = ['preview-', 'demo-'];
 
-    public const TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih'];
+    public const TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih', 'otonan'];
 
     public const EVENT_TYPES = [
         'wedding' => ['Pawiwahan', 'Resepsi'],
@@ -16,6 +16,7 @@ class Invitation extends Model
         'megedong' => ['Megedong-gedongan'],
         'pitung_dina' => ['Abulan Pitung Dina'],
         'tigang_sasih' => ['Tigang Sasih'],
+        'otonan' => ['Otonan'],
     ];
 
     /**
@@ -24,10 +25,12 @@ class Invitation extends Model
      *
      * child_named: the child already has a name by this ceremony, so the name is required and becomes the title.
      * age_days: the child's age at the ceremony, used for the template preview's sample birth date.
+     * numbered: the ceremony repeats, so ceremony_number may say which one it is and replaces the fixed note.
      */
     public const CHILD_CEREMONIES = [
-        'pitung_dina' => ['title' => 'Abulan Pitung Dina', 'note' => '42 Hari', 'child_named' => false, 'age_days' => 42],
-        'tigang_sasih' => ['title' => 'Tigang Sasih', 'note' => '3 Bulanan', 'child_named' => true, 'age_days' => 105],
+        'pitung_dina' => ['title' => 'Abulan Pitung Dina', 'note' => '42 Hari', 'child_named' => false, 'age_days' => 42, 'numbered' => false],
+        'tigang_sasih' => ['title' => 'Tigang Sasih', 'note' => '3 Bulanan', 'child_named' => true, 'age_days' => 105, 'numbered' => false],
+        'otonan' => ['title' => 'Otonan', 'note' => null, 'child_named' => true, 'age_days' => 210, 'numbered' => true],
     ];
 
     public const PHOTO_COLUMNS = ['groom_photo', 'bride_photo', 'celebrant_photo', 'child_photo'];
@@ -52,6 +55,7 @@ class Invitation extends Model
         'child_gender',
         'child_birth_date',
         'child_photo',
+        'ceremony_number',
         'feed_consent_at',
         'user_id',
         'template_id',
@@ -107,6 +111,7 @@ class Invitation extends Model
             'gallery_photos' => 'array',
             'is_hidden_from_feed' => 'boolean',
             'celebrant_age' => 'integer',
+            'ceremony_number' => 'integer',
             'feed_consent_at' => 'datetime',
         ];
     }
@@ -144,9 +149,43 @@ class Invitation extends Model
         return self::CHILD_CEREMONIES[$this->invitation_type]['title'] ?? null;
     }
 
+    /**
+     * "42 Hari" for fixed ceremonies; "Otonan Pertama" or "Otonan ke-3" for numbered ones, null when no number is given.
+     */
     public function getCeremonyNoteAttribute(): ?string
     {
-        return self::CHILD_CEREMONIES[$this->invitation_type]['note'] ?? null;
+        if (! $this->isNumberedCeremony()) {
+            return self::CHILD_CEREMONIES[$this->invitation_type]['note'] ?? null;
+        }
+
+        return match (true) {
+            ! $this->ceremony_number => null,
+            $this->ceremony_number === 1 => $this->ceremony_title.' Pertama',
+            default => $this->ceremony_title.' ke-'.$this->ceremony_number,
+        };
+    }
+
+    /**
+     * True for ceremonies that repeat through life (otonan), where ceremony_number applies.
+     */
+    public function isNumberedCeremony(): bool
+    {
+        return (bool) (self::CHILD_CEREMONIES[$this->invitation_type]['numbered'] ?? false);
+    }
+
+    /**
+     * The ceremony inside a sentence: "abulan pitung dina (42 hari)", "otonan ke-3" or just "otonan".
+     */
+    public function getCeremonyPhraseAttribute(): ?string
+    {
+        if (! $this->isChildCeremony()) {
+            return null;
+        }
+
+        return mb_strtolower(match (true) {
+            $this->isNumberedCeremony() => $this->ceremony_note ?: $this->ceremony_title,
+            default => $this->ceremony_title.' ('.$this->ceremony_note.')',
+        });
     }
 
     /**
@@ -212,7 +251,7 @@ class Invitation extends Model
         return match (true) {
             $this->isBirthday() => 'perayaan ulang tahun '.$this->display_name,
             $this->isMegedong() => 'upacara megedong-gedongan kami',
-            $this->isChildCeremony() => 'upacara '.mb_strtolower($this->ceremony_title.' ('.$this->ceremony_note.')').' buah hati kami'
+            $this->isChildCeremony() => 'upacara '.$this->ceremony_phrase.' buah hati kami'
                 .($this->titledByChildName() ? ', '.$this->child_nickname : ''),
             default => 'acara pernikahan kami',
         };

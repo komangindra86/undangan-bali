@@ -257,7 +257,8 @@ class InvitationController extends Controller
         $base = Str::slug(match (true) {
             $invitation->isBirthday() => 'ulang tahun '.$invitation->celebrant_nickname,
             $invitation->isMegedong() => 'megedong gedongan '.$invitation->bride_nickname.' '.$invitation->groom_nickname,
-            $invitation->isChildCeremony() => $invitation->ceremony_title.' '.$invitation->display_name,
+            // A numbered ceremony carries its number, so each otonan of the same child gets a readable link.
+            $invitation->isChildCeremony() => ($invitation->isNumberedCeremony() && $invitation->ceremony_note ? $invitation->ceremony_note : $invitation->ceremony_title).' '.$invitation->display_name,
             default => 'undangan '.$invitation->groom_nickname.' '.$invitation->bride_nickname,
         });
         $slug = $base;
