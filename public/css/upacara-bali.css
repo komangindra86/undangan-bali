@@ -44,6 +44,9 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .ub .ua-music { position:fixed; bottom:18px; right:18px; z-index:30; background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:24px; box-shadow:0 10px 24px var(--shadow); padding:8px 14px; max-width:85vw; }
 .ub .ua-music button { background:none; color:inherit; border:0; min-height:36px; font-weight:700; cursor:pointer; }
 .ub .ua-music span { font-size:12px; }
+.ub .wg-label { color:var(--accent); }
+.ub .wg-button { background:var(--accent); color:var(--on-accent); }
+.ub .wg-check { border-color:var(--accent); color:var(--accent); }
 .ub-card { background:var(--panel); border:1px solid var(--line); border-radius:24px; box-shadow:0 18px 44px var(--shadow); }
 .ub-place { margin:22px 0 0; }
 .ub-place strong { display:block; font-size:18px; }
@@ -58,7 +61,7 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .orn-emblem { width:92px; margin:0 auto 10px; }
 
 /* Oton Kencana: morning light on ivory, symmetric, the date framed by a paras stone candi bentar. */
-.ub--oton-kencana { --out:#efe6d3; --bg:#fbf6ea; --panel:#fffdf8; --ink:#4b3a26; --muted:#77664f; --accent:#8a5d14; --on-accent:#fff; --line:#b98d3a4d; --orn:#c2a05a; --shadow:#8a5d1424; }
+.ub--oton-kencana { --out:#efe6d3; --bg:#fbf6ea; --panel:#fffdf8; --ink:#4b3a26; --muted:#6b5a44; --accent:#7a5210; --on-accent:#fff; --line:#b98d3a4d; --orn:#c2a05a; --shadow:#8a5d1424; }
 .ub--oton-kencana .ub-hero { position:relative; text-align:center; padding:62px 0 0; overflow:hidden; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='none' stroke='%23c9a04e' stroke-opacity='.16'%3E%3Cpath d='M28 14c6 6 6 22 0 28c-6-6-6-22 0-28zM14 28c6-6 22-6 28 0c-6 6-22 6-28 0z'/%3E%3Ccircle cx='0' cy='0' r='5'/%3E%3Ccircle cx='56' cy='0' r='5'/%3E%3Ccircle cx='0' cy='56' r='5'/%3E%3Ccircle cx='56' cy='56' r='5'/%3E%3C/g%3E%3C/svg%3E"),radial-gradient(ellipse at 50% 24%,#fffef9 0,#fbf1dc 56%,#f1dfba 100%); }
 /* Ider-ider: the fringe of gold triangles along the top. */
 .ub-ider { position:absolute; inset:0 0 auto; height:13px; border-top:3px solid #dcc07a; background:linear-gradient(135deg,#dcc07a 25%,transparent 25%) 0 0/18px 18px,linear-gradient(225deg,#dcc07a 25%,transparent 25%) 0 0/18px 18px; }
@@ -81,9 +84,12 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .ub--oton-kencana .ub-child,.ub--oton-kencana .ub-event { background:var(--panel); border:1px solid var(--line); border-radius:24px; box-shadow:0 18px 44px var(--shadow); }
 .ub--oton-kencana .ub-child { margin-top:26px; padding:32px 18px 28px; }
 .ub--oton-kencana .ub-child-photo { display:block; width:164px; height:164px; margin:0 auto 22px; border-radius:50%; object-fit:cover; border:4px solid #fff; box-shadow:0 0 0 1px var(--line),0 14px 30px var(--shadow); }
-.ub--oton-kencana .ub-parents { display:grid; grid-template-columns:1fr 1fr; margin-top:18px; border-top:1px solid var(--line); }
+.ub--oton-kencana .ub-parents { display:grid; margin-top:18px; border-top:1px solid var(--line); }
 .ub--oton-kencana .ub-parents p { margin:0; padding:16px 8px 0; }
-.ub--oton-kencana .ub-parents p:first-child { border-right:1px solid var(--line); }
+@media(min-width:480px) {
+    .ub--oton-kencana .ub-parents { grid-template-columns:1fr 1fr; }
+    .ub--oton-kencana .ub-parents p:first-child { border-right:1px solid var(--line); }
+}
 .ub--oton-kencana .ub-parents span { display:block; color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; }
 .ub--oton-kencana .ub-parents strong { display:block; font:500 17px/1.45 Georgia,serif; }
 .ub--oton-kencana .ub-event { padding:32px 20px 36px; }
@@ -92,9 +98,9 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 
 /* Sekar Cempaka: ivory and cempaka rose in soft focus, asymmetric, under a penjor with a canang sari. */
 .ub--sekar-cempaka { --out:#f1dfe0; --bg:#fff9f5; --panel:#ffffff; --ink:#55323d; --muted:#7b5864; --accent:#a8456a; --on-accent:#fff; --line:#a8456a33; --orn:#c98aa0; --shadow:#a8456a1f; }
-.ub--sekar-cempaka .ub-hero { position:relative; display:flex; align-items:flex-end; min-height:600px; padding:64px 28px 112px; overflow:hidden; background:radial-gradient(circle at 16% 20%,#ffffffd9 0,#ffffff00 84px),radial-gradient(circle at 64% 52%,#fbd3dc99 0,#fbd3dc00 110px),radial-gradient(circle at 24% 74%,#ffe7c999 0,#ffe7c900 96px),radial-gradient(circle at 86% 12%,#ffffffb3 0,#ffffff00 60px),linear-gradient(180deg,#fce6ea,#fff9f5 80%); }
+.ub--sekar-cempaka .ub-hero { position:relative; display:flex; align-items:flex-end; min-height:600px; padding:216px 28px 112px; overflow:hidden; background:radial-gradient(circle at 16% 20%,#ffffffd9 0,#ffffff00 84px),radial-gradient(circle at 64% 52%,#fbd3dc99 0,#fbd3dc00 110px),radial-gradient(circle at 24% 74%,#ffe7c999 0,#ffe7c900 96px),radial-gradient(circle at 86% 12%,#ffffffb3 0,#ffffff00 60px),linear-gradient(180deg,#fce6ea,#fff9f5 80%); }
 .ub--sekar-cempaka .orn-penjor { position:absolute; top:14px; right:-10px; width:auto; height:calc(100% - 14px); }
-.ub--sekar-cempaka .ub-hero-text { position:relative; max-width:calc(100% - 62px); text-align:left; }
+.ub--sekar-cempaka .ub-hero-text { position:relative; max-width:calc(100% - 72px); text-align:left; }
 .ub--sekar-cempaka .ub-page h1 { color:var(--accent); font-style:italic; font-size:clamp(40px,12vw,72px); line-height:1.04; }
 .ub--sekar-cempaka .ub-greeting { margin-top:-44px; background:var(--panel); border-radius:44px 44px 0 0; box-shadow:0 -14px 30px #a8456a14; }
 .ub--sekar-cempaka .ub-greeting .orn-canang { position:relative; width:124px; margin:-108px auto 20px; }
@@ -109,10 +115,11 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .ub--sekar-cempaka .ub-parents strong { display:block; font-weight:500; }
 .ub--sekar-cempaka .ub-parents span { color:var(--accent); }
 .ub--sekar-cempaka .ub-event { display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:center; margin-top:22px; padding:18px; text-align:left; background:var(--panel); border-radius:28px; box-shadow:0 16px 38px var(--shadow); }
-.ub-day { display:grid; min-width:104px; margin:0; padding:26px 12px 16px; text-align:center; background:linear-gradient(160deg,#b9597c,#9c3d61); color:#fff; border-radius:60px 60px 16px 16px; }
+.ub-day { display:grid; min-width:104px; margin:0; padding:26px 12px 16px; text-align:center; background:linear-gradient(160deg,#b04f73,#963a5c); color:#fff; border-radius:60px 60px 16px 16px; }
 .ub-day span { font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
 .ub-day strong { font:500 46px/1.15 Georgia,serif; }
-.ub--sekar-cempaka .ub-details { margin:0; gap:14px; }
+.ub--sekar-cempaka .ub-details { display:contents; }
+.ub--sekar-cempaka .ub-details div:last-child { grid-column:1/-1; }
 .ub--sekar-cempaka .ub-details dd { font-size:17px; }
 .ub--sekar-cempaka .ub-gallery { display:block; columns:2; column-gap:12px; }
 .ub--sekar-cempaka .ub-gallery > * { break-inside:avoid; margin-bottom:12px; }
@@ -157,16 +164,16 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .ub-step-note { margin:0; color:var(--muted); }
 .ub--purnama-alit .ub-button { border-radius:12px; margin-top:18px; }
 .ub--purnama-alit .ub-gallery-section { text-align:left; }
-.ub--purnama-alit .ub-gallery { display:flex; gap:12px; margin-inline:-28px; padding:0 28px 26px; overflow-x:auto; scroll-snap-type:x mandatory; }
+.ub--purnama-alit .ub-gallery { display:flex; align-items:center; gap:12px; margin-inline:-28px; padding:0 28px 26px; overflow-x:auto; scroll-snap-type:x mandatory; }
 .ub--purnama-alit .ub-gallery > * { flex:0 0 78%; scroll-snap-align:center; }
-.ub--purnama-alit .ub-gallery img { height:340px; }
+.ub--purnama-alit .ub-gallery img { max-height:380px; }
 .ub--purnama-alit .ub-placeholder { aspect-ratio:auto; height:340px; }
 .ub--purnama-alit .ub-closing { padding-bottom:0; }
 .ub--purnama-alit .ub-closing .orn-awan { width:160px; margin:0 auto 20px; }
 .ub--purnama-alit .ub-closing .ub-poleng { margin:64px -28px 0; }
 
 /* Rare Kencana: cream and gold, centred between two hanging lamak; cards edged like ider-ider. */
-.ub--rare-kencana { --out:#efe4cc; --bg:#fbf5e6; --panel:#fffdf7; --ink:#4a3421; --muted:#76634a; --accent:#8a5f1c; --on-accent:#fff; --line:#b98d3a4d; --orn:#c2a05a; --shadow:#8a5f1c22; }
+.ub--rare-kencana { --out:#efe4cc; --bg:#fbf5e6; --panel:#fffdf7; --ink:#4a3421; --muted:#6c5a42; --accent:#7d5415; --on-accent:#fff; --line:#b98d3a4d; --orn:#c2a05a; --shadow:#8a5f1c22; }
 .ub--rare-kencana .ub-hero { position:relative; text-align:center; min-height:500px; padding:66px 78px 56px; background:radial-gradient(ellipse at 50% 30%,#fffef8 0,#fbf1dc 60%,#f1e0bd 100%); }
 .ub--rare-kencana .orn-lamak { position:absolute; top:-4px; width:56px; }
 .ub--rare-kencana .orn-lamak.is-left { left:12px; }
@@ -204,8 +211,8 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .ub--sekar-jepun .orn-jepun.is-closing { width:78px; margin:0 auto 18px; }
 
 /* Langit Kumara: a soft blue sky, left-aligned and modern, with a bebean kite and its trailing tails. */
-.ub--langit-kumara { --out:#dcecf4; --bg:#f4fafd; --panel:#ffffff; --ink:#23434a; --muted:#56757c; --accent:#1f6f78; --on-accent:#fff; --line:#1f6f7833; --orn:#7fb8c4; --shadow:#1f6f781f; }
-.ub--langit-kumara .ub-hero { position:relative; display:flex; align-items:flex-end; min-height:640px; padding:60px 28px 50px; overflow:hidden; background:linear-gradient(180deg,#bfe0f4 0,#e3f2fa 64%,#f4fafd 100%); }
+.ub--langit-kumara { --out:#dcecf4; --bg:#f4fafd; --panel:#ffffff; --ink:#23434a; --muted:#48666d; --accent:#1a6169; --on-accent:#fff; --line:#1f6f7833; --orn:#7fb8c4; --shadow:#1f6f781f; }
+.ub--langit-kumara .ub-hero { position:relative; display:flex; align-items:flex-end; min-height:640px; padding:384px 28px 50px; overflow:hidden; background:linear-gradient(180deg,#bfe0f4 0,#e3f2fa 64%,#f4fafd 100%); }
 .ub--langit-kumara .orn-layangan { position:absolute; top:22px; right:18px; width:106px; transform:rotate(8deg); }
 .ub--langit-kumara .ub-hero .orn-mega { position:absolute; }
 .ub--langit-kumara .orn-mega.is-a { top:64px; left:-34px; width:176px; }
@@ -234,7 +241,7 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .ub--langit-kumara .orn-mega.is-closing { width:136px; margin:0 auto 14px; }
 
 /* Nyambutin Kencana: warm terracotta and gold; a gebogan between two umbul-umbul above a red brick wall. */
-.ub--nyambutin-kencana { --out:#f1ddcd; --bg:#fff7ef; --panel:#fffdf9; --ink:#5a2a1c; --muted:#84584a; --accent:#a3432a; --on-accent:#fff; --line:#a3432a33; --orn:#d9a06a; --shadow:#a3432a1f; }
+.ub--nyambutin-kencana { --out:#f1ddcd; --bg:#fff7ef; --panel:#fffdf9; --ink:#5a2a1c; --muted:#7a4f41; --accent:#963b23; --on-accent:#fff; --line:#a3432a33; --orn:#d9a06a; --shadow:#a3432a1f; }
 .ub--nyambutin-kencana .ub-hero { position:relative; text-align:center; padding:54px 72px 0; overflow:hidden; background:radial-gradient(ellipse at 50% 26%,#fffaf2 0,#fbe7d5 60%,#f4cfb6 100%); }
 .ub--nyambutin-kencana .orn-umbul { position:absolute; bottom:30px; width:76px; }
 .ub--nyambutin-kencana .orn-umbul.is-left { left:0; }
@@ -259,7 +266,7 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .ub--nyambutin-kencana .orn-gebogan.is-closing { width:66px; margin:0 auto 16px; }
 
 /* Tunjung Petak: white and soft green, calm and centred above a pond of white lotus; sections rise like ripples. */
-.ub--tunjung-petak { --out:#e0ece4; --bg:#f7fbf5; --panel:#ffffff; --ink:#2f4a3a; --muted:#587262; --accent:#2f6a48; --on-accent:#fff; --line:#2f6a4833; --orn:#9cc4a8; --shadow:#2f6a481c; }
+.ub--tunjung-petak { --out:#e0ece4; --bg:#f7fbf5; --panel:#ffffff; --ink:#2f4a3a; --muted:#4f6858; --accent:#2f6a48; --on-accent:#fff; --line:#2f6a4833; --orn:#9cc4a8; --shadow:#2f6a481c; }
 .ub--tunjung-petak .ub-hero { text-align:center; padding:64px 24px 0; background:linear-gradient(180deg,#ffffff 0,#f1f8ef 46%,#d6ece6 76%,#bfe0e2 100%); }
 .ub--tunjung-petak .orn-kolam { width:calc(100% + 48px); max-width:none; margin:30px -24px 0; }
 .ub--tunjung-petak .ub-page h1 { color:var(--accent); }
@@ -276,7 +283,7 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .ub--tunjung-petak .orn-tunjung.is-closing { width:116px; margin:0 auto 16px; }
 
 /* Surya Alit: morning orange, modern; the sun rises beside Gunung Agung over a meru and rice terraces. */
-.ub--surya-alit { --out:#f6e3cf; --bg:#fff8ef; --panel:#ffffff; --ink:#5a3520; --muted:#84604a; --accent:#a34a12; --on-accent:#fff; --line:#a34a1230; --orn:#f0b37a; --shadow:#a34a121f; }
+.ub--surya-alit { --out:#f6e3cf; --bg:#fff8ef; --panel:#ffffff; --ink:#5a3520; --muted:#7a5640; --accent:#a34a12; --on-accent:#fff; --line:#a34a1230; --orn:#f0b37a; --shadow:#a34a121f; }
 .ub--surya-alit .ub-hero { padding:64px 0 0; background:linear-gradient(180deg,#ffe0bd 0,#fff0dc 52%,#fff8ef 100%); }
 .ub--surya-alit .ub-hero-text { padding:0 28px; text-align:left; }
 .ub--surya-alit .orn-fajar { width:100%; }
@@ -290,11 +297,13 @@ body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Aria
 .ub--surya-alit .ub-parents strong { display:block; font-weight:400; }
 .ub--surya-alit .ub-parents span { color:var(--accent); }
 .ub--surya-alit .ub-birth { margin-top:12px; border-radius:8px; }
-.ub--surya-alit .ub-event { display:grid; grid-template-columns:auto 1fr; gap:22px; align-items:center; margin-top:20px; padding:22px 20px; border-radius:18px; text-align:left; }
+.ub--surya-alit .ub-event { display:grid; grid-template-columns:auto 1fr; gap:10px 22px; align-items:center; margin-top:20px; padding:22px 20px; border-radius:18px; text-align:left; }
 .ub-sun { display:grid; place-content:center; width:108px; height:108px; margin:8px; border-radius:50%; text-align:center; background:radial-gradient(circle,#fffbe6 0,#ffe2a3 60%,#fbbf6a 100%); box-shadow:0 0 0 8px #ffdca055,0 0 0 16px #ffdca02b; }
 .ub-sun span { font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
 .ub-sun strong { font:500 40px/1.05 Georgia,serif; }
-.ub--surya-alit .ub-details { margin:0; gap:12px; }
+.ub--surya-alit .ub-details { display:contents; }
+.ub--surya-alit .ub-sun { grid-row:span 2; }
+.ub--surya-alit .ub-details div:last-child { grid-column:1/-1; }
 .ub--surya-alit .ub-details dd { font-size:16px; }
 .ub--surya-alit .ub-button { border-radius:12px; }
 .ub--surya-alit .ub-closing { padding-top:0; }

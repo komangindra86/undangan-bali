@@ -17,13 +17,13 @@
     // Opening cover colours: accent and shade over a photo, then accent, text and shade over the design's own
     // illustration, which is shown when the invitation has no photo and is light enough to need dark text.
     [$photoAccent, $photoShade, $artAccent, $artText, $artShade] = [
-        'rare-kencana' => ['#e6c98a', 'rgba(52, 35, 18, .62)', '#8a5f1c', '#4a3421', 'rgba(255, 250, 238, .14)'],
+        'rare-kencana' => ['#e6c98a', 'rgba(52, 35, 18, .62)', '#7d5415', '#4a3421', 'rgba(255, 250, 238, .14)'],
         'sekar-jepun' => ['#f6d36b', 'rgba(74, 58, 22, .6)', '#8f6400', '#55482f', 'rgba(255, 253, 244, .2)'],
-        'langit-kumara' => ['#bfe4e1', 'rgba(20, 52, 60, .62)', '#1f6f78', '#23434a', 'rgba(240, 250, 253, .14)'],
-        'nyambutin-kencana' => ['#f3c9a8', 'rgba(70, 26, 14, .62)', '#a3432a', '#5a2a1c', 'rgba(255, 244, 234, .16)'],
+        'langit-kumara' => ['#bfe4e1', 'rgba(20, 52, 60, .62)', '#1a6169', '#23434a', 'rgba(240, 250, 253, .14)'],
+        'nyambutin-kencana' => ['#f3c9a8', 'rgba(70, 26, 14, .62)', '#963b23', '#5a2a1c', 'rgba(255, 244, 234, .16)'],
         'tunjung-petak' => ['#cfe8d3', 'rgba(24, 52, 38, .62)', '#2f6a48', '#2f4a3a', 'rgba(247, 251, 245, .2)'],
         'surya-alit' => ['#ffd08a', 'rgba(84, 42, 14, .6)', '#a34a12', '#5a3520', 'rgba(255, 246, 236, .14)'],
-        'oton-kencana' => ['#e9c877', 'rgba(52, 36, 14, .56)', '#8a5d14', '#4b3a26', 'rgba(255, 250, 238, .16)'],
+        'oton-kencana' => ['#e9c877', 'rgba(52, 36, 14, .56)', '#7a5210', '#4b3a26', 'rgba(255, 250, 238, .16)'],
         'sekar-cempaka' => ['#f8cdd7', 'rgba(72, 28, 46, .56)', '#a8456a', '#55323d', 'rgba(255, 246, 247, .16)'],
         'purnama-alit' => ['#f6e6ad', 'rgba(22, 22, 56, .58)', '#f6e6ad', '#fffaf0', 'rgba(22, 22, 56, .2)'],
     ][$design];
