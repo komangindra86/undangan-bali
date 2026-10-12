@@ -200,6 +200,7 @@ function draftFromInvitation(invitation) {
       // Megedong-gedongan keeps its own copy of child_order in megedong_data.
       child_order: invitation.child_order || '',
       child_birth_date: invitation.child_birth_date?.slice(0, 10) || '',
+      ceremony_number: invitation.ceremony_number == null ? '' : String(invitation.ceremony_number),
       child_photo: remoteMedia(invitation.child_photo, 'image/jpeg'),
     },
     selected_template: invitation.template || { id: invitation.template_id },

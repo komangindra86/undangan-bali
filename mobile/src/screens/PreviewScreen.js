@@ -1,7 +1,7 @@
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { FooterActions, SecondaryButton } from '../components/Buttons';
 import WizardLayout from '../components/WizardLayout';
-import { childLabelFor, giftLabelFor, invitationName, isBirthday, isChildCeremony, isMegedong, personScreenFor } from '../constants/invitation';
+import { ceremonyNumberLabelFor, childLabelFor, giftLabelFor, invitationName, isBirthday, isChildCeremony, isMegedong, personScreenFor } from '../constants/invitation';
 import { useAuth } from '../context/AuthContext';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
@@ -60,6 +60,7 @@ export default function PreviewScreen({ navigation }) {
         <SummaryRow label="Template" value={templateName} />
         <SummaryRow label={birthday ? 'Yang berulang tahun' : megedong ? 'Calon orang tua' : childCeremony ? 'Judul undangan' : 'Mempelai'} value={invitationName(draft)} />
         {childCeremony ? <SummaryRow label="Buah hati" value={child.child_full_name || `${childLabelFor(draft)} (nama belum diisi)`} subvalue={[child.child_order, child.child_birth_date ? `Lahir ${formatDate(child.child_birth_date)}` : null].filter(Boolean).join(' · ') || undefined} optional={!child.child_full_name} /> : null}
+        {ceremonyNumberLabelFor(draft) ? <SummaryRow label="Upacara" value={ceremonyNumberLabelFor(draft)} /> : null}
         {megedong && draft.megedong_data?.pregnancy_age ? <SummaryRow label="Usia kandungan" value={draft.megedong_data.pregnancy_age} /> : null}
         {megedong && draft.megedong_data?.child_order ? <SummaryRow label="Anak ke-" value={draft.megedong_data.child_order} /> : null}
         {birthday && draft.birthday_data?.celebrant_age ? <SummaryRow label="Usia yang ditampilkan" value={`${draft.birthday_data.celebrant_age} tahun`} /> : null}

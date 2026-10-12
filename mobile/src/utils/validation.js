@@ -73,3 +73,10 @@ export function validateBirthdayAge(value) {
   return /^\d+$/.test(text) && Number(text) >= 1 && Number(text) <= 150
     ? null : 'Usia yang dirayakan harus angka bulat 1 sampai 150, atau kosongkan.';
 }
+
+export function validateCeremonyNumber(value, label) {
+  const text = cleanText(value);
+  if (!text) return null;
+  return /^\d+$/.test(text) && Number(text) >= 1 && Number(text) <= 200
+    ? null : `${label} harus angka bulat 1 sampai 200, atau kosongkan.`;
+}

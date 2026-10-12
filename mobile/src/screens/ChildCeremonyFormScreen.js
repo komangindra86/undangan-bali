@@ -5,11 +5,11 @@ import DateTimeField from '../components/DateTimeField';
 import FormField from '../components/FormField';
 import PhotoField from '../components/PhotoField';
 import WizardLayout from '../components/WizardLayout';
-import { invitationName, requiresChildName } from '../constants/invitation';
+import { invitationName, isNumberedCeremony, requiresChildName, typeLabelFor } from '../constants/invitation';
 import { useDraft } from '../context/DraftContext';
 import { pickProfilePhoto } from '../services/imageService';
 import { colors, spacing } from '../theme';
-import { cleanText, firstError, MAX_NICKNAME_LENGTH, validateName, validateSafeText } from '../utils/validation';
+import { cleanText, firstError, MAX_NICKNAME_LENGTH, validateCeremonyNumber, validateName, validateSafeText } from '../utils/validation';
 
 const GENDERS = [{ value: 'putra', label: 'Putra' }, { value: 'putri', label: 'Putri' }];
 
@@ -22,6 +22,8 @@ export default function ChildCeremonyFormScreen({ navigation }) {
   const [child, setChild] = useState(draft.child_data || {});
   const [formError, setFormError] = useState(null);
   const nameRequired = requiresChildName(draft);
+  const numbered = isNumberedCeremony(draft);
+  const numberLabel = `${typeLabelFor(draft).replace(/^./, (letter) => letter.toUpperCase())} ke-`;
   const optionalMark = nameRequired ? ' *' : ' (opsional)';
   const title = invitationName({ ...draft, groom_data: father, bride_data: mother, child_data: child });
 
@@ -44,6 +46,7 @@ export default function ChildCeremonyFormScreen({ navigation }) {
       validateName(child.child_full_name, 'Nama lengkap buah hati', { required: nameRequired }),
       validateName(child.child_nickname, 'Nama panggilan buah hati', { required: nameRequired, max: MAX_NICKNAME_LENGTH }),
       validateSafeText(child.child_order, 'Anak ke-', { max: 50 }),
+      numbered ? validateCeremonyNumber(child.ceremony_number, numberLabel) : null,
     ]);
 
     if (error) {
@@ -63,6 +66,7 @@ export default function ChildCeremonyFormScreen({ navigation }) {
           child_gender: child.child_gender || '',
           child_order: cleanText(child.child_order),
           child_birth_date: child.child_birth_date || '',
+          ceremony_number: numbered ? cleanText(child.ceremony_number) : '',
         },
       });
       navigation.navigate('EventForm');
@@ -113,6 +117,7 @@ export default function ChildCeremonyFormScreen({ navigation }) {
       <FormField label={`Nama lengkap buah hati${optionalMark}`} maxLength={80} value={child.child_full_name} onChangeText={(value) => setChild((current) => ({ ...current, child_full_name: value }))} />
       <FormField label={`Nama panggilan buah hati${optionalMark}`} maxLength={MAX_NICKNAME_LENGTH} helperText={nameRequired ? 'Menjadi judul undangan.' : undefined} value={child.child_nickname} onChangeText={(value) => setChild((current) => ({ ...current, child_nickname: value }))} />
       <FormField label="Anak ke- (opsional)" maxLength={50} placeholder="Contoh: Anak pertama" value={child.child_order} onChangeText={(value) => setChild((current) => ({ ...current, child_order: value }))} />
+      {numbered ? <FormField label={`${numberLabel} (opsional)`} keyboardType="number-pad" maxLength={3} placeholder="Contoh: 1" helperText="Isi angka bila ingin ditampilkan, misalnya 1 untuk otonan pertama." value={String(child.ceremony_number || '')} onChangeText={(value) => setChild((current) => ({ ...current, ceremony_number: value }))} /> : null}
       <DateTimeField label="Tanggal lahir (opsional)" mode="date" optional clearLabel="Hapus tanggal lahir" maximumDate={new Date()} value={child.child_birth_date} onChange={(value) => setChild((current) => ({ ...current, child_birth_date: value }))} />
     </WizardLayout>
   );

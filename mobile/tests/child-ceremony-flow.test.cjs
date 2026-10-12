@@ -6,7 +6,7 @@ const { test } = require('node:test');
 const { transformSync } = require('@babel/core');
 
 function harness(responseFor = (url) => ({ data: url.includes('/templates?') ? [
-  { id: 1, invitation_type: 'wedding' }, { id: 6, invitation_type: 'birthday' }, { id: 9, invitation_type: 'megedong' }, { id: 12, invitation_type: 'pitung_dina' }, { id: 15, invitation_type: 'tigang_sasih' },
+  { id: 1, invitation_type: 'wedding' }, { id: 6, invitation_type: 'birthday' }, { id: 9, invitation_type: 'megedong' }, { id: 12, invitation_type: 'pitung_dina' }, { id: 15, invitation_type: 'tigang_sasih' }, { id: 21, invitation_type: 'otonan' },
 ] : { id: 42 } })) {
   const storage = new Map();
   const requests = [];
@@ -80,7 +80,7 @@ test('the type picker lists every invitation type once, in order', () => {
   const { load } = harness();
   const { INVITATION_CHOICES } = load('src/constants/invitation.js');
 
-  assert.deepEqual(Array.from(INVITATION_CHOICES, (choice) => choice.type), ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih']);
+  assert.deepEqual(Array.from(INVITATION_CHOICES, (choice) => choice.type), ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih', 'otonan']);
   assert.equal(INVITATION_CHOICES[3].title, 'Abulan Pitung Dina (42 Hari)');
   assert.ok(Array.from(INVITATION_CHOICES).every((choice) => choice.icon && choice.title && choice.body));
 });
@@ -193,4 +193,68 @@ test('tigang sasih template catalog is requested and filtered by its own type', 
   const templates = await api.templates('tigang_sasih');
   assert.match(requests[0].url, /invitation_type=tigang_sasih/);
   assert.deepEqual(Array.from(templates.data, (template) => template.id), [15]);
+});
+
+test('otonan is titled by the child name and may say which otonan it is', () => {
+  const { load } = harness();
+  const kit = load('src/constants/invitation.js');
+  const draft = { invitation_type: 'otonan', groom_data: { groom_nickname: 'Wira' }, bride_data: { bride_nickname: 'Ayu' }, child_data: { child_nickname: 'Kirana' } };
+
+  assert.equal(kit.isChildCeremony(draft), true);
+  assert.equal(kit.requiresChildName(draft), true);
+  assert.equal(kit.isNumberedCeremony(draft), true);
+  assert.equal(kit.isNumberedCeremony({ invitation_type: 'tigang_sasih' }), false);
+  assert.equal(kit.invitationName(draft), 'Kirana');
+  assert.equal(kit.typeLabelFor(draft), 'otonan');
+  assert.equal(kit.giftLabelFor(draft), 'Tanda Kasih');
+  assert.deepEqual(Array.from(kit.eventTypesFor(draft)), ['Otonan']);
+
+  assert.equal(kit.ceremonyNumberLabelFor(draft), null);
+  assert.equal(kit.occasionPhraseFor(draft), 'upacara otonan buah hati kami, Kirana');
+  const third = { ...draft, child_data: { ...draft.child_data, ceremony_number: '3' } };
+  assert.equal(kit.ceremonyNumberLabelFor(third), 'Otonan ke-3');
+  assert.equal(kit.occasionPhraseFor(third), 'upacara otonan ke-3 buah hati kami, Kirana');
+  // Server records carry the number at the top level.
+  assert.equal(kit.ceremonyNumberLabelFor({ invitation_type: 'otonan', ceremony_number: 1 }), 'Otonan Pertama');
+  // Ceremonies held once never show a number, even if an old draft carries one.
+  assert.equal(kit.ceremonyNumberLabelFor({ invitation_type: 'tigang_sasih', child_data: { ceremony_number: '3' } }), null);
+});
+
+test('otonan number is optional and must be a whole number from 1 to 200', () => {
+  const { load } = harness();
+  const { validateCeremonyNumber } = load('src/utils/validation.js');
+
+  assert.equal(validateCeremonyNumber('', 'Otonan ke-'), null);
+  assert.equal(validateCeremonyNumber('1', 'Otonan ke-'), null);
+  assert.equal(validateCeremonyNumber('200', 'Otonan ke-'), null);
+  for (const value of ['0', '201', '2.5', 'tiga']) {
+    assert.match(validateCeremonyNumber(value, 'Otonan ke-'), /Otonan ke- harus angka bulat 1 sampai 200/);
+  }
+});
+
+test('a new otonan draft preselects its event, and sync sends the number', async () => {
+  const { load, requests } = harness();
+  const { createEmptyDraft } = load('src/services/draftStorage.js');
+  const { OTONAN_OPENING_QUOTE, templateCardColorsFor } = load('src/constants/invitation.js');
+  const { api } = load('src/services/api.js');
+
+  const draft = createEmptyDraft('otonan');
+  assert.equal(draft.event_data.event_type, 'Otonan');
+  assert.equal(draft.event_data.opening_quote, OTONAN_OPENING_QUOTE);
+  assert.equal(templateCardColorsFor({ slug: 'otonan-rare-kencana', blade_view: 'invitations.templates.upacara-anak.rare-kencana' }).accent, '#a8792c');
+  assert.equal(templateCardColorsFor({ slug: 'purnama-alit', blade_view: 'invitations.templates.upacara-anak.purnama-alit' }).accent, '#f3dc92');
+
+  const templates = await api.templates('otonan');
+  assert.match(requests[0].url, /invitation_type=otonan/);
+  assert.deepEqual(Array.from(templates.data, (template) => template.id), [21]);
+
+  await api.syncDraft({
+    ...draft, selected_template: 21,
+    groom_data: { groom_full_name: 'I Made Wira Adnyana', groom_nickname: 'Wira' },
+    bride_data: { bride_full_name: 'Ni Putu Ayu Lestari', bride_nickname: 'Ayu' },
+    child_data: { child_full_name: 'Ni Luh Kirana Dewi', child_nickname: 'Kirana', ceremony_number: '3' },
+  }, 'test-token');
+  const fields = new Map(requests[1].body.entries);
+  assert.equal(fields.get('invitation_type'), 'otonan');
+  assert.equal(fields.get('child_data[ceremony_number]'), '3');
 });

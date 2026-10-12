@@ -166,6 +166,9 @@ function conceptFor(slug) {
     'nyambutin-kencana': 'Merah marun dan emas dengan suasana upacara yang khidmat.',
     'tunjung-petak': 'Putih dan hijau lembut bernuansa bunga tunjung.',
     'surya-alit': 'Jingga pagi yang hangat dengan tampilan modern.',
+    'oton-kencana': 'Hijau zamrud dan emas bernuansa kain prada yang khidmat.',
+    'sekar-cempaka': 'Gading dan merah muda lembut bernuansa bunga cempaka.',
+    'purnama-alit': 'Biru malam dengan cahaya purnama, tenang dan modern.',
   }[slug] || 'Desain undangan untuk momen istimewa.';
 }
 

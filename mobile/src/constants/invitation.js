@@ -8,13 +8,16 @@ export const PITUNG_DINA_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida San
 
 export const TIGANG_SASIH_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara Tigang Sasih (3 bulanan) bagi buah hati kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.';
 
+export const OTONAN_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara Otonan bagi buah hati kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.';
+
 export const GIFT_PAYOUT_FEE_PERCENT = 1;
 
-export const INVITATION_TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih'];
+export const INVITATION_TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih', 'otonan'];
 
 // Megedong-gedongan and the child ceremonies keep the father in groom_data and the mother in bride_data.
 // `childCeremony` types also use child_data and share ChildCeremonyFormScreen. `childNamed` marks ceremonies
-// where the child already has a name: it is required and becomes the title.
+// where the child already has a name: it is required and becomes the title. `numbered` marks ceremonies that
+// repeat (otonan), where child_data.ceremony_number may say which one it is.
 const TYPE_INFO = {
   wedding: {
     label: 'pernikahan', giftLabel: 'Wedding Gift', personScreen: 'GroomBrideForm', personStep: 'Mempelai',
@@ -49,6 +52,14 @@ const TYPE_INFO = {
     choice: { title: 'Tigang Sasih (3 Bulanan)', buttonTitle: 'Tigang Sasih', body: 'Upacara saat buah hati berumur tiga bulan Bali (105 hari). Nama buah hati menjadi judul undangan.' },
     preview: { eyebrow: 'OM SWASTYASTU', names: 'Kirana', caption: 'Tigang Sasih · 3 Bulanan', heroTitle: 'UPACARA TIGANG SASIH', heroCaption: 'Putri dari Wira & Ayu' },
   },
+  otonan: {
+    childCeremony: true, childNamed: true, numbered: true,
+    label: 'otonan', giftLabel: 'Tanda Kasih', personScreen: 'ChildCeremonyForm', personStep: 'Buah Hati & Orang Tua',
+    openingQuote: OTONAN_OPENING_QUOTE, eventTypes: ['Otonan'], icon: 'sparkles-outline',
+    occasion: 'upacara otonan buah hati kami',
+    choice: { title: 'Otonan', body: 'Hari kelahiran menurut kalender Bali, setiap 210 hari. Untuk otonan pertama maupun berikutnya; nama buah hati menjadi judul undangan.' },
+    preview: { eyebrow: 'OM SWASTYASTU', names: 'Kirana', caption: 'Otonan', heroTitle: 'UPACARA OTONAN', heroCaption: 'Putri dari Wira & Ayu' },
+  },
 };
 
 const typeInfo = (invitation) => TYPE_INFO[invitation?.invitation_type] || TYPE_INFO.wedding;
@@ -57,6 +68,7 @@ export const isBirthday = (invitation) => invitation?.invitation_type === 'birth
 export const isMegedong = (invitation) => invitation?.invitation_type === 'megedong';
 export const isChildCeremony = (invitation) => Boolean(TYPE_INFO[invitation?.invitation_type]?.childCeremony);
 export const requiresChildName = (invitation) => Boolean(TYPE_INFO[invitation?.invitation_type]?.childNamed);
+export const isNumberedCeremony = (invitation) => Boolean(TYPE_INFO[invitation?.invitation_type]?.numbered);
 export const typeLabelFor = (invitation) => typeInfo(invitation).label;
 export const typeIconFor = (invitation) => typeInfo(invitation).icon;
 export const giftLabelFor = (invitation) => typeInfo(invitation).giftLabel;
@@ -90,10 +102,20 @@ export function invitationName(invitation) {
   return `${groom || 'Mempelai'} & ${bride || 'Pasangan'}`;
 }
 
+// "Otonan Pertama" or "Otonan ke-3" for a numbered ceremony; null when no number is given.
+export function ceremonyNumberLabelFor(invitation) {
+  if (!isNumberedCeremony(invitation)) return null;
+  const number = Number(invitation?.child_data?.ceremony_number || invitation?.ceremony_number);
+  if (!Number.isInteger(number) || number < 1) return null;
+  const title = typeInfo(invitation).choice.title;
+  return number === 1 ? `${title} Pertama` : `${title} ke-${number}`;
+}
+
 // Reads inside "kami mengundang untuk hadir di ...".
 export function occasionPhraseFor(invitation) {
   if (isBirthday(invitation)) return `perayaan ulang tahun ${invitationName(invitation)}`;
-  const occasion = typeInfo(invitation).occasion || 'acara pernikahan kami';
+  const numberLabel = ceremonyNumberLabelFor(invitation);
+  const occasion = numberLabel ? `upacara ${numberLabel.toLowerCase()} buah hati kami` : typeInfo(invitation).occasion || 'acara pernikahan kami';
   const child = requiresChildName(invitation) ? (invitation?.child_data?.child_nickname || invitation?.child_nickname) : null;
   return child ? `${occasion}, ${child}` : occasion;
 }
@@ -109,6 +131,9 @@ export const TEMPLATE_CARD_COLORS = {
   'nyambutin-kencana': { background: '#4a121b', accent: '#e2b65a', text: '#f6e6c8', hero: '#4a121b' },
   'tunjung-petak': { background: '#f7fbf5', accent: '#34704d', text: '#2f4a3a', hero: '#34704d' },
   'surya-alit': { background: '#fff6ec', accent: '#ad4f17', text: '#5a3520', hero: '#c2631f' },
+  'oton-kencana': { background: '#0f3b2e', accent: '#e0b95b', text: '#f4e9cc', hero: '#0f3b2e' },
+  'sekar-cempaka': { background: '#fff8f5', accent: '#a8456a', text: '#5a3540', hero: '#a8456a' },
+  'purnama-alit': { background: '#1b2247', accent: '#f3dc92', text: '#eef0ff', hero: '#1b2247' },
 };
 
 // A design can be offered to several invitation types under different slugs (e.g. tigang-sasih-rare-kencana),
