@@ -238,6 +238,16 @@ class ChildCeremonyInvitationTest extends TestCase
                 ->assertSee('Momen berharga')
                 ->assertDontSee('Tigang Sasih')->assertDontSee('Hari-hari pertama');
         }
+
+        // Otonan's own designs each have their own layout and ornament, and explain the ceremony.
+        foreach (['oton-kencana' => 'orn-gapura', 'sekar-cempaka' => 'orn-penjor', 'purnama-alit' => 'orn-pawukon'] as $slug => $ornament) {
+            $this->get('/preview/templates/'.$slug)->assertOk()
+                ->assertSee('upacara-bali.css')->assertSee('ub--'.$slug)
+                ->assertSee($ornament)->assertSee('ub-tridatu')
+                ->assertSee('kalender pawukon Bali')
+                ->assertSee('Tanda Kasih')->assertSee('Om Shanti, Shanti, Shanti Om');
+        }
+        $this->get('/preview/templates/otonan-rare-kencana')->assertOk()->assertSee('upacara-anak.css')->assertDontSee('orn-gapura');
     }
 
     public function test_otonan_is_titled_by_the_child_name_and_may_carry_its_number(): void

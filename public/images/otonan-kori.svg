@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 1000" preserveAspectRatio="xMidYMid slice"><style>.l{fill:none;stroke:#e3bd62;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.d{fill:#e3bd62}.c{fill:#f6ecd0;stroke:#e3bd62;stroke-width:1.6;stroke-linejoin:round}.s{fill:#17523e;stroke:#e3bd62;stroke-width:1.6;stroke-linejoin:round}.b{fill:none;stroke:#e9c98a;stroke-width:5;stroke-linecap:round}.j{fill:none;stroke:#f1e3a0;stroke-width:2.4;stroke-linecap:round}.w{fill:#e9c98a;stroke:#7a2f1f;stroke-width:1.8;stroke-linejoin:round}.wl{fill:none;stroke:#7a2f1f;stroke-width:1.8;stroke-linecap:round}</style><defs><pattern id="p" width="56" height="56" patternUnits="userSpaceOnUse"><g fill="none" stroke="#e3bd62" stroke-opacity=".3"><path d="M28 14c6 6 6 22 0 28c-6-6-6-22 0-28zM14 28c6-6 22-6 28 0c-6 6-22 6-28 0z"/><circle r="5"/><circle cx="56" r="5"/><circle cy="56" r="5"/><circle cx="56" cy="56" r="5"/></g></pattern><radialGradient id="g" cx=".5" cy=".3" r=".7"><stop offset="0" stop-color="#1d6b53"/><stop offset="1" stop-color="#0c3327"/></radialGradient><g id="k">
+    <path class="l" style="stroke-width:3" d="M30 78V320"/>
+    <path class="c" d="M14 46Q30 22 46 46Z"/>
+    <path class="c" d="M2 74Q30 34 58 74Z"/>
+    <path class="l" d="M2 74q4 9 8 0q4 9 8 0q4 9 8 0q4 9 8 0q4 9 8 0q4 9 8 0q4 9 8 0M14 46q4 7 8 0q4 7 8 0q4 7 8 0q4 7 8 0M30 24V10"/>
+    <circle class="d" cx="30" cy="8" r="3.5"/>
+    <path class="l" d="M6 80c-4 12 4 20 0 34M54 80c4 12-4 20 0 34"/>
+    <path class="s" d="M150 320H38V304H50V282H44V270H60V246H54V234H70V208H64V196H80V168H74V156H90V128H85V118H100V92H96V82H112V60H108V52H126V34H134V20H150Z"/>
+    <path class="l" d="M44 276H150M54 240H150M64 202H150M74 162H150M85 123H150M96 87H150M108 56H150M38 310H150"/>
+    <path class="l" d="M124 252l9 11-9 11-9-11zM126 180l8 10-8 10-8-10zM130 102l6 8-6 8-6-8zM98 258c8-8 8 8 0 0M104 186c7-7 7 7 0 0"/>
+</g></defs><rect width="600" height="1000" fill="url(#g)"/><rect width="600" height="1000" fill="url(#p)"/><use href="#k" transform="translate(75 616) scale(1.2)"/><use href="#k" transform="translate(525 616) scale(-1.2 1.2)"/><path d="M0 997H600" stroke="#e3bd62" stroke-width="6"/></svg>

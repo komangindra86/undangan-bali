@@ -1,0 +1,158 @@
+/* Child ceremony designs with their own layout and Balinese ornaments (views under upacara-anak/designs). */
+* { box-sizing: border-box; }
+body.ub { margin:0; background:var(--out); color:var(--ink); font:16px/1.75 Arial,sans-serif; }
+.ub-page { position:relative; width:100%; max-width:780px; margin:auto; overflow:hidden; background:var(--bg); }
+.ub .invitation-opening__center { max-width:100%; }
+.ub .invitation-opening__names,.ub .invitation-opening__guest { overflow-wrap:anywhere; }
+.ub-demo { background:#000000b8; color:#fff; text-align:center; font-size:12px; padding:12px 18px; }
+.ub-eyebrow { color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.3em; margin:0; text-transform:uppercase; }
+.ub-intro { color:var(--muted); font-size:14px; letter-spacing:.16em; margin:0; text-transform:uppercase; }
+.ub-note { display:inline-block; margin:10px 0 0; padding:3px 14px; border:1px solid var(--line); border-radius:999px; color:var(--accent); font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+.ub-page h1 { font:500 clamp(36px,10vw,66px)/1.1 Georgia,serif; margin:16px 0 12px; overflow-wrap:anywhere; }
+.ub-page h2 { font:500 clamp(23px,6vw,32px)/1.3 Georgia,serif; margin:8px 0; overflow-wrap:anywhere; }
+.ub-relation { margin:0 0 14px; color:var(--muted); font:italic 17px/1.5 Georgia,serif; }
+.ub-date { color:var(--accent); font-size:13px; letter-spacing:.18em; margin:0; text-transform:uppercase; }
+.ub-section { padding:46px 28px; text-align:center; overflow-wrap:anywhere; }
+.ub-greeting > p { max-width:560px; margin:0 auto; font:italic 17px/1.9 Georgia,serif; }
+.ub-meaning { margin:30px auto 0; max-width:460px; }
+.ub-meaning p { margin:0; color:var(--muted); font-size:14px; line-height:1.7; }
+.ub-meaning strong { color:var(--accent); }
+/* Benang tridatu: the red, white and black thread tied at an otonan. */
+.ub-tridatu { display:block; width:132px; height:7px; margin:0 auto 14px; border-radius:4px; background:repeating-linear-gradient(115deg,#b3261e 0 7px,#f7f3ea 7px 14px,#1b1b1b 14px 21px); box-shadow:0 0 0 1px #00000026; }
+/* Kain poleng: two half-transparent stripes cross into black, grey and white squares. */
+.ub-poleng { height:30px; background:linear-gradient(90deg,#0000008a 50%,transparent 0) 0 0/20px 20px,linear-gradient(#0000008a 50%,transparent 0) 0 0/20px 20px,#f4f1ea; }
+.ub-child-line { color:var(--muted); margin:6px 0; }
+.ub-birth { display:inline-block; margin:18px 0 0; padding:6px 18px; border:1px solid var(--line); border-radius:999px; font-size:14px; font-weight:700; }
+.ub-details { display:grid; gap:18px; margin:18px 0 0; }
+.ub-details dt { color:var(--muted); font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+.ub-details dd { margin:0; font-size:18px; font-weight:700; }
+.ub-details small { display:block; font-size:15px; font-weight:400; }
+.ub-button { align-items:center; background:var(--accent); border:0; border-radius:999px; color:var(--on-accent); cursor:pointer; display:inline-flex; font:700 14px Arial,sans-serif; justify-content:center; margin-top:24px; max-width:100%; min-height:48px; padding:12px 24px; text-decoration:none; }
+.ub-button:focus-visible { outline:3px solid var(--ink); outline-offset:4px; }
+.ub-gallery { display:grid; gap:14px; margin-top:22px; }
+.ub-gallery img { width:100%; max-height:600px; object-fit:contain; border-radius:14px; background:var(--panel); }
+.ub-gallery figure { margin:0; }
+.ub-gallery figcaption { color:var(--muted); font-size:12px; padding:8px; }
+.ub-placeholder { aspect-ratio:4/3; border:1px dashed var(--line); border-radius:14px; background:radial-gradient(circle at 50% 50%,var(--accent) 0 8px,transparent 9px),var(--panel); }
+.ub-closing { padding-bottom:104px; }
+.ub-closing h2 { color:var(--accent); margin:20px 0; }
+.ub-family { margin:0; }
+.ub-credit { margin:22px 0 0; color:var(--muted); font-size:13px; }
+.ub .ua-music { position:fixed; bottom:18px; right:18px; z-index:30; background:var(--panel); color:var(--ink); border:1px solid var(--accent); border-radius:24px; padding:8px 14px; max-width:85vw; }
+.ub .ua-music button { background:none; color:inherit; border:0; min-height:36px; font-weight:700; cursor:pointer; }
+.ub .ua-music span { font-size:12px; }
+
+.orn { display:block; height:auto; overflow:visible; }
+.orn-line { fill:none; stroke:var(--orn); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.orn-dot { fill:var(--orn); }
+.orn-cloth { fill:var(--orn-cloth); stroke:var(--orn); stroke-width:1.6; stroke-linejoin:round; }
+.orn-stone { fill:var(--orn-stone); stroke:var(--orn); stroke-width:1.6; stroke-linejoin:round; }
+.orn-fruit { fill:var(--orn-fruit); stroke:var(--orn); stroke-width:1.6; }
+.orn-bamboo { fill:none; stroke:var(--orn-bamboo); stroke-width:5; stroke-linecap:round; }
+.orn-janur { fill:none; stroke:var(--orn-janur); stroke-width:2.4; stroke-linecap:round; }
+.orn-cloud { fill:var(--orn-cloud); stroke:var(--orn-cloud-line); stroke-width:1.8; stroke-linejoin:round; }
+.orn-cloud-line { fill:none; stroke:var(--orn-cloud-line); stroke-width:1.8; stroke-linecap:round; }
+.orn-moon { fill:var(--orn-moon); }
+.orn-gapura > path:first-child { stroke-width:3; }
+.orn.is-mirrored { transform:scaleX(-1); }
+.orn-patra { width:200px; max-width:70%; margin:0 auto 20px; }
+
+/* Oton Kencana: prada emerald and gold, symmetric, the date framed by a candi bentar. */
+.ub--oton-kencana { --out:#061e16; --bg:#0c3327; --panel:#113f30; --ink:#f6ecd0; --muted:#cfc39c; --accent:#e3bd62; --on-accent:#0a2a20; --line:#e3bd6266; --orn:#e3bd62; --orn-cloth:#f6ecd0; --orn-stone:#17523e; --orn-fruit:#c9762c; }
+.ub--oton-kencana .ub-page { border-inline:6px double var(--accent); }
+.ub--oton-kencana .ub-hero { position:relative; text-align:center; padding:56px 0 0; border-bottom:3px double var(--accent); background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cg fill='none' stroke='%23e3bd62' stroke-opacity='.26'%3E%3Cpath d='M28 14c6 6 6 22 0 28c-6-6-6-22 0-28zM14 28c6-6 22-6 28 0c-6 6-22 6-28 0z'/%3E%3Ccircle cx='0' cy='0' r='5'/%3E%3Ccircle cx='56' cy='0' r='5'/%3E%3Ccircle cx='0' cy='56' r='5'/%3E%3Ccircle cx='56' cy='56' r='5'/%3E%3C/g%3E%3C/svg%3E"),radial-gradient(circle at 50% 22%,#1d6b53 0,transparent 62%); }
+/* Ider-ider: the fringe of gold triangles along the top. */
+.ub-ider { position:absolute; inset:0 0 auto; height:14px; border-top:3px solid var(--accent); background:linear-gradient(135deg,var(--accent) 25%,transparent 25%) 0 0/20px 20px,linear-gradient(225deg,var(--accent) 25%,transparent 25%) 0 0/20px 20px; }
+.ub--oton-kencana .orn-banten { width:104px; margin:20px auto 12px; }
+.ub--oton-kencana .ub-page h1 { color:#f3d894; padding-inline:24px; }
+.ub--oton-kencana .ub-relation { padding-inline:24px; }
+.ub-gate { display:flex; align-items:flex-end; justify-content:space-between; margin-top:18px; }
+.ub-gate .orn-gapura { flex:none; width:clamp(104px,29vw,190px); }
+.ub-gate-date { flex:1; display:grid; margin:0; padding-bottom:26px; }
+.ub-gate-date span { color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.22em; text-transform:uppercase; }
+.ub-gate-date strong { font:500 clamp(54px,17vw,92px)/1.05 Georgia,serif; }
+.ub--oton-kencana .ub-greeting { background:var(--panel); }
+.ub--oton-kencana .ub-meaning { padding-top:26px; border-top:1px solid var(--line); }
+.ub--oton-kencana .ub-child { margin:28px 6px 6px; padding:30px 18px 26px; background:var(--panel); border:1px solid var(--accent); outline:1px solid var(--line); outline-offset:5px; }
+.ub--oton-kencana .ub-child-photo { display:block; width:164px; height:164px; margin:0 auto 22px; border-radius:50%; object-fit:cover; border:3px solid var(--accent); box-shadow:0 0 0 6px var(--panel),0 0 0 7px var(--accent); }
+.ub--oton-kencana .ub-parents { display:grid; grid-template-columns:1fr 1fr; margin-top:18px; border-top:1px solid var(--line); }
+.ub--oton-kencana .ub-parents p { margin:0; padding:16px 8px 0; }
+.ub--oton-kencana .ub-parents p:first-child { border-right:1px solid var(--line); }
+.ub--oton-kencana .ub-parents span { display:block; color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; }
+.ub--oton-kencana .ub-parents strong { display:block; font:500 17px/1.45 Georgia,serif; }
+.ub--oton-kencana .ub-event { padding:30px 20px 34px; background:var(--panel); border:3px double var(--accent); }
+.ub--oton-kencana .ub-button { border-radius:4px; }
+.ub-gate--small { justify-content:center; gap:44px; margin:0 0 22px; }
+.ub-gate--small .orn-gapura { width:64px; }
+
+/* Sekar Cempaka: ivory and cempaka rose, asymmetric, under a penjor with a canang sari. */
+.ub--sekar-cempaka { --out:#f1dfe0; --bg:#fff9f5; --panel:#ffffff; --ink:#55323d; --muted:#7b5864; --accent:#a8456a; --on-accent:#fff; --line:#a8456a33; --orn:#a8456a; --orn-cloth:#f8cdd7; --orn-stone:#f3e3c2; --orn-bamboo:#b58b3b; --orn-janur:#a9a046; }
+.ub--sekar-cempaka .ub-hero { position:relative; display:flex; align-items:flex-end; min-height:600px; padding:64px 28px 112px; overflow:hidden; background:radial-gradient(circle at 4% 8%,#fbdde4 0 70px,transparent 71px),linear-gradient(180deg,#fdeef0,#fff9f5 78%); }
+.ub--sekar-cempaka .orn-penjor { position:absolute; top:14px; right:-10px; width:auto; height:calc(100% - 14px); }
+.ub-hero-text { position:relative; max-width:calc(100% - 62px); text-align:left; }
+.ub--sekar-cempaka .ub-page h1 { color:var(--accent); font-style:italic; font-size:clamp(40px,12vw,72px); line-height:1.04; }
+.ub--sekar-cempaka .ub-greeting { position:relative; margin-top:-44px; background:var(--panel); border-radius:44px 44px 0 0; box-shadow:0 -14px 30px #a8456a14; }
+.ub--sekar-cempaka .ub-greeting .orn-canang { width:116px; margin:-104px auto 22px; filter:drop-shadow(0 10px 16px #55323d33); }
+.ub--sekar-cempaka .ub-meaning { padding:22px 20px; border-radius:20px; background:#fdeef0; }
+.ub--sekar-cempaka .ub-child { display:grid; gap:24px; justify-items:center; }
+.ub--sekar-cempaka .ub-child-photo { display:grid; place-items:center; width:196px; height:252px; border-radius:98px 98px 14px 14px; object-fit:cover; background:#fdeef0; border:1px solid var(--accent); outline:1px solid var(--line); outline-offset:6px; }
+.ub--sekar-cempaka .ub-child-photo .orn-canang { width:104px; }
+.ub--sekar-cempaka .ub-parents { margin:10px 0 0; font:19px/1.55 Georgia,serif; }
+.ub--sekar-cempaka .ub-parents strong { display:block; font-weight:500; }
+.ub--sekar-cempaka .ub-parents span { color:var(--accent); }
+.ub--sekar-cempaka .ub-event { display:grid; grid-template-columns:auto 1fr; gap:20px; align-items:center; margin-top:22px; padding:18px; text-align:left; background:var(--panel); border-radius:28px; box-shadow:0 14px 34px #a8456a1c; }
+.ub-day { display:grid; min-width:104px; margin:0; padding:26px 12px 16px; text-align:center; background:var(--accent); color:#fff; border-radius:60px 60px 16px 16px; }
+.ub-day span { font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; }
+.ub-day strong { font:500 46px/1.15 Georgia,serif; }
+.ub--sekar-cempaka .ub-details { margin:0; gap:14px; }
+.ub--sekar-cempaka .ub-details dd { font-size:17px; }
+.ub--sekar-cempaka .ub-gallery { display:block; columns:2; column-gap:12px; }
+.ub--sekar-cempaka .ub-gallery > * { break-inside:avoid; margin-bottom:12px; }
+.ub--sekar-cempaka .ub-gallery img,.ub--sekar-cempaka .ub-placeholder { border-radius:14px; }
+.ub--sekar-cempaka .ub-gallery > :nth-child(odd):is(img),.ub--sekar-cempaka .ub-gallery > :nth-child(odd) .ub-placeholder { border-radius:90px 90px 14px 14px; }
+.ub--sekar-cempaka .ub-placeholder { aspect-ratio:3/4; }
+.ub--sekar-cempaka .ub-closing { background:#fdeef0; border-radius:44px 44px 0 0; }
+.ub--sekar-cempaka .ub-closing .orn-canang { width:84px; margin:0 auto 22px; }
+@media(min-width:600px) {
+    .ub--sekar-cempaka .ub-child { grid-template-columns:auto 1fr; align-items:center; text-align:left; padding-inline:56px; }
+}
+
+/* Purnama Alit: night indigo, the pawukon wheel around the full moon, Kamasan clouds and poleng. */
+.ub--purnama-alit { --out:#0b0e26; --bg:#151a3d; --panel:#1f2757; --ink:#eef0ff; --muted:#b9bfe6; --accent:#f3dc92; --on-accent:#151a3d; --line:#f3dc9244; --orn:#f3dc92; --orn-cloth:#c98b3c; --orn-moon:#fdf3c4; --orn-cloud:#e9c98a; --orn-cloud-line:#7a2f1f; }
+.ub--purnama-alit .ub-hero { text-align:center; padding:0 24px 46px; background:radial-gradient(circle at 12% 30%,#ffffffb3 0 1.5px,transparent 2.5px),radial-gradient(circle at 88% 22%,#ffffff99 0 1.5px,transparent 2.5px),radial-gradient(circle at 80% 58%,#ffffff80 0 1px,transparent 2px),radial-gradient(circle at 18% 66%,#ffffff80 0 1px,transparent 2px),linear-gradient(180deg,#0b0e26,#151a3d); }
+.ub--purnama-alit .ub-hero .ub-poleng { margin:0 -24px 30px; border-bottom:3px solid var(--accent); }
+.ub-sky { position:relative; width:min(250px,68vw); margin:24px auto 22px; }
+.ub-sky .orn-pawukon { width:100%; filter:drop-shadow(0 0 26px #f3dc9250); }
+.ub-sky .orn-awan { position:absolute; }
+.ub-sky .orn-awan.is-left { left:-24%; bottom:10%; width:60%; }
+.ub-sky .orn-awan.is-right { right:-24%; top:10%; width:50%; }
+.ub--purnama-alit .ub-note { border-radius:6px; }
+.ub--purnama-alit .ub-meaning { max-width:none; margin:0; padding:24px 28px; background:var(--panel); text-align:center; }
+.ub-meaning .ub-wuku { color:var(--accent); font-size:13px; font-weight:700; letter-spacing:.16em; margin:0 0 14px; text-transform:uppercase; }
+.ub--purnama-alit .ub-greeting { padding-bottom:30px; }
+.ub-timeline { margin:10px 28px 10px 38px; border-left:1px solid var(--line); }
+.ub-step { position:relative; padding:0 0 40px 28px; text-align:left; overflow-wrap:anywhere; }
+.ub-step::before { content:''; position:absolute; left:-8px; top:1px; width:15px; height:15px; border-radius:50%; background:var(--orn-moon); box-shadow:0 0 0 5px var(--bg),0 0 0 6px var(--line),0 0 16px 4px #f3dc9255; }
+.ub--purnama-alit .ub-child { display:flex; gap:16px; align-items:center; margin-top:12px; padding:18px; background:var(--panel); border-radius:16px; }
+.ub--purnama-alit .ub-child-photo { flex:none; width:88px; height:88px; border-radius:50%; object-fit:cover; border:2px solid var(--accent); }
+.ub--purnama-alit .ub-child h2 { margin-top:0; font-size:22px; }
+.ub--purnama-alit .ub-parents { margin:6px 0 0; }
+.ub--purnama-alit .ub-parents strong { display:block; font-weight:400; }
+.ub--purnama-alit .ub-parents span { color:var(--accent); }
+.ub--purnama-alit .ub-birth { margin-top:12px; border-radius:6px; }
+.ub-time { margin:2px 0 4px; color:var(--accent); font:700 30px/1.3 Arial,sans-serif; }
+.ub-step-note { margin:0; color:var(--muted); }
+.ub--purnama-alit .ub-button { border-radius:10px; margin-top:18px; }
+.ub--purnama-alit .ub-gallery-section { text-align:left; }
+.ub--purnama-alit .ub-gallery { display:flex; gap:12px; margin-inline:-28px; padding:0 28px 12px; overflow-x:auto; scroll-snap-type:x mandatory; }
+.ub--purnama-alit .ub-gallery > * { flex:0 0 78%; scroll-snap-align:center; }
+.ub--purnama-alit .ub-gallery img { height:340px; }
+.ub--purnama-alit .ub-placeholder { aspect-ratio:auto; height:340px; }
+.ub--purnama-alit .ub-closing { padding-bottom:0; }
+.ub--purnama-alit .ub-closing .orn-awan { width:150px; margin:0 auto 20px; }
+.ub--purnama-alit .ub-closing .ub-poleng { margin:64px -28px 0; border-top:3px solid var(--accent); }
+
+.ub .is-revealed { animation:ub-reveal .7s ease both; }
+@keyframes ub-reveal { from { opacity:.45; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+@media(max-width:360px) { .ub-section { padding-inline:18px; } .ub-timeline { margin-inline:26px 18px; } }
+@media(prefers-reduced-motion:reduce) { .ub *, .ub *::before, .ub *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }

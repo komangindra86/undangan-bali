@@ -104,35 +104,6 @@ body.anak { --paper:#fbf3e4; --ink:#4a3421; --muted:#806a52; --accent:#a8792c; -
 .anak--surya .ua-event { border-radius:14px; background:#fff; border-color:#ad4f1738; }
 .anak--surya .ua-button { border-radius:12px; }
 
-/* Oton Kencana: prada-cloth emerald and gold. */
-.anak.anak--oton { --paper:#0f3b2e; --ink:#f4e9cc; --muted:#cdbf98; --accent:#e0b95b; --on-accent:#0c2a21; --panel:#164a3a; --line:#e0b95b66; --petal:#f4e9cc; --heart:#e0b95b; background:#082219; }
-.anak--oton .ua-page { border-inline:8px double #e0b95b; }
-.anak--oton .ua-demo { background:#082219; color:#f4e9cc; }
-.anak--oton .ua-hero { background:radial-gradient(circle at 50% 0,#1d5c48 0,transparent 64%),repeating-linear-gradient(0deg,transparent 0 26px,#e0b95b10 27px 28px),repeating-linear-gradient(90deg,transparent 0 26px,#e0b95b10 27px 28px); }
-.anak--oton .ua-page h1 { color:#f0d28c; }
-.anak--oton .ua-event { border:4px double #e0b95b; border-radius:8px; }
-.anak--oton .ua-child { border-radius:8px; }
-
-/* Sekar Cempaka: ivory and soft cempaka rose. */
-.anak.anak--cempaka { --paper:#fff8f5; --ink:#5a3540; --muted:#876470; --accent:#a8456a; --on-accent:#fff; --panel:#ffffff; --line:#a8456a38; --petal:#ffffff; --heart:#f3b7c6; background:#f3e1e2; }
-.anak--cempaka .ua-hero { background:radial-gradient(circle at 88% 10%,#fbdde4 0 62px,transparent 63px),radial-gradient(circle at 8% 34%,#fdeaee 0 78px,transparent 79px),radial-gradient(circle at 82% 96%,#fad7df 0 46px,transparent 47px); }
-.anak--cempaka .ua-flower { filter:drop-shadow(0 10px 18px #a8456a2e); }
-.anak--cempaka .ua-page h1 { color:#a8456a; font-style:italic; }
-.anak--cempaka .ua-child { border:0; border-radius:120px 120px 24px 24px; box-shadow:0 12px 30px #a8456a1f; padding-top:38px; }
-.anak--cempaka .ua-event { background:#a8456a; border:0; color:#fff; }
-.anak--cempaka .ua-event .ua-eyebrow,.anak--cempaka .ua-event .ua-details span { color:#fff0f3; }
-.anak--cempaka .ua-event .ua-button { background:#fff; color:#8a3454; }
-
-/* Purnama Alit: night indigo under a full moon, modern. */
-.anak.anak--purnama { --paper:#1b2247; --ink:#eef0ff; --muted:#b9bfe6; --accent:#f3dc92; --on-accent:#1b2247; --panel:#252d5c; --line:#f3dc9255; --petal:#fdf6d8; --heart:#f3dc92; background:#10142e; }
-.anak--purnama .ua-demo { background:#10142e; color:#eef0ff; }
-.anak--purnama .ua-hero { padding-top:76px; background:radial-gradient(circle at 16% 22%,#ffffffb3 0 1.5px,transparent 2.5px),radial-gradient(circle at 84% 14%,#ffffff99 0 1.5px,transparent 2.5px),radial-gradient(circle at 72% 44%,#ffffff80 0 1px,transparent 2px),radial-gradient(circle at 28% 58%,#ffffff80 0 1px,transparent 2px),radial-gradient(circle at 50% 128px,#f3dc9233 0 96px,#f3dc9214 97px 150px,transparent 151px),linear-gradient(180deg,#10142e,#1b2247); }
-.anak--purnama .ua-petals path { stroke:#f3dc92; }
-.anak--purnama .ua-note,.anak--purnama .ua-facts div { border-radius:8px; }
-.anak--purnama .ua-child { border-radius:18px; border-color:transparent; box-shadow:0 14px 34px #0a0d2266; }
-.anak--purnama .ua-event { border-radius:18px; background:#252d5c; border-color:#f3dc9233; }
-.anak--purnama .ua-button { border-radius:12px; }
-
 .anak .is-revealed { animation:ua-reveal .7s ease both; }
 @keyframes ua-reveal { from { opacity:.45; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
 @media(min-width:650px) { .ua-gallery { grid-template-columns:1fr 1fr; } .ua-gallery > :first-child { grid-column:span 2; } }

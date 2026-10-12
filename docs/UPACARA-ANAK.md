@@ -49,11 +49,40 @@ lebih dari satu upacara mendapat baris sendiri dengan slug berbeda dan
 
 ## Halaman
 
+Ada dua generasi desain. Tiga desain otonan (Oton Kencana, Sekar Cempaka,
+Purnama Alit) punya tata letak sendiri dengan ornamen Bali: lihat
+[Desain Berornamen](#desain-berornamen). Enam desain lainnya masih memakai
+satu halaman bersama yang hanya berbeda warna:
+
 `resources/views/invitations/templates/upacara-anak/page.blade.php` dengan
 `public/css/upacara-anak.css`. Isi: Om Swastyastu, nama upacara dan
 keterangannya, kata pembuka, buah hati (foto, nama, putra/putri, anak ke-,
 tanggal lahir bila diisi) beserta nama ayah dan ibu, waktu dan tempat, peta,
 galeri, Tanda Kasih, dan penutup Om Shanti, Shanti, Shanti Om.
+
+## Desain Berornamen
+
+`upacara-anak/frame.blade.php` menyiapkan data, sampul pembuka, dan skrip, lalu
+memuat isi desain dari `upacara-anak/designs/<slug>.blade.php`. Gaya ada di
+`public/css/upacara-bali.css` (`.ub--<slug>`). Tiap desain menyusun bagiannya
+sendiri, jadi desain baru berarti berkas isi baru, bukan sekadar warna baru.
+
+| Desain | Tata letak | Ornamen |
+| --- | --- | --- |
+| Oton Kencana | Simetris; tanggal berdiri di antara candi bentar | Candi bentar, tedung, banten, ider-ider, kain prada, patra |
+| Sekar Cempaka | Asimetris rata kiri; foto dan tanggal berbentuk lengkung | Penjor dengan sampian dan sanggah, canang sari |
+| Purnama Alit | Garis waktu; galeri geser | Roda pawukon, purnama, awan Kamasan, kain poleng |
+
+Ornamen digambar sebagai SVG di `upacara-anak/ornaments/` dan mengambil warna
+dari variabel CSS desainnya (`--orn`, `--orn-cloth`, dan seterusnya). Benang
+tridatu dan kain poleng dibuat dengan CSS (`.ub-tridatu`, `.ub-poleng`).
+
+Ciri upacara: `CHILD_CEREMONIES[...]['meaning']` berisi satu kalimat tentang
+upacaranya, ditampilkan bersama benang tridatu; Purnama Alit juga menulis
+`30 wuku × 7 hari = 210 hari`.
+
+Sampul pembuka memakai foto buah hati bila ada; bila tidak, ilustrasi
+`public/images/otonan-*.svg` dengan bayangan yang lebih tipis.
 
 ## Feed dan Gift
 

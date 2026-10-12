@@ -26,11 +26,15 @@ class Invitation extends Model
      * child_named: the child already has a name by this ceremony, so the name is required and becomes the title.
      * age_days: the child's age at the ceremony, used for the template preview's sample birth date.
      * numbered: the ceremony repeats, so ceremony_number may say which one it is and replaces the fixed note.
+     * meaning: one line explaining the ceremony, shown by the designs that have a place for it.
      */
     public const CHILD_CEREMONIES = [
         'pitung_dina' => ['title' => 'Abulan Pitung Dina', 'note' => '42 Hari', 'child_named' => false, 'age_days' => 42, 'numbered' => false],
         'tigang_sasih' => ['title' => 'Tigang Sasih', 'note' => '3 Bulanan', 'child_named' => true, 'age_days' => 105, 'numbered' => false],
-        'otonan' => ['title' => 'Otonan', 'note' => null, 'child_named' => true, 'age_days' => 210, 'numbered' => true],
+        'otonan' => [
+            'title' => 'Otonan', 'note' => null, 'child_named' => true, 'age_days' => 210, 'numbered' => true,
+            'meaning' => 'Peringatan hari kelahiran menurut kalender pawukon Bali, yang datang setiap 210 hari.',
+        ],
     ];
 
     public const PHOTO_COLUMNS = ['groom_photo', 'bride_photo', 'celebrant_photo', 'child_photo'];
@@ -163,6 +167,11 @@ class Invitation extends Model
             $this->ceremony_number === 1 => $this->ceremony_title.' Pertama',
             default => $this->ceremony_title.' ke-'.$this->ceremony_number,
         };
+    }
+
+    public function getCeremonyMeaningAttribute(): ?string
+    {
+        return self::CHILD_CEREMONIES[$this->invitation_type]['meaning'] ?? null;
     }
 
     /**
