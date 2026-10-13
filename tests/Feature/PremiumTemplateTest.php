@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Invitation;
 use App\Models\InvitationTemplate;
 use App\Models\User;
+use Database\Seeders\InvitationTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -134,6 +135,60 @@ class PremiumTemplateTest extends TestCase
 
         $invitation->takeDown('Undangan palsu');
         $this->get('/u/wira-ayu/bagikan')->assertNotFound();
+    }
+
+    public function test_wiwaha_agung_renders_with_the_least_and_the_most_an_invitation_can_hold(): void
+    {
+        $this->seed(InvitationTemplateSeeder::class);
+        $template = InvitationTemplate::where('slug', 'wiwaha-agung')->firstOrFail();
+        $this->assertTrue($template->is_premium);
+        $owner = User::factory()->create(['role' => 'user']);
+        $base = [
+            'user_id' => $owner->id,
+            'template_id' => $template->id,
+            'status' => 'published',
+            'groom_full_name' => 'I Made Wira Adnyana',
+            'groom_nickname' => 'Wira',
+            'bride_full_name' => 'Ni Putu Ayu Lestari',
+            'bride_nickname' => 'Ayu',
+            'event_type' => 'Pawiwahan',
+            'event_date' => now()->addMonth()->toDateString(),
+            'start_time' => '10:00',
+            'venue_name' => 'Bale Banjar Ubud',
+            'venue_address' => 'Jalan Raya Ubud, Gianyar, Bali',
+            'music_type' => 'none',
+            'published_at' => now(),
+        ];
+        Invitation::create($base + ['slug' => 'wira-ayu-minimal']);
+        $full = Invitation::create($base + [
+            'slug' => 'wira-ayu-lengkap',
+            'groom_father_name' => 'I Ketut Darma',
+            'groom_mother_name' => 'Ni Luh Sari',
+            'bride_father_name' => 'I Wayan Sudarta',
+            'end_time' => '13:00',
+            'opening_quote' => 'Dengan restu keluarga kami mengundang.',
+            'google_maps_url' => 'https://maps.google.com/?q=-8.5069,115.2625',
+            'groom_photo' => 'invitations/qa/groom.jpg',
+            'gallery_photos' => ['invitations/qa/one.jpg', 'invitations/qa/two.jpg'],
+        ]);
+        $full->moments()->create(['title' => 'Pertama bertemu', 'body' => 'Di pura desa.', 'occurred_at' => '2021-03-01']);
+
+        $this->get('/preview/templates/wiwaha-agung')->assertOk()->assertSee('Kisah kami')->assertSee('Simpan ke kalender');
+        $this->get('/u/wira-ayu-minimal?to=Bapak+Wayan')
+            ->assertOk()
+            ->assertSee('Bapak Wayan')
+            ->assertDontSee('Kisah kami')
+            ->assertDontSee('Putra dari')
+            ->assertDontSee('Momen kami')
+            ->assertSee('laporkan undangan ini');
+        $this->get('/u/wira-ayu-lengkap')
+            ->assertOk()
+            ->assertSee('Pertama bertemu')
+            ->assertSee('I Ketut Darma &amp; Ni Luh Sari', false)
+            ->assertSee('I Wayan Sudarta')
+            ->assertSee('10:00 - 13:00 WITA')
+            ->assertSee('Momen kami')
+            ->assertSee('Buka Google Maps');
     }
 
     private function templates(): array

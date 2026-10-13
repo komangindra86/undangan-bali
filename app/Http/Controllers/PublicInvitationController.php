@@ -82,7 +82,7 @@ class PublicInvitationController extends Controller
             'bride_mother_name' => 'Ni Made Rini',
             'opening_quote' => 'Dalam restu keluarga dan kehangatan Bali, kami mengikat janji untuk berjalan bersama.',
             'event_type' => 'Pawiwahan',
-            'event_date' => Carbon::parse('2026-08-18'),
+            'event_date' => now()->addMonths(2)->startOfDay(),
             'start_time' => '10:00',
             'end_time' => '13:00',
             'venue_name' => 'Bale Banjar Ubud',

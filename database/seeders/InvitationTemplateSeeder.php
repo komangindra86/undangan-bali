@@ -64,6 +64,19 @@ class InvitationTemplateSeeder extends Seeder
             ]);
         }
 
+        // Premium designs are made for custom orders: hidden from the catalogue unless the account was given access.
+        foreach (['wiwaha-agung' => 'Wiwaha Agung'] as $slug => $name) {
+            InvitationTemplate::updateOrCreate(['slug' => $slug], [
+                'name' => $name,
+                'invitation_type' => 'wedding',
+                'thumbnail' => 'templates/bali-preview/hero-couple.jpg',
+                'preview_image' => 'templates/bali-preview/hero-couple.jpg',
+                'blade_view' => 'invitations.templates.premium.'.$slug,
+                'is_active' => true,
+                'is_premium' => true,
+            ]);
+        }
+
         foreach (['ceria-confetti' => 'Ceria Confetti', 'ruang-putih' => 'Ruang Putih', 'bali-pradnyan' => 'Bali Pradnyan'] as $slug => $name) {
             InvitationTemplate::updateOrCreate(['slug' => $slug], [
                 'name' => $name,

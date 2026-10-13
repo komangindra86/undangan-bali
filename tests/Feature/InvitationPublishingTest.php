@@ -107,7 +107,7 @@ class InvitationPublishingTest extends TestCase
             'is_active' => true,
         ]);
         $this->assertSame($legacy->id, $invitation->fresh()->template_id);
-        $this->assertSame(5, InvitationTemplate::where('is_active', true)->where('invitation_type', 'wedding')->count());
+        $this->assertSame(5, InvitationTemplate::where('is_active', true)->where('is_premium', false)->where('invitation_type', 'wedding')->count());
     }
 
     public function test_local_draft_can_be_synced_after_register_and_published(): void

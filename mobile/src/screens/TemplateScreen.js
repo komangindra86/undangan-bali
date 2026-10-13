@@ -156,6 +156,7 @@ function conceptFor(slug) {
     'ubud-garden': 'Editorial terang, taman Ubud dan warna natural.',
     'royal-kamasan': 'Adat mewah, patra emas, songket gelap, countdown.',
     'puspa-kencana': 'Ivory hangat, ukiran Bali, bunga kamboja, dan kilau emas.',
+    'wiwaha-agung': 'Premium: foto dalam lengkung kori, penjor, pita songket, dan kisah pasangan.',
     'ceria-confetti': 'Warna ceria, kartu foto playful, dan suasana pesta.',
     'ruang-putih': 'Minimalis, ruang lega, tipografi editorial yang tenang.',
     'bali-pradnyan': 'Hijau dalam, ornamen emas dan kehangatan perayaan Bali.',
