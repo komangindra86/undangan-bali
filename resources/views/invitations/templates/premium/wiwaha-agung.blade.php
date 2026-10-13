@@ -262,13 +262,96 @@
         .wa-player { bottom: 18px; position: fixed; right: 18px; z-index: 30; }
         .wa-player button { background: #fffaf0; border: 1px solid var(--wa-gold-soft); border-radius: 999px; box-shadow: 0 10px 24px rgba(74, 52, 20, .22); color: var(--wa-gold); cursor: pointer; font: 700 12px Inter, system-ui, sans-serif; min-height: 44px; padding: 0 18px; }
 
-        .js [data-reveal] { opacity: 0; transform: translateY(26px); transition: opacity .8s ease, transform .9s cubic-bezier(.2, .75, .25, 1); }
+        /* Motion. Hero pieces wait for the opening cover, the rest plays as each part scrolls into view. */
+        .wa-hero > .wa-petals, .wa-hero > .wa-sparkles, .wa-band > .wa-sparkles { inset: 0; overflow: hidden; pointer-events: none; position: absolute; }
+        .wa-petals svg { animation: wa-fall linear infinite; filter: drop-shadow(0 4px 6px rgba(120, 84, 24, .18)); opacity: 0; position: absolute; top: -8%; }
+        .wa-sparkles i { animation: wa-twinkle 3.6s ease-in-out infinite; background: radial-gradient(circle, #fffbe6, #e7c574 55%, transparent 72%); border-radius: 50%; height: 6px; opacity: 0; position: absolute; width: 6px; }
+        .wa-arch-wrap { isolation: isolate; }
+        .wa-arch-wrap::before { animation: wa-glow 5.5s ease-in-out infinite; background: radial-gradient(circle, rgba(255, 224, 150, .8), transparent 64%); border-radius: 50%; content: ''; inset: -20%; position: absolute; z-index: -1; }
+        .wa-arch img { animation: wa-kenburns 16s ease-in-out infinite alternate; }
+        .wa-arch-wrap .orn-jepun.is-a { animation: wa-float 6s ease-in-out infinite; }
+        .wa-arch-wrap .orn-jepun.is-b { animation: wa-float 7s ease-in-out 1.2s infinite; }
+        .wa-hero h1 span { animation: wa-shimmer 4.5s linear infinite; background: linear-gradient(100deg, #b3863a 20%, #f8e7b0 45%, #b3863a 70%) 0 0 / 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .wa-button { overflow: hidden; position: relative; }
+        .wa-button::after { animation: wa-sheen 4.2s ease-in-out infinite; background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, .5) 50%, transparent 65%); content: ''; inset: 0; position: absolute; transform: translateX(-120%); }
+        .wa-band { animation: wa-songket 28s linear infinite; }
+        .wa-countdown strong.is-tick { animation: wa-tick .5s ease; }
+        .wa-closing .orn-canang { animation: wa-spin 44s linear infinite; }
+        .wa-player button.is-playing { animation: wa-pulse 1.9s ease-out infinite; }
+        .wa-gallery-grid img { cursor: zoom-in; }
+
+        .js .wa-hero .orn-penjor, .js .wa-hero .wa-heading > *, .js .wa-hero .wa-arch-wrap, .js .wa-hero h1, .js .wa-hero .wa-date, .js .wa-hero .wa-guest { opacity: 0; }
+        html.js:not(.invitation-pending) .wa-hero .orn-penjor { animation: wa-penjor-in 1.7s cubic-bezier(.2, .75, .25, 1) .1s both, wa-sway 7s ease-in-out 1.8s infinite; }
+        html.js:not(.invitation-pending) .wa-hero .wa-heading > * { animation: wa-rise .9s cubic-bezier(.2, .75, .25, 1) .2s both; }
+        html.js:not(.invitation-pending) .wa-hero .wa-heading > :nth-child(2) { animation-delay: .45s; }
+        html.js:not(.invitation-pending) .wa-hero .wa-arch-wrap { animation: wa-bloom 1.4s cubic-bezier(.2, .75, .25, 1) .6s both; }
+        html.js:not(.invitation-pending) .wa-hero h1 { animation: wa-rise 1s cubic-bezier(.2, .75, .25, 1) 1.15s both; }
+        html.js:not(.invitation-pending) .wa-hero .wa-date { animation: wa-rise .9s cubic-bezier(.2, .75, .25, 1) 1.45s both; }
+        html.js:not(.invitation-pending) .wa-hero .wa-guest { animation: wa-rise .9s cubic-bezier(.2, .75, .25, 1) 1.7s both; }
+
+        .js [data-reveal] { opacity: 0; transform: translateY(26px); transition: opacity .8s ease var(--d, 0s), transform .9s cubic-bezier(.2, .75, .25, 1) var(--d, 0s); }
+        .js [data-reveal="left"] { transform: translateX(-46px); }
+        .js [data-reveal="right"] { transform: translateX(46px); }
+        .js [data-reveal="zoom"] { transform: scale(.84); }
+        .js [data-reveal="gate"] { opacity: 1; transform: none; }
         .js [data-reveal].is-revealed { opacity: 1; transform: none; }
+        /* The two halves of the gate start closed and part to show the date. */
+        .wa-gate-half { flex: none; }
+        .js [data-reveal="gate"] .wa-gate-half { transition: transform 1.5s cubic-bezier(.2, .75, .25, 1); }
+        .js [data-reveal="gate"] .wa-gate-half.is-left { transform: translateX(36%); }
+        .js [data-reveal="gate"] .wa-gate-half.is-right { transform: translateX(-36%); }
+        .js [data-reveal="gate"] .wa-gate-date { opacity: 0; transform: scale(.7); transition: opacity .9s ease .75s, transform 1s cubic-bezier(.2, .75, .25, 1) .75s; }
+        .js [data-reveal="gate"].is-revealed .wa-gate-half { transform: none; }
+        .js [data-reveal="gate"].is-revealed .wa-gate-date { opacity: 1; transform: none; }
+        /* The story's gold thread draws itself, then each chapter's dot pops in. */
+        .js .wa-story ol::before { transform: scaleY(0); transform-origin: top; transition: transform 2.4s ease .3s; }
+        .js .wa-story.is-revealed ol::before { transform: scaleY(1); }
+        .js .wa-story li::before { transform: scale(0); transition: transform .55s cubic-bezier(.3, 1.6, .5, 1) .3s; }
+        .js .wa-story li.is-revealed::before { transform: scale(1); }
+        .js .wa-countdown div { opacity: 0; transform: translateY(18px) scale(.9); transition: opacity .6s ease, transform .7s cubic-bezier(.3, 1.4, .5, 1); }
+        .js .wa-band.is-revealed .wa-countdown div { opacity: 1; transform: none; }
+        .js .wa-band.is-revealed .wa-countdown div:nth-child(2) { transition-delay: .12s; }
+        .js .wa-band.is-revealed .wa-countdown div:nth-child(3) { transition-delay: .24s; }
+        .js .wa-band.is-revealed .wa-countdown div:nth-child(4) { transition-delay: .36s; }
+
+        .wa-lightbox { align-items: center; background: rgba(24, 14, 8, .94); display: flex; inset: 0; justify-content: center; position: fixed; z-index: 60; }
+        .wa-lightbox[hidden] { display: none; }
+        .wa-lightbox img { animation: wa-bloom .45s cubic-bezier(.2, .75, .25, 1) both; border-radius: 14px; box-shadow: 0 30px 80px #000a; max-height: 82vh; max-width: 92vw; }
+        .wa-lightbox button { background: rgba(255, 248, 232, .14); border: 1px solid rgba(240, 215, 159, .5); border-radius: 999px; color: #fff5e1; cursor: pointer; font: 400 26px/1 Georgia, serif; height: 46px; position: absolute; width: 46px; }
+        .wa-lightbox [data-lightbox-close] { right: 16px; top: 16px; }
+        .wa-lightbox [data-lightbox-prev] { left: 12px; top: calc(50% - 23px); }
+        .wa-lightbox [data-lightbox-next] { right: 12px; top: calc(50% - 23px); }
+        .wa-lightbox p { bottom: 18px; color: #f0d79f; font-size: 12px; left: 0; letter-spacing: .2em; margin: 0; position: absolute; right: 0; text-align: center; }
+
         @keyframes wa-sway { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-1.4deg); } }
+        @keyframes wa-penjor-in { from { opacity: 0; transform: rotate(10deg); } to { opacity: 1; transform: rotate(0); } }
+        @keyframes wa-rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+        @keyframes wa-bloom { from { filter: blur(8px); opacity: 0; transform: scale(.84); } to { filter: blur(0); opacity: 1; transform: none; } }
+        @keyframes wa-kenburns { from { transform: scale(1); } to { transform: scale(1.09) translateY(-1.5%); } }
+        @keyframes wa-glow { 0%, 100% { opacity: .55; transform: scale(.94); } 50% { opacity: 1; transform: scale(1.06); } }
+        @keyframes wa-float { 50% { translate: 0 -7px; } }
+        @keyframes wa-shimmer { to { background-position: -220% 0; } }
+        @keyframes wa-sheen { 0%, 55% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+        @keyframes wa-songket { to { background-position: 212px 0, -212px 0, 0 0; } }
+        @keyframes wa-tick { from { opacity: .35; transform: translateY(-7px); } to { opacity: 1; transform: none; } }
+        @keyframes wa-spin { to { transform: rotate(360deg); } }
+        @keyframes wa-pulse { 0% { box-shadow: 0 10px 24px rgba(74, 52, 20, .22), 0 0 0 0 rgba(201, 162, 83, .55); } 100% { box-shadow: 0 10px 24px rgba(74, 52, 20, .22), 0 0 0 16px rgba(201, 162, 83, 0); } }
+        @keyframes wa-fall {
+            0% { opacity: 0; top: -8%; transform: translateX(0) rotate(0); }
+            10% { opacity: .9; }
+            50% { transform: translateX(30px) rotate(170deg); }
+            90% { opacity: .85; }
+            100% { opacity: 0; top: 104%; transform: translateX(-14px) rotate(330deg); }
+        }
+        @keyframes wa-twinkle { 0%, 100% { opacity: 0; transform: scale(.4); } 50% { opacity: .95; transform: scale(1.35); } }
         @media (prefers-reduced-motion: reduce) {
             html { scroll-behavior: auto; }
-            .wa-hero .orn-penjor { animation: none; }
-            .js [data-reveal] { opacity: 1; transform: none; transition: none; }
+            .wa-page *, .wa-page *::before, .wa-page *::after, .wa-lightbox img { animation: none !important; transition: none !important; }
+            .wa-petals, .wa-sparkles { display: none; }
+            .js .wa-hero .orn-penjor, .js .wa-hero .wa-heading > *, .js .wa-hero .wa-arch-wrap, .js .wa-hero h1, .js .wa-hero .wa-date, .js .wa-hero .wa-guest { opacity: 1; }
+            .js [data-reveal], .js [data-reveal="gate"] .wa-gate-half, .js [data-reveal="gate"] .wa-gate-date, .js .wa-countdown div { opacity: 1; transform: none; }
+            .js .wa-story ol::before { transform: scaleY(1); }
+            .js .wa-story li::before { transform: scale(1); }
         }
         @media (max-width: 350px) {
             .wa-section { padding-left: 18px; padding-right: 18px; }
@@ -296,6 +379,16 @@
 
         <header class="wa-hero">
             @include($ornaments.'penjor')
+            <div class="wa-petals" aria-hidden="true">
+                @foreach ([[8, 34, 11, 0], [24, 22, 14, 3.5], [46, 28, 12, 6], [63, 20, 16, 1.5], [78, 30, 13, 8], [90, 24, 15, 4.5], [36, 18, 17, 10]] as [$left, $size, $duration, $delay])
+                    <svg viewBox="-60 -60 120 120" style="left: {{ $left }}%; width: {{ $size }}px; animation-duration: {{ $duration }}s; animation-delay: {{ $delay }}s"><use href="#ub-jepun"/></svg>
+                @endforeach
+            </div>
+            <div class="wa-sparkles" aria-hidden="true">
+                @foreach ([[12, 18], [30, 9], [52, 30], [71, 14], [88, 40], [18, 56], [40, 70], [64, 62], [82, 78], [8, 84]] as [$left, $top])
+                    <i style="left: {{ $left }}%; top: {{ $top }}%; animation-delay: {{ $loop->index * 0.55 }}s"></i>
+                @endforeach
+            </div>
             <div class="wa-heading">
                 <p class="wa-eyebrow">Om Swastyastu</p>
                 <p class="wa-script">{{ $invitation->event_type }}</p>
@@ -327,9 +420,9 @@
             <p>{{ $invitation->opening_quote ?: 'Dengan restu keluarga, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada hari bahagia kami.' }}</p>
         </section>
 
-        <section class="wa-section wa-couple" data-reveal aria-label="Mempelai">
-            <p class="wa-eyebrow">Mempelai</p>
-            <article class="wa-person">
+        <section class="wa-section wa-couple" aria-label="Mempelai">
+            <p class="wa-eyebrow" data-reveal>Mempelai</p>
+            <article class="wa-person" data-reveal="left">
                 <div class="wa-portrait {{ $isPreview && ! $invitation->groom_photo ? 'is-demo-groom' : '' }}">
                     @if ($groomPhoto)
                         <img src="{{ $mediaUrl($groomPhoto) }}" alt="Foto {{ $invitation->groom_full_name }}" loading="lazy">
@@ -346,8 +439,8 @@
                     @endif
                 </div>
             </article>
-            <p class="wa-amp" aria-hidden="true">&amp;</p>
-            <article class="wa-person is-bride">
+            <p class="wa-amp" aria-hidden="true" data-reveal="zoom">&amp;</p>
+            <article class="wa-person is-bride" data-reveal="right">
                 <div class="wa-portrait {{ $isPreview && ! $invitation->bride_photo ? 'is-demo-bride' : '' }}">
                     @if ($bridePhoto)
                         <img src="{{ $mediaUrl($bridePhoto) }}" alt="Foto {{ $invitation->bride_full_name }}" loading="lazy">
@@ -371,7 +464,7 @@
                 <p class="wa-script">Kisah kami</p>
                 <ol>
                     @foreach ($story as $chapter)
-                        <li>
+                        <li data-reveal="left">
                             @if ($chapter['when'])<time>{{ $chapter['when'] }}</time>@endif
                             <h3>{{ $chapter['title'] }}</h3>
                             @if ($chapter['body'])<p>{{ $chapter['body'] }}</p>@endif
@@ -383,6 +476,11 @@
         @endif
 
         <section class="wa-band" data-reveal aria-label="Hitung mundur">
+            <div class="wa-sparkles" aria-hidden="true">
+                @foreach ([[6, 22], [20, 70], [38, 12], [57, 82], [74, 20], [92, 60]] as [$left, $top])
+                    <i style="left: {{ $left }}%; top: {{ $top }}%; animation-delay: {{ $loop->index * 0.6 }}s"></i>
+                @endforeach
+            </div>
             <p class="wa-eyebrow">Menuju hari bahagia</p>
             <h2>{{ $invitation->event_date->translatedFormat('d F Y') }}</h2>
             <div class="wa-countdown" data-countdown="{{ $eventTarget }}">
@@ -397,14 +495,14 @@
         <section class="wa-section" data-reveal aria-label="Waktu dan tempat">
             <p class="wa-eyebrow">Waktu dan tempat</p>
             <h2>{{ $invitation->event_type }}</h2>
-            <div class="wa-gate">
-                @include($ornaments.'gapura')
+            <div class="wa-gate" data-reveal="gate">
+                <div class="wa-gate-half is-left">@include($ornaments.'gapura')</div>
                 <p class="wa-gate-date">
                     <span>{{ $invitation->event_date->translatedFormat('l') }}</span>
                     <strong>{{ $invitation->event_date->translatedFormat('d') }}</strong>
                     <span>{{ $invitation->event_date->translatedFormat('F Y') }}</span>
                 </p>
-                @include($ornaments.'gapura', ['class' => 'is-mirrored'])
+                <div class="wa-gate-half is-right">@include($ornaments.'gapura', ['class' => 'is-mirrored'])</div>
             </div>
             <div class="wa-details">
                 <dl>
@@ -418,11 +516,11 @@
         </section>
 
         @if (count($gallery))
-            <section class="wa-section" data-reveal aria-label="Galeri">
-                <p class="wa-script">Momen kami</p>
+            <section class="wa-section" aria-label="Galeri">
+                <p class="wa-script" data-reveal>Momen kami</p>
                 <div class="wa-gallery-grid">
                     @foreach ($gallery as $photo)
-                        <img src="{{ $mediaUrl($photo) }}" alt="Foto {{ $couple }} {{ $loop->iteration }}" loading="lazy">
+                        <img src="{{ $mediaUrl($photo) }}" alt="Foto {{ $couple }} {{ $loop->iteration }}" loading="lazy" data-reveal="zoom" data-gallery style="--d: {{ ($loop->index % 4) * 0.08 }}s">
                     @endforeach
                 </div>
             </section>
@@ -446,6 +544,14 @@
             <p class="wa-credit">@include('invitations.partials.app-credit')</p>
         </footer>
     </main>
+
+    <div class="wa-lightbox" data-lightbox hidden>
+        <img alt="">
+        <button type="button" data-lightbox-close aria-label="Tutup">&times;</button>
+        <button type="button" data-lightbox-prev aria-label="Foto sebelumnya">&lsaquo;</button>
+        <button type="button" data-lightbox-next aria-label="Foto berikutnya">&rsaquo;</button>
+        <p data-lightbox-count></p>
+    </div>
 
     @if ($musicPath && ! $isPreview)
         <div class="wa-player">
@@ -475,6 +581,10 @@
                 field('hours').textContent = String(Math.floor(left / 3600000) % 24).padStart(2, '0');
                 field('minutes').textContent = String(Math.floor(left / 60000) % 60).padStart(2, '0');
                 field('seconds').textContent = String(Math.floor(left / 1000) % 60).padStart(2, '0');
+                // Restart the little drop on the seconds each time they change.
+                field('seconds').classList.remove('is-tick');
+                void field('seconds').offsetWidth;
+                field('seconds').classList.add('is-tick');
             };
             tick();
             setInterval(tick, 1000);
@@ -482,8 +592,8 @@
             const audio = document.querySelector('[data-audio]');
             const toggle = document.querySelector('[data-audio-toggle]');
             toggle?.addEventListener('click', async () => {
-                if (!audio.paused) { audio.pause(); toggle.textContent = 'Musik'; return; }
-                try { await audio.play(); toggle.textContent = 'Jeda'; } catch { toggle.textContent = 'Musik'; }
+                if (!audio.paused) { audio.pause(); toggle.textContent = 'Musik'; toggle.classList.remove('is-playing'); return; }
+                try { await audio.play(); toggle.textContent = 'Jeda'; toggle.classList.add('is-playing'); } catch { toggle.textContent = 'Musik'; }
             });
 
             document.querySelector('[data-share]')?.addEventListener('click', async (event) => {
@@ -491,6 +601,26 @@
                 if (navigator.share) { try { await navigator.share({ text }); } catch {} return; }
                 await navigator.clipboard.writeText(text);
                 event.currentTarget.textContent = 'Link tersalin';
+            });
+
+            const lightbox = document.querySelector('[data-lightbox]');
+            const photos = [...document.querySelectorAll('[data-gallery]')];
+            let current = 0;
+            const show = (index) => {
+                current = (index + photos.length) % photos.length;
+                lightbox.querySelector('img').src = photos[current].src;
+                lightbox.querySelector('[data-lightbox-count]').textContent = `${current + 1} / ${photos.length}`;
+                lightbox.hidden = false;
+            };
+            photos.forEach((photo, index) => photo.addEventListener('click', () => show(index)));
+            lightbox.querySelector('[data-lightbox-prev]').addEventListener('click', (event) => { event.stopPropagation(); show(current - 1); });
+            lightbox.querySelector('[data-lightbox-next]').addEventListener('click', (event) => { event.stopPropagation(); show(current + 1); });
+            lightbox.addEventListener('click', () => { lightbox.hidden = true; });
+            document.addEventListener('keydown', (event) => {
+                if (lightbox.hidden) return;
+                if (event.key === 'Escape') lightbox.hidden = true;
+                if (event.key === 'ArrowLeft') show(current - 1);
+                if (event.key === 'ArrowRight') show(current + 1);
             });
         })();
     </script>
