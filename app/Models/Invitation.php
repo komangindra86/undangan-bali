@@ -71,7 +71,7 @@ class Invitation extends Model
     protected $appends = ['public_url'];
 
     // The admin's takedown note is internal; the owner only learns that the invitation was taken down.
-    protected $hidden = ['takedown_note', 'order_details'];
+    protected $hidden = ['takedown_note', 'order_details', 'monitor_token'];
 
     protected $fillable = [
         'invitation_type',

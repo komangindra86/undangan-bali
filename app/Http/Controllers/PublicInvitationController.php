@@ -55,6 +55,22 @@ class PublicInvitationController extends Controller
         return view('invitations.share', ['invitation' => $invitation]);
     }
 
+    /**
+     * Where the customer of a made-to-order invitation watches the gifts coming in. They have no account, so the
+     * page is reached by a private link that only the admin hands over.
+     */
+    public function giftMonitor(string $token): View
+    {
+        $invitation = Invitation::where('monitor_token', $token)->firstOrFail();
+        $gifts = $invitation->weddingGifts()->where('transaction_status', 'paid')->latest('paid_at')->get();
+
+        return view('gifts.monitor', [
+            'invitation' => $invitation,
+            'gifts' => $gifts,
+            'total' => (int) $gifts->sum('gift_amount'),
+        ]);
+    }
+
     public function gift(string $slug): View
     {
         $invitation = Invitation::with('giftSetting')

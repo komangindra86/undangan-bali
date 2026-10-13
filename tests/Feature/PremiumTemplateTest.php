@@ -102,6 +102,78 @@ class PremiumTemplateTest extends TestCase
         $this->getJson('/api/moments')->assertJsonCount(0, 'data');
     }
 
+    public function test_custom_order_takes_picked_times_uploaded_music_and_shows_gifts_to_the_customer(): void
+    {
+        Storage::fake('public');
+        [, $premium] = $this->templates();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $payload = [
+            'intent' => 'publish',
+            'start_hour' => '9',
+            'start_minute' => '30',
+            'end_hour' => '',
+            'end_minute' => '0',
+            'story' => [['title' => 'Memadik', 'month' => '6', 'year' => '2024', 'body' => 'Dua keluarga bertemu.']],
+        ] + collect($this->orderPayload($premium))->except(['start_time', 'end_time', 'story'])->all();
+        $song = fn () => UploadedFile::fake()->create('lagu.mp3', 500, 'audio/mpeg');
+
+        $this->actingAs($admin, 'web')->post('/admin/custom', $payload + ['music_file' => $song()])
+            ->assertSessionHasErrors('music_rights_confirmed');
+        $this->assertSame(0, Invitation::count());
+
+        $this->actingAs($admin, 'web')->post('/admin/custom', $payload + ['music_file' => $song(), 'music_rights_confirmed' => '1'])->assertRedirect();
+        $invitation = Invitation::firstOrFail();
+        $this->assertStringStartsWith('09:30', $invitation->start_time);
+        $this->assertNull($invitation->end_time);
+        $this->assertSame('upload', $invitation->music_type);
+        $this->assertNotNull($invitation->music_rights_accepted_at);
+        Storage::disk('public')->assertExists($invitation->music_file);
+        $this->assertSame('2024-06', $invitation->moments()->firstOrFail()->occurred_at->format('Y-m'));
+        $this->assertSame(40, strlen($invitation->monitor_token));
+        $this->assertArrayNotHasKey('monitor_token', $invitation->toArray());
+
+        $this->actingAs($admin, 'web')->get("/admin/custom/{$invitation->id}/edit")
+            ->assertOk()->assertSee('Musik unggahan saat ini')->assertSee('/pantau/'.$invitation->monitor_token);
+
+        // Saving with the uploaded music still chosen keeps the file; choosing none removes it.
+        $uploaded = $invitation->music_file;
+        $this->actingAs($admin, 'web')->put("/admin/custom/{$invitation->id}", $payload + ['music_id' => 'upload'])->assertRedirect();
+        Storage::disk('public')->assertExists($uploaded);
+        $this->actingAs($admin, 'web')->put("/admin/custom/{$invitation->id}", $payload + ['music_id' => ''])->assertRedirect();
+        Storage::disk('public')->assertMissing($uploaded);
+        $this->assertSame('none', $invitation->fresh()->music_type);
+
+        $tooMany = array_map(fn ($number) => UploadedFile::fake()->image("foto-{$number}.jpg", 20, 20), range(1, 21));
+        $this->actingAs($admin, 'web')->put("/admin/custom/{$invitation->id}", $payload + ['gallery_photos' => $tooMany])
+            ->assertSessionHasErrors('gallery_photos');
+        $this->actingAs($admin, 'web')->put("/admin/custom/{$invitation->id}", $payload + ['gallery_photos' => array_slice($tooMany, 0, 20)])
+            ->assertRedirect();
+        $this->assertCount(20, $invitation->fresh()->gallery_photos);
+
+        foreach ([['Tamu Baik', 150000, 'paid', 'Selamat menempuh hidup baru'], ['Tamu Batal', 99000, 'pending', null]] as [$guest, $amount, $status, $message]) {
+            $invitation->weddingGifts()->create([
+                'guest_name' => $guest,
+                'message' => $message,
+                'gift_amount' => $amount,
+                'service_fee' => 0,
+                'total_amount' => $amount,
+                'order_id' => 'WGIFT-'.$status,
+                'transaction_status' => $status,
+                'paid_at' => $status === 'paid' ? now() : null,
+            ]);
+        }
+        $this->app['auth']->forgetGuards();
+
+        $this->get('/pantau/'.$invitation->monitor_token)
+            ->assertOk()
+            ->assertSee('Tamu Baik')
+            ->assertSee('Rp150.000')
+            ->assertSee('Selamat menempuh hidup baru')
+            ->assertDontSee('Tamu Batal')
+            ->assertDontSee('Rp99.000');
+        $this->get('/pantau/'.str_repeat('x', 40))->assertNotFound();
+    }
+
     public function test_custom_orders_are_for_admins_and_only_cover_admin_made_invitations(): void
     {
         [$free, $premium] = $this->templates();

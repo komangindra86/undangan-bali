@@ -20,6 +20,16 @@
         $label = 'block text-sm text-stone-300 mb-2';
         $card = 'bg-stone-900 border border-stone-800 rounded-3xl p-4 md:p-6 mb-6';
         $value = fn (string $name) => old($name, $invitation->{$name});
+        $months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        // Hours and minutes of a stored or re-submitted time, for the pick lists.
+        $picked = function (string $prefix) use ($invitation) {
+            $time = old($prefix.'_hour') !== null && old($prefix.'_hour') !== ''
+                ? sprintf('%02d:%02d', (int) old($prefix.'_hour'), (int) old($prefix.'_minute'))
+                : (old($prefix.'_hour') === '' ? '' : substr((string) $invitation->{$prefix.'_time'}, 0, 5));
+
+            return $time ? [(int) substr($time, 0, 2), (int) substr($time, 3, 2)] : [null, null];
+        };
+        $currentMusic = old('music_id', $invitation->music_type === 'upload' && $invitation->music_file ? 'upload' : $invitation->music_id);
     @endphp
     @include('admin.partials.nav', [
         'title' => $invitation->exists ? 'Ubah undangan pelanggan' : 'Buat undangan pelanggan',
@@ -51,11 +61,15 @@
         @if ($live)
             <section class="{{ $card }} border-emerald-700/50">
                 <h2 class="font-serif text-xl">Link untuk pelanggan</h2>
-                <p class="text-stone-400 text-sm mt-1">Kirim keduanya: link undangan, dan halaman bagikan tempat pelanggan menulis nama tamu.</p>
+                <p class="text-stone-400 text-sm mt-1">Link undangan, halaman bagikan tempat pelanggan menulis nama tamu, dan halaman untuk memantau tanda kasih yang masuk.</p>
                 <label class="{{ $label }} mt-4">Link undangan</label>
                 <input readonly value="{{ $invitation->public_url }}" onclick="this.select()" class="{{ $field }} text-sm">
                 <label class="{{ $label }} mt-4">Halaman bagikan (isi nama tamu)</label>
                 <input readonly value="{{ route('invitations.share', $invitation->slug) }}" onclick="this.select()" class="{{ $field }} text-sm">
+                @if ($invitation->monitor_token)
+                    <label class="{{ $label }} mt-4">Pantau tanda kasih (hanya untuk pelanggan, jangan disebar)</label>
+                    <input readonly value="{{ route('gifts.monitor', $invitation->monitor_token) }}" onclick="this.select()" class="{{ $field }} text-sm">
+                @endif
             </section>
         @endif
 
@@ -102,7 +116,7 @@
                                 @if ($invitation->{$who.'_photo'})
                                     <img src="{{ Storage::url($invitation->{$who.'_photo'}) }}" alt="" class="h-24 w-24 object-cover rounded-xl mb-3">
                                 @endif
-                                <input type="file" id="{{ $who }}_photo" name="{{ $who }}_photo" accept="image/*" class="block w-full text-sm text-stone-300">
+                                <input type="file" id="{{ $who }}_photo" name="{{ $who }}_photo" accept="image/*" data-resize class="block w-full text-sm text-stone-300">
                             </div>
                         </div>
                     </fieldset>
@@ -124,16 +138,28 @@
                     </div>
                     <div>
                         <label class="{{ $label }}" for="event_date">Tanggal</label>
-                        <input type="date" id="event_date" name="event_date" required value="{{ old('event_date', $invitation->event_date?->format('Y-m-d')) }}" class="{{ $field }}">
+                        <input type="date" id="event_date" name="event_date" required data-pick-date value="{{ old('event_date', $invitation->event_date?->format('Y-m-d')) }}" class="{{ $field }} cursor-pointer" style="color-scheme: dark">
+                        <p class="text-stone-500 text-xs mt-2">Klik untuk memilih dari kalender.</p>
                     </div>
-                    <div>
-                        <label class="{{ $label }}" for="start_time">Jam mulai (WITA)</label>
-                        <input type="time" id="start_time" name="start_time" required value="{{ old('start_time', substr((string) $invitation->start_time, 0, 5)) }}" class="{{ $field }}">
-                    </div>
-                    <div>
-                        <label class="{{ $label }}" for="end_time">Jam selesai (opsional)</label>
-                        <input type="time" id="end_time" name="end_time" value="{{ old('end_time', substr((string) $invitation->end_time, 0, 5)) }}" class="{{ $field }}">
-                    </div>
+                    @foreach (['start' => ['Jam mulai (WITA)', true], 'end' => ['Jam selesai (opsional)', false]] as $prefix => [$text, $required])
+                        @php [$hour, $minute] = $picked($prefix); @endphp
+                        <fieldset>
+                            <legend class="{{ $label }}">{{ $text }}</legend>
+                            <div class="grid grid-cols-2 gap-2">
+                                <select name="{{ $prefix }}_hour" aria-label="{{ $text }}: jam" @required($required) class="{{ $field }}">
+                                    <option value="">{{ $required ? 'Jam' : 'Tidak diisi' }}</option>
+                                    @for ($h = 0; $h < 24; $h++)
+                                        <option value="{{ $h }}" @selected($hour === $h)>{{ sprintf('%02d', $h) }}</option>
+                                    @endfor
+                                </select>
+                                <select name="{{ $prefix }}_minute" aria-label="{{ $text }}: menit" class="{{ $field }}">
+                                    @foreach (array_unique(array_merge(range(0, 55, 5), $minute !== null ? [$minute] : [])) as $m)
+                                        <option value="{{ $m }}" @selected($minute === $m)>{{ sprintf('%02d', $m) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </fieldset>
+                    @endforeach
                     <div class="sm:col-span-2">
                         <label class="{{ $label }}" for="venue_name">Nama tempat</label>
                         <input id="venue_name" name="venue_name" required maxlength="120" value="{{ $value('venue_name') }}" class="{{ $field }}">
@@ -151,9 +177,9 @@
 
             <section class="{{ $card }}">
                 <h2 class="font-serif text-xl">Galeri dan musik</h2>
-                <p class="text-stone-400 text-sm mt-1">Paling banyak {{ $maxGallery }} foto. Foto pertama dipakai sebagai foto sampul.</p>
+<p class="text-stone-400 text-sm mt-1">Paling banyak {{ $maxGallery }} foto (sekarang {{ count($invitation->gallery_photos ?? []) }}). Foto pertama dipakai sebagai foto sampul. Foto besar dikecilkan otomatis sebelum diunggah.</p>
                 @if ($invitation->gallery_photos)
-                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-4">
+                    <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3 mt-4">
                         @foreach ($invitation->gallery_photos as $path)
                             <label class="block text-xs text-stone-400">
                                 <img src="{{ Storage::url($path) }}" alt="" class="aspect-square w-full object-cover rounded-xl mb-2">
@@ -163,24 +189,55 @@
                     </div>
                 @endif
                 <label class="{{ $label }} mt-4" for="gallery_photos">Tambah foto galeri</label>
-                <input type="file" id="gallery_photos" name="gallery_photos[]" accept="image/*" multiple class="block w-full text-sm text-stone-300">
+                <input type="file" id="gallery_photos" name="gallery_photos[]" accept="image/*" multiple data-resize data-max-files="{{ max(0, $maxGallery - count($invitation->gallery_photos ?? [])) }}" class="block w-full text-sm text-stone-300">
+                <p class="text-amber-200 text-xs mt-2" data-resize-status></p>
 
                 <label class="{{ $label }} mt-5" for="music_id">Musik</label>
                 <select id="music_id" name="music_id" class="{{ $field }}">
                     <option value="">Tanpa musik</option>
+                    @if ($invitation->music_type === 'upload' && $invitation->music_file)
+                        <option value="upload" @selected($currentMusic === 'upload')>Musik unggahan saat ini</option>
+                    @endif
                     @foreach ($musics as $music)
-                        <option value="{{ $music->id }}" @selected((int) $value('music_id') === $music->id)>{{ $music->title }}{{ $music->artist ? ' - '.$music->artist : '' }}</option>
+                        <option value="{{ $music->id }}" @selected((string) $currentMusic === (string) $music->id)>{{ $music->title }}{{ $music->artist ? ' - '.$music->artist : '' }}</option>
                     @endforeach
                 </select>
+                @if ($invitation->music_type === 'upload' && $invitation->music_file)
+                    <audio controls preload="none" src="{{ Storage::url($invitation->music_file) }}" class="mt-3 w-full"></audio>
+                @endif
+                <label class="{{ $label }} mt-5" for="music_file">Atau unggah musik sendiri (MP3, WAV, atau M4A, paling besar 10 MB)</label>
+                <input type="file" id="music_file" name="music_file" accept=".mp3,.wav,.m4a,audio/*" class="block w-full text-sm text-stone-300">
+                <label class="flex items-start gap-3 mt-3 text-sm text-stone-300">
+                    <input type="checkbox" name="music_rights_confirmed" value="1" class="h-5 w-5 mt-0.5">
+                    <span>Saya atau pelanggan memiliki hak atau izin untuk memakai musik yang diunggah ini. Wajib dicentang bila mengunggah.</span>
+                </label>
             </section>
 
             <section class="{{ $card }}">
                 <h2 class="font-serif text-xl">Kisah pasangan (opsional)</h2>
                 <p class="text-stone-400 text-sm mt-1">Tampil sebagai garis waktu pada template premium. Baris tanpa judul diabaikan.</p>
                 @for ($index = 0; $index < $maxStory; $index++)
-                    <div class="grid sm:grid-cols-[1fr_170px] gap-3 mt-4">
+                    <div class="grid sm:grid-cols-[1fr_270px] gap-3 mt-4">
                         <input name="story[{{ $index }}][title]" maxlength="100" value="{{ $story[$index]['title'] ?? '' }}" placeholder="Judul, contoh: Pertama bertemu" aria-label="Judul kisah {{ $index + 1 }}" class="{{ $field }}">
-                        <input type="month" name="story[{{ $index }}][when]" value="{{ $story[$index]['when'] ?? '' }}" aria-label="Bulan dan tahun kisah {{ $index + 1 }}" class="{{ $field }}">
+                        @php
+                            $when = $story[$index]['when'] ?? '';
+                            $storyYear = (int) ($story[$index]['year'] ?? substr($when, 0, 4));
+                            $storyMonth = (int) ($story[$index]['month'] ?? substr($when, 5, 2));
+                        @endphp
+                        <div class="grid grid-cols-2 gap-2">
+                            <select name="story[{{ $index }}][month]" aria-label="Bulan kisah {{ $index + 1 }}" class="{{ $field }}">
+                                <option value="">Bulan</option>
+                                @foreach ($months as $number => $monthName)
+                                    <option value="{{ $number + 1 }}" @selected($storyMonth === $number + 1)>{{ $monthName }}</option>
+                                @endforeach
+                            </select>
+                            <select name="story[{{ $index }}][year]" aria-label="Tahun kisah {{ $index + 1 }}" class="{{ $field }}">
+                                <option value="">Tahun</option>
+                                @foreach ($years as $year)
+                                    <option value="{{ $year }}" @selected($storyYear === $year)>{{ $year }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <textarea name="story[{{ $index }}][body]" maxlength="600" rows="2" placeholder="Cerita singkat" aria-label="Cerita {{ $index + 1 }}" class="{{ $field }} sm:col-span-2">{{ $story[$index]['body'] ?? '' }}</textarea>
                     </div>
                 @endfor
@@ -231,5 +288,52 @@
             </div>
         </form>
     </main>
+
+    <script>
+        (() => {
+            document.querySelectorAll('[data-pick-date]').forEach((input) => {
+                const open = () => { try { input.showPicker(); } catch {} };
+                input.addEventListener('click', open);
+                input.addEventListener('keydown', (event) => { if (event.key.length === 1) { event.preventDefault(); open(); } });
+            });
+
+            // Phone photos are several megabytes each; shrink them here so many can be sent in one go.
+            const MAX_SIDE = 1920;
+            const shrink = async (file) => {
+                if (!file.type.startsWith('image/') || file.type === 'image/gif') return file;
+                try {
+                    const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+                    const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+                    if (scale === 1 && file.size < 900 * 1024) return file;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(bitmap.width * scale);
+                    canvas.height = Math.round(bitmap.height * scale);
+                    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+                    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', .86));
+                    return blob && blob.size < file.size ? new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }) : file;
+                } catch {
+                    return file;
+                }
+            };
+            document.querySelectorAll('input[type="file"][data-resize]').forEach((input) => {
+                input.addEventListener('change', async () => {
+                    const status = input.parentElement.querySelector('[data-resize-status]');
+                    let files = [...input.files];
+                    const limit = input.dataset.maxFiles === undefined ? null : Number(input.dataset.maxFiles);
+                    const dropped = limit !== null && files.length > limit ? files.length - limit : 0;
+                    if (dropped) files = files.slice(0, limit);
+                    if (status) status.textContent = 'Menyiapkan foto...';
+                    const transfer = new DataTransfer();
+                    for (const file of files) transfer.items.add(await shrink(file));
+                    input.files = transfer.files;
+                    if (status) {
+                        status.textContent = dropped
+                            ? `${files.length} foto siap diunggah. ${dropped} foto tidak diikutkan karena melewati batas galeri.`
+                            : (files.length ? `${files.length} foto siap diunggah.` : '');
+                    }
+                });
+            });
+        })();
+    </script>
 </body>
 </html>

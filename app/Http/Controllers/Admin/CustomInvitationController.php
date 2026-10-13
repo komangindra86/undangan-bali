@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -20,7 +21,7 @@ use Illuminate\View\View;
  */
 class CustomInvitationController extends Controller
 {
-    private const MAX_GALLERY = 6;
+    private const MAX_GALLERY = 20;
 
     private const MAX_STORY = 6;
 
@@ -80,6 +81,7 @@ class CustomInvitationController extends Controller
             'templates' => InvitationTemplate::where('is_active', true)->where('invitation_type', 'wedding')
                 ->orderByDesc('is_premium')->orderBy('id')->get(),
             'musics' => Music::where('is_active', true)->orderBy('title')->get(['id', 'title', 'artist']),
+            'years' => range((int) now()->format('Y') + 1, 1990),
             'eventTypes' => Invitation::EVENT_TYPES['wedding'],
             'maxGallery' => self::MAX_GALLERY,
             'maxStory' => self::MAX_STORY,
@@ -88,6 +90,7 @@ class CustomInvitationController extends Controller
 
     private function save(Request $request, Invitation $invitation): void
     {
+        $this->mergePickedTimes($request);
         $name = ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'];
         $nickname = ['required', 'string', 'max:18', 'regex:/^[\pL\s.\'-]+$/u'];
         $parent = ['nullable', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'];
@@ -118,7 +121,10 @@ class CustomInvitationController extends Controller
             'gallery_photos.*' => ['image', 'max:8192'],
             'remove_gallery' => ['nullable', 'array'],
             'remove_gallery.*' => ['string'],
-            'music_id' => ['nullable', Rule::exists('musics', 'id')->where('is_active', true)],
+            // "upload" keeps the file already uploaded for this invitation; a number picks one from the catalogue.
+            'music_id' => ['nullable', Rule::in(['upload', ...Music::where('is_active', true)->pluck('id')->map(fn ($id) => (string) $id)->all()])],
+            'music_file' => ['nullable', 'file', 'mimes:mp3,wav,m4a', 'max:10240'],
+            'music_rights_confirmed' => $request->hasFile('music_file') ? ['accepted'] : ['nullable'],
             'story' => ['nullable', 'array', 'max:'.self::MAX_STORY],
             'story.*.title' => $text(100),
             'story.*.when' => ['nullable', 'date_format:Y-m'],
@@ -133,6 +139,8 @@ class CustomInvitationController extends Controller
             '*.regex' => ':attribute hanya boleh berisi huruf, spasi, titik, petik, atau tanda hubung.',
             '*.not_regex' => ':attribute tidak boleh mengandung karakter < atau >.',
             'gift_receiver_name.required_if' => 'Isi nama penerima bila tanda kasih diaktifkan.',
+            'music_rights_confirmed.accepted' => 'Centang pernyataan hak pakai musik sebelum mengunggah.',
+            'gallery_photos.max' => 'Galeri paling banyak :max foto.',
         ], [
             'template_id' => 'template',
             'groom_full_name' => 'nama lengkap mempelai pria',
@@ -156,6 +164,7 @@ class CustomInvitationController extends Controller
             'gallery_photos' => 'foto galeri',
             'gallery_photos.*' => 'foto galeri',
             'music_id' => 'musik',
+            'music_file' => 'berkas musik',
             'gift_receiver_name' => 'nama penerima tanda kasih',
             'gift_minimum_amount' => 'nominal minimal',
         ]);
@@ -169,8 +178,7 @@ class CustomInvitationController extends Controller
                 'opening_quote', 'event_type', 'event_date', 'start_time', 'end_time',
                 'venue_name', 'venue_address', 'google_maps_url',
             ])->all());
-            $invitation->music_id = $data['music_id'] ?? null;
-            $invitation->music_type = $invitation->music_id ? 'default' : 'none';
+            $this->applyMusic($request, $invitation, $data['music_id'] ?? null);
             // Made-to-order invitations are handed over by link and stay out of the app's public feed.
             $invitation->is_hidden_from_feed = true;
             $invitation->order_details = array_filter(collect($data['order'] ?? [])->only(self::ORDER_FIELDS)->all()) ?: null;
@@ -195,6 +203,8 @@ class CustomInvitationController extends Controller
                 $invitation->status = 'published';
                 $invitation->published_at ??= now();
                 $invitation->slug ??= $invitation->uniqueSlug();
+                // The private link the customer opens to watch incoming gifts.
+                $invitation->monitor_token ??= Str::random(40);
             } elseif ($invitation->status !== 'published') {
                 $invitation->status = 'draft';
             }
@@ -223,6 +233,52 @@ class CustomInvitationController extends Controller
                 'fee_value' => config('wedding_gift.payout_fee_percent'),
             ]);
         });
+    }
+
+    /** The form sends hours, minutes, story months and years as separate pick lists; put them back together. */
+    private function mergePickedTimes(Request $request): void
+    {
+        $time = fn (string $prefix) => filled($request->input($prefix.'_hour'))
+            ? sprintf('%02d:%02d', (int) $request->input($prefix.'_hour'), (int) $request->input($prefix.'_minute'))
+            : null;
+        $story = collect($request->input('story', []))->map(function ($chapter) {
+            if (is_array($chapter) && filled($chapter['year'] ?? null) && filled($chapter['month'] ?? null)) {
+                $chapter['when'] = sprintf('%04d-%02d', (int) $chapter['year'], (int) $chapter['month']);
+            }
+
+            return $chapter;
+        })->all();
+
+        $request->merge(array_filter([
+            'start_time' => $request->has('start_hour') ? $time('start') : $request->input('start_time'),
+            'end_time' => $request->has('end_hour') ? $time('end') : $request->input('end_time'),
+        ], fn ($value) => $value !== null) + ['story' => $story]);
+        if ($request->has('end_hour') && ! filled($request->input('end_hour'))) {
+            $request->merge(['end_time' => null]);
+        }
+    }
+
+    private function applyMusic(Request $request, Invitation $invitation, ?string $choice): void
+    {
+        $previousUpload = $invitation->music_file;
+
+        if ($request->hasFile('music_file')) {
+            $invitation->music_file = $request->file('music_file')->store('invitations/musics', 'public');
+            $invitation->music_type = 'upload';
+            $invitation->music_id = null;
+            $invitation->music_rights_accepted_at = now();
+            $invitation->music_rights_terms_version = Invitation::MUSIC_RIGHTS_TERMS_VERSION;
+        } elseif ($choice === 'upload' && $previousUpload) {
+            return;
+        } else {
+            $invitation->music_id = is_numeric($choice) ? (int) $choice : null;
+            $invitation->music_type = $invitation->music_id ? 'default' : 'none';
+            $invitation->music_file = null;
+        }
+
+        if ($previousUpload && $previousUpload !== $invitation->music_file) {
+            Storage::disk('public')->delete($previousUpload);
+        }
     }
 
     private function savedMessage(Invitation $invitation): string

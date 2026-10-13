@@ -39,6 +39,10 @@ Route::post('/u/{slug}/lapor', [PublicReportController::class, 'store'])
     ->middleware('throttle:5,10')
     ->name('invitations.report.store');
 
+Route::get('/pantau/{token}', [PublicInvitationController::class, 'giftMonitor'])
+    ->middleware('throttle:30,1')
+    ->name('gifts.monitor');
+
 Route::get('/gift/{slug}', [PublicInvitationController::class, 'gift'])
     ->name('gifts.public');
 
