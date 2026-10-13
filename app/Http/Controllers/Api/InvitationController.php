@@ -74,6 +74,7 @@ class InvitationController extends Controller
     public function publish(Request $request, Invitation $invitation): JsonResponse
     {
         $this->ensureOwner($request, $invitation);
+        abort_if($invitation->isTakenDown(), 422, 'Undangan ini diturunkan oleh admin dan tidak dapat dipublikasikan. Hubungi admin bila ini keliru.');
 
         $personFields = match (true) {
             $invitation->isBirthday() => ['celebrant_full_name' => 80, 'celebrant_nickname' => 18],
@@ -157,6 +158,8 @@ class InvitationController extends Controller
     public function destroy(Request $request, Invitation $invitation): JsonResponse
     {
         $this->ensureOwner($request, $invitation);
+        // A taken-down invitation is kept as the record of what was reported.
+        abort_if($invitation->isTakenDown(), 422, 'Undangan yang diturunkan admin tidak dapat dihapus. Hubungi admin bila ini keliru.');
         abort_if(
             $invitation->weddingGifts()->whereIn('transaction_status', ['pending', 'paid', 'refunded'])->exists()
                 || $invitation->payoutRequests()->exists(),

@@ -238,6 +238,11 @@ class SocialController extends Controller
     {
         $this->owner($request, $invitation);
         $data = $request->validate(['is_hidden_from_feed' => ['required', 'boolean']]);
+        abort_if(
+            ! $request->boolean('is_hidden_from_feed') && $invitation->isBlockedFromFeed(),
+            422,
+            'Undangan ini disembunyikan dari feed oleh admin dan tidak dapat ditampilkan kembali.'
+        );
         if ($invitation->isBirthday() && ! $request->boolean('is_hidden_from_feed')) {
             $request->validate(['privacy_acknowledged' => ['required', 'accepted']], [
                 'privacy_acknowledged.accepted' => 'Setujui bahwa foto dan nama panggilan akan terlihat publik, termasuk izin wali untuk foto anak.',
@@ -289,6 +294,7 @@ class SocialController extends Controller
         abort_unless(
             $invitation->status === 'published'
             && ! $invitation->is_hidden_from_feed
+            && ! $invitation->isBlockedFromFeed()
             && ! $invitation->archived_at
             && ! $invitation->media_deleted_at
             && (! $invitation->isBirthday() || $invitation->feed_consent_at),

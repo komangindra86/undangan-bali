@@ -69,6 +69,9 @@ class Invitation extends Model
 
     protected $appends = ['public_url'];
 
+    // The admin's takedown note is internal; the owner only learns that the invitation was taken down.
+    protected $hidden = ['takedown_note'];
+
     protected $fillable = [
         'invitation_type',
         'celebrant_full_name',
@@ -137,6 +140,8 @@ class Invitation extends Model
             'published_at' => 'datetime',
             'archived_at' => 'datetime',
             'media_deleted_at' => 'datetime',
+            'taken_down_at' => 'datetime',
+            'feed_blocked_at' => 'datetime',
             'music_rights_accepted_at' => 'datetime',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
@@ -459,6 +464,11 @@ class Invitation extends Model
         return $this->hasMany(InvitationRequest::class);
     }
 
+    public function reports()
+    {
+        return $this->hasMany(ContentReport::class);
+    }
+
     public function reactions()
     {
         return $this->hasMany(InvitationReaction::class);
@@ -488,9 +498,37 @@ class Invitation extends Model
 
     public function canReceiveGiftPayments(): bool
     {
+        if ($this->isTakenDown()) {
+            return false;
+        }
+
         // Production gifts need an owner who can request a payout; demo pages stay display-only.
         return ! app()->environment('production')
             || ($this->user_id !== null && ! $this->isRetentionExempt());
+    }
+
+    /**
+     * An admin took the invitation down (a fake or abusive one): its public page, gift page and feed entry are
+     * off, and the owner cannot publish it again. Only an admin sets or clears this, so it is not fillable.
+     */
+    public function isTakenDown(): bool
+    {
+        return $this->taken_down_at !== null;
+    }
+
+    public function takeDown(string $note): void
+    {
+        $this->forceFill(['taken_down_at' => now(), 'takedown_note' => $note])->save();
+    }
+
+    public function isBlockedFromFeed(): bool
+    {
+        return $this->feed_blocked_at !== null || $this->isTakenDown();
+    }
+
+    public function scopeAllowedInFeed($query)
+    {
+        return $query->whereNull('taken_down_at')->whereNull('feed_blocked_at');
     }
 
     public function isRetentionExempt(): bool

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminPasswordController;
 use App\Http\Controllers\Admin\ContentReportController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GiftPayoutController;
+use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
 use App\Http\Controllers\Admin\WeddingGiftController as AdminWeddingGiftController;
 use App\Http\Controllers\GoogleMobileOAuthController;
 use App\Http\Controllers\PublicInvitationController;
@@ -52,4 +53,7 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::get('/gifts', [AdminWeddingGiftController::class, 'index'])->name('gifts.index');
     Route::get('/reports', [ContentReportController::class, 'index'])->name('reports.index');
     Route::put('/reports/{report}', [ContentReportController::class, 'update'])->name('reports.update');
+    Route::get('/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
+    Route::put('/invitations/{invitation}/take-down', [AdminInvitationController::class, 'takeDown'])->name('invitations.take-down');
+    Route::put('/invitations/{invitation}/restore', [AdminInvitationController::class, 'restore'])->name('invitations.restore');
 });

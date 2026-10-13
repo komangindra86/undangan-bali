@@ -17,6 +17,10 @@
             <p class="bg-emerald-950 border border-emerald-800 text-emerald-200 rounded-2xl p-4 mb-6">{{ session('message') }}</p>
         @endif
 
+        @if ($errors->any())
+            <p class="bg-red-950 border border-red-800 text-red-100 rounded-2xl p-4 mb-6">{{ $errors->first() }}</p>
+        @endif
+
         <section class="bg-stone-900 border border-stone-800 rounded-3xl p-4 md:p-5 mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
                 <h2 class="font-serif text-xl">Antrian laporan</h2>
@@ -60,7 +64,9 @@
                             @if ($publicUrl)
                                 <a href="{{ $publicUrl }}" target="_blank" rel="noopener" class="text-amber-300 hover:underline">Buka undangan</a>
                             @endif
-                            @if ($report->invitation?->is_hidden_from_feed)
+                            @if ($report->invitation?->isTakenDown())
+                                <p class="text-red-300 mt-1">Undangan sudah diturunkan</p>
+                            @elseif ($report->invitation?->is_hidden_from_feed)
                                 <p class="text-stone-500 mt-1">Sudah tersembunyi dari feed</p>
                             @endif
                         </div>
@@ -96,9 +102,10 @@
                                     <option value="hide_comment">Sembunyikan komentar</option>
                                 @endif
                                 <option value="hide_moment">Sembunyikan Moment dari feed</option>
+                                <option value="take_down">Turunkan undangan (link &amp; gift mati)</option>
                                 <option value="dismiss">Abaikan, tidak melanggar</option>
                             </select>
-                            <input name="admin_note" placeholder="Catatan admin (opsional)" class="bg-stone-950 border border-stone-700 rounded-xl px-3 py-3 text-stone-100">
+                            <input name="admin_note" placeholder="Catatan admin (wajib bila menurunkan undangan)" class="bg-stone-950 border border-stone-700 rounded-xl px-3 py-3 text-stone-100">
                             <button class="bg-amber-400 text-stone-950 font-semibold rounded-xl px-4 py-3 hover:bg-amber-300">Simpan</button>
                         </form>
                     @endif

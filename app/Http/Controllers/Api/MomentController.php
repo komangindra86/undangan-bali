@@ -147,6 +147,7 @@ class MomentController extends Controller
             ->whereNull('archived_at')
             ->whereNull('media_deleted_at')
             ->where('is_hidden_from_feed', false)
+            ->allowedInFeed()
             ->whereHas('user', fn ($query) => $query->where('is_test_account', false))
             ->where(function ($query) {
                 $query->where(function ($wedding) {

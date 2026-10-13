@@ -7,24 +7,32 @@ use App\Models\InvitationTemplate;
 use App\Models\WeddingGiftSetting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class PublicInvitationController extends Controller
 {
     private const PAYMENT_DEMO_SLUG = 'demo-wedding-gift-xendit';
 
-    public function show(Request $request, string $slug): View
+    public function show(Request $request, string $slug): View|Response
     {
         $invitation = Invitation::with(['template', 'music', 'giftSetting'])
             ->where('slug', $slug)
             ->whereIn('status', ['published', 'archived'])
             ->firstOrFail();
 
-        $invitation->views()->create([
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'viewed_at' => now(),
-        ]);
+        if ($invitation->isTakenDown()) {
+            // A signed-in admin still sees the page, to review what was reported or decide on restoring it.
+            if (! $request->user('web')?->isAdmin()) {
+                return response()->view('invitations.unavailable', status: 410);
+            }
+        } else {
+            $invitation->views()->create([
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'viewed_at' => now(),
+            ]);
+        }
 
         $view = $invitation->template->blade_view ?: 'invitations.templates.bali-classic';
 
