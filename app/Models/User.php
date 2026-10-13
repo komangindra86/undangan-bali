@@ -48,7 +48,6 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_test_account' => 'boolean',
-            'can_use_premium_templates' => 'boolean',
         ];
     }
 

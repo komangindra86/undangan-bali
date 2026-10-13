@@ -7,42 +7,23 @@ use App\Models\InvitationTemplate;
 use App\Models\User;
 use Database\Seeders\InvitationTemplateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PremiumTemplateTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_premium_templates_only_show_for_accounts_with_access(): void
+    public function test_premium_templates_never_reach_the_app(): void
     {
         [$free, $premium] = $this->templates();
-        $customer = User::factory()->create(['role' => 'user']);
-        $studio = User::factory()->create(['role' => 'user']);
-        $studio->forceFill(['can_use_premium_templates' => true])->save();
+        $user = User::factory()->create(['role' => 'user']);
 
         $this->getJson('/api/templates')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $free->id);
-        $this->getJson("/api/templates/{$premium->id}")->assertNotFound();
-        $this->actingAs($customer, 'sanctum')->getJson('/api/templates')->assertJsonCount(1, 'data');
-        $this->actingAs($customer, 'sanctum')->getJson("/api/templates/{$premium->id}")->assertNotFound();
-
-        $this->actingAs($studio, 'sanctum')->getJson('/api/templates')
-            ->assertJsonCount(2, 'data')
-            ->assertJsonPath('data.1.id', $premium->id)
-            ->assertJsonPath('data.1.is_premium', true);
-        $this->actingAs($studio, 'sanctum')->getJson("/api/templates/{$premium->id}")->assertOk();
-
-        // The preview stays open to anyone, so a design can be shown to a customer before the order.
-        $this->app['auth']->forgetGuards();
-        $this->get('/preview/templates/premium-sample')->assertOk();
-    }
-
-    public function test_only_accounts_with_access_can_build_and_publish_on_a_premium_template(): void
-    {
-        [, $premium] = $this->templates();
-        $customer = User::factory()->create(['role' => 'user']);
-        $studio = User::factory()->create(['role' => 'user']);
-        $studio->forceFill(['can_use_premium_templates' => true])->save();
-        $payload = [
+        $this->actingAs($user, 'sanctum')->getJson('/api/templates')->assertJsonCount(1, 'data');
+        $this->actingAs($user, 'sanctum')->getJson("/api/templates/{$premium->id}")->assertNotFound();
+        $this->actingAs($user, 'sanctum')->postJson('/api/invitations', [
             'invitation_type' => 'wedding',
             'template_id' => $premium->id,
             'groom_full_name' => 'I Made Wira',
@@ -54,58 +35,97 @@ class PremiumTemplateTest extends TestCase
             'start_time' => '10:00',
             'venue_name' => 'Bale Banjar',
             'venue_address' => 'Ubud, Bali',
-        ];
+        ])->assertUnprocessable()->assertJsonValidationErrors('template_id');
 
-        $this->actingAs($customer, 'sanctum')->postJson('/api/invitations', $payload)
-            ->assertUnprocessable()->assertJsonValidationErrors('template_id');
-
-        $id = $this->actingAs($studio, 'sanctum')->postJson('/api/invitations', $payload)->assertCreated()->json('data.id');
-        $slug = $this->actingAs($studio, 'sanctum')->postJson("/api/invitations/{$id}/publish")->assertOk()->json('data.slug');
+        // The preview stays open to anyone, so a design can be shown to a customer before the order.
         $this->app['auth']->forgetGuards();
-        $this->get('/u/'.$slug)->assertOk();
-
-        // Losing access later leaves a live invitation alone, but it cannot be published again on that design.
-        $studio->forceFill(['can_use_premium_templates' => false])->save();
-        $this->get('/u/'.$slug)->assertOk();
-        $this->actingAs($studio->fresh(), 'sanctum')->postJson("/api/invitations/{$id}/publish")->assertUnprocessable();
+        $this->get('/preview/templates/premium-sample')->assertOk();
     }
 
-    public function test_admin_grants_and_revokes_premium_access_by_email(): void
+    public function test_admin_builds_a_customer_invitation_on_the_web_and_hands_over_the_link(): void
     {
-        $this->templates();
+        Storage::fake('public');
+        [, $premium] = $this->templates();
         $admin = User::factory()->create(['role' => 'admin']);
-        $studio = User::factory()->create(['role' => 'user', 'email' => 'studio@example.com', 'name' => 'Studio Santih']);
 
-        $this->actingAs($admin, 'web')->get('/admin/templates')
-            ->assertOk()->assertSee('Premium Sample')->assertSee('/preview/templates/premium-sample')->assertSee('Belum ada akun yang diberi akses');
-        $this->actingAs($admin, 'web')->post('/admin/templates/access', ['email' => 'tidak-ada@example.com'])
-            ->assertSessionHasErrors('email');
-        $this->actingAs($admin, 'web')->post('/admin/templates/access', ['email' => 'admin-lain@example.com'])
-            ->assertSessionHasErrors('email');
+        $this->actingAs($admin, 'web')->get('/admin/custom')
+            ->assertOk()->assertSee('Premium Sample')->assertSee('/preview/templates/premium-sample')->assertSee('Belum ada pesanan custom');
+        $this->actingAs($admin, 'web')->get('/admin/custom/create')->assertOk()->assertSee('Premium Sample (premium)');
 
-        $this->actingAs($admin, 'web')->post('/admin/templates/access', ['email' => ' Studio@Example.com '])->assertRedirect();
-        $this->assertTrue($studio->fresh()->can_use_premium_templates);
-        $this->actingAs($admin, 'web')->get('/admin/templates')->assertSee('Studio Santih')->assertSee('Cabut akses');
+        $payload = $this->orderPayload($premium) + [
+            'groom_photo' => UploadedFile::fake()->image('groom.jpg'),
+            'gallery_photos' => [UploadedFile::fake()->image('one.jpg'), UploadedFile::fake()->image('two.jpg')],
+        ];
+        $this->actingAs($admin, 'web')->post('/admin/custom', ['intent' => 'draft'] + $payload)->assertRedirect();
 
-        $this->actingAs($admin, 'web')->put("/admin/templates/access/{$studio->id}/revoke")->assertRedirect();
-        $this->assertFalse($studio->fresh()->can_use_premium_templates);
+        $invitation = Invitation::firstOrFail();
+        $this->assertSame('draft', $invitation->status);
+        $this->assertNull($invitation->slug);
+        $this->assertSame($admin->id, $invitation->user_id);
+        $this->assertTrue($invitation->is_hidden_from_feed);
+        $this->assertSame('1234567890', $invitation->order_details['account_number']);
+        $this->assertArrayNotHasKey('order_details', $invitation->toArray());
+        $this->assertCount(2, $invitation->gallery_photos);
+        Storage::disk('public')->assertExists($invitation->groom_photo);
+        $this->assertSame(['Pertama bertemu'], $invitation->moments()->pluck('title')->all());
+        $this->assertTrue($invitation->giftSetting->is_active);
 
-        $this->actingAs($studio, 'web')->get('/admin/templates')->assertForbidden();
-        $this->actingAs($studio, 'web')->post('/admin/templates/access', ['email' => 'studio@example.com'])->assertForbidden();
-        $this->assertFalse($studio->fresh()->can_use_premium_templates);
+        $removed = $invitation->gallery_photos[0];
+        $this->actingAs($admin, 'web')->put("/admin/custom/{$invitation->id}", [
+            'intent' => 'publish',
+            'venue_name' => 'Puri Agung Ubud',
+            'remove_gallery' => [$removed],
+            'story' => [['title' => 'Memadik', 'when' => '2024-06', 'body' => 'Dua keluarga bertemu.']],
+        ] + $this->orderPayload($premium))->assertRedirect("/admin/custom/{$invitation->id}/edit");
+
+        $invitation->refresh();
+        $this->assertSame('published', $invitation->status);
+        $this->assertSame('undangan-wira-ayu', $invitation->slug);
+        $this->assertSame('Puri Agung Ubud', $invitation->venue_name);
+        $this->assertCount(1, $invitation->gallery_photos);
+        Storage::disk('public')->assertMissing($removed);
+        $this->assertSame(['Memadik'], $invitation->moments()->pluck('title')->all());
+        $this->assertSame(1, $premium->fresh()->usage_count);
+
+        $this->actingAs($admin, 'web')->get("/admin/custom/{$invitation->id}/edit")
+            ->assertOk()->assertSee('/u/undangan-wira-ayu/bagikan')->assertSee('Simpan perubahan')->assertDontSee('Simpan sebagai draft');
+        $this->actingAs($admin, 'web')->get('/admin/custom')->assertSee('Ni Kadek Sari')->assertSee('Halaman bagikan');
+
+        // Saving again keeps it live and does not count the template twice.
+        $this->actingAs($admin, 'web')->put("/admin/custom/{$invitation->id}", ['intent' => 'publish'] + $this->orderPayload($premium))->assertRedirect();
+        $this->assertSame(1, $premium->fresh()->usage_count);
+        $this->app['auth']->forgetGuards();
+
+        $this->get('/u/undangan-wira-ayu')->assertOk();
+        $this->get('/u/undangan-wira-ayu/bagikan')->assertOk();
+        $this->get('/gift/undangan-wira-ayu')->assertOk();
+        $this->getJson('/api/moments')->assertJsonCount(0, 'data');
     }
 
-    public function test_registering_cannot_switch_premium_access_on(): void
+    public function test_custom_orders_are_for_admins_and_only_cover_admin_made_invitations(): void
     {
-        $this->postJson('/api/register', [
-            'name' => 'Pengguna Baru',
-            'email' => 'baru@example.com',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'can_use_premium_templates' => true,
-        ])->assertCreated();
+        [$free, $premium] = $this->templates();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create(['role' => 'user']);
+        $theirs = Invitation::create([
+            'user_id' => $user->id,
+            'template_id' => $free->id,
+            'status' => 'draft',
+            'groom_nickname' => 'Wira',
+            'bride_nickname' => 'Ayu',
+        ]);
 
-        $this->assertFalse(User::where('email', 'baru@example.com')->firstOrFail()->can_use_premium_templates);
+        $this->actingAs($user, 'web')->get('/admin/custom')->assertForbidden();
+        $this->actingAs($user, 'web')->post('/admin/custom', ['intent' => 'publish'] + $this->orderPayload($premium))->assertForbidden();
+        $this->assertSame(1, Invitation::count());
+
+        $this->actingAs($admin, 'web')->get("/admin/custom/{$theirs->id}/edit")->assertNotFound();
+        $this->actingAs($admin, 'web')->put("/admin/custom/{$theirs->id}", ['intent' => 'publish'] + $this->orderPayload($premium))->assertNotFound();
+        $this->assertSame('draft', $theirs->fresh()->status);
+
+        $this->actingAs($admin, 'web')->post('/admin/custom', ['intent' => 'publish', 'groom_nickname' => 'Wira<b>', 'gift_receiver_name' => ''] + $this->orderPayload($premium))
+            ->assertSessionHasErrors(['groom_nickname', 'gift_receiver_name']);
+        $this->assertSame(1, Invitation::count());
     }
 
     public function test_share_page_lets_the_host_send_personal_links_without_the_app(): void
@@ -189,6 +209,29 @@ class PremiumTemplateTest extends TestCase
             ->assertSee('10:00 - 13:00 WITA')
             ->assertSee('Momen kami')
             ->assertSee('Buka Google Maps');
+    }
+
+    private function orderPayload(InvitationTemplate $template): array
+    {
+        return [
+            'template_id' => $template->id,
+            'groom_full_name' => 'I Made Wira Adnyana',
+            'groom_nickname' => 'Wira',
+            'groom_father_name' => 'I Ketut Darma',
+            'bride_full_name' => 'Ni Putu Ayu Lestari',
+            'bride_nickname' => 'Ayu',
+            'event_type' => 'Pawiwahan',
+            'event_date' => now()->addMonth()->toDateString(),
+            'start_time' => '10:00',
+            'end_time' => '13:00',
+            'venue_name' => 'Bale Banjar Ubud',
+            'venue_address' => 'Jalan Raya Ubud, Gianyar, Bali',
+            'story' => [['title' => 'Pertama bertemu', 'when' => '2021-03', 'body' => 'Di pura desa.'], ['title' => '', 'when' => '', 'body' => '']],
+            'gift_active' => '1',
+            'gift_receiver_name' => 'Wira & Ayu',
+            'gift_minimum_amount' => 25000,
+            'order' => ['customer_name' => 'Ni Kadek Sari', 'customer_whatsapp' => '081234567890', 'bank_name' => 'BCA', 'account_number' => '1234567890', 'account_holder' => 'Ni Kadek Sari'],
+        ];
     }
 
     private function templates(): array

@@ -3,10 +3,10 @@
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminPasswordController;
 use App\Http\Controllers\Admin\ContentReportController;
+use App\Http\Controllers\Admin\CustomInvitationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GiftPayoutController;
 use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
-use App\Http\Controllers\Admin\PremiumTemplateController;
 use App\Http\Controllers\Admin\WeddingGiftController as AdminWeddingGiftController;
 use App\Http\Controllers\GoogleMobileOAuthController;
 use App\Http\Controllers\PublicInvitationController;
@@ -66,7 +66,9 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::get('/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
     Route::put('/invitations/{invitation}/take-down', [AdminInvitationController::class, 'takeDown'])->name('invitations.take-down');
     Route::put('/invitations/{invitation}/restore', [AdminInvitationController::class, 'restore'])->name('invitations.restore');
-    Route::get('/templates', [PremiumTemplateController::class, 'index'])->name('templates.index');
-    Route::post('/templates/access', [PremiumTemplateController::class, 'grant'])->name('templates.grant');
-    Route::put('/templates/access/{user}/revoke', [PremiumTemplateController::class, 'revoke'])->name('templates.revoke');
+    Route::get('/custom', [CustomInvitationController::class, 'index'])->name('custom.index');
+    Route::get('/custom/create', [CustomInvitationController::class, 'create'])->name('custom.create');
+    Route::post('/custom', [CustomInvitationController::class, 'store'])->name('custom.store');
+    Route::get('/custom/{invitation}/edit', [CustomInvitationController::class, 'edit'])->name('custom.edit');
+    Route::put('/custom/{invitation}', [CustomInvitationController::class, 'update'])->name('custom.update');
 });

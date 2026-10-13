@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Invitation extends Model
 {
@@ -70,7 +71,7 @@ class Invitation extends Model
     protected $appends = ['public_url'];
 
     // The admin's takedown note is internal; the owner only learns that the invitation was taken down.
-    protected $hidden = ['takedown_note'];
+    protected $hidden = ['takedown_note', 'order_details'];
 
     protected $fillable = [
         'invitation_type',
@@ -142,6 +143,7 @@ class Invitation extends Model
             'media_deleted_at' => 'datetime',
             'taken_down_at' => 'datetime',
             'feed_blocked_at' => 'datetime',
+            'order_details' => 'array',
             'music_rights_accepted_at' => 'datetime',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
@@ -494,6 +496,26 @@ class Invitation extends Model
         }
 
         return $query;
+    }
+
+    /** A readable public link, made unique with a short suffix when the plain one is taken. */
+    public function uniqueSlug(): string
+    {
+        $base = Str::slug(match (true) {
+            $this->isBirthday() => 'ulang tahun '.$this->celebrant_nickname,
+            $this->isMegedong() => 'megedong gedongan '.$this->bride_nickname.' '.$this->groom_nickname,
+            // A numbered ceremony carries its number, so each otonan of the same child gets a readable link.
+            $this->isMepandes() => 'mepandes '.$this->display_name,
+            $this->isChildCeremony() => ($this->isNumberedCeremony() && $this->ceremony_note ? $this->ceremony_note : $this->ceremony_title).' '.$this->display_name,
+            default => 'undangan '.$this->groom_nickname.' '.$this->bride_nickname,
+        });
+        $slug = $base;
+
+        while (self::where('slug', $slug)->where('id', '!=', $this->id)->exists()) {
+            $slug = $base.'-'.Str::lower(Str::random(5));
+        }
+
+        return $slug;
     }
 
     public function canReceiveGiftPayments(): bool

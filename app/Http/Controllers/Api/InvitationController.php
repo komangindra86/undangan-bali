@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class InvitationController extends Controller
@@ -98,11 +97,7 @@ class InvitationController extends Controller
         Validator::make($invitation->toArray(), [
             ...$personRules,
             ...($invitation->isMepandes() ? $this->mepandesPublishRules($invitation) : []),
-            'template_id' => [
-                'required',
-                Rule::exists('invitation_templates', 'id')->where('is_active', true)->where('invitation_type', $invitation->invitation_type)
-                    ->when(! $request->user()->can_use_premium_templates, fn ($rule) => $rule->where('is_premium', false)),
-            ],
+            'template_id' => ['required', Rule::exists('invitation_templates', 'id')->where('is_active', true)->where('is_premium', false)->where('invitation_type', $invitation->invitation_type)],
             'event_type' => ['required', Rule::in(Invitation::EVENT_TYPES[$invitation->invitation_type] ?? Invitation::EVENT_TYPES['wedding'])],
             'event_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required'],
@@ -139,7 +134,7 @@ class InvitationController extends Controller
             $firstPublish = ! $invitation->slug;
 
             $invitation->update([
-                'slug' => $invitation->slug ?: $this->uniqueSlug($invitation),
+                'slug' => $invitation->slug ?: $invitation->uniqueSlug(),
                 'status' => 'published',
                 'published_at' => $invitation->published_at ?: now(),
             ]);
@@ -327,24 +322,5 @@ class InvitationController extends Controller
             'participants.*.father_name' => $name,
             'participants.*.mother_name' => $name,
         ] : $rules;
-    }
-
-    private function uniqueSlug(Invitation $invitation): string
-    {
-        $base = Str::slug(match (true) {
-            $invitation->isBirthday() => 'ulang tahun '.$invitation->celebrant_nickname,
-            $invitation->isMegedong() => 'megedong gedongan '.$invitation->bride_nickname.' '.$invitation->groom_nickname,
-            // A numbered ceremony carries its number, so each otonan of the same child gets a readable link.
-            $invitation->isMepandes() => 'mepandes '.$invitation->display_name,
-            $invitation->isChildCeremony() => ($invitation->isNumberedCeremony() && $invitation->ceremony_note ? $invitation->ceremony_note : $invitation->ceremony_title).' '.$invitation->display_name,
-            default => 'undangan '.$invitation->groom_nickname.' '.$invitation->bride_nickname,
-        });
-        $slug = $base;
-
-        while (Invitation::where('slug', $slug)->where('id', '!=', $invitation->id)->exists()) {
-            $slug = $base.'-'.Str::lower(Str::random(5));
-        }
-
-        return $slug;
     }
 }
