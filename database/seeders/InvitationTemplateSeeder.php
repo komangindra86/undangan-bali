@@ -65,7 +65,7 @@ class InvitationTemplateSeeder extends Seeder
         }
 
         // Premium designs are made for custom orders: hidden from the catalogue unless the account was given access.
-        foreach (['wiwaha-agung' => 'Wiwaha Agung'] as $slug => $name) {
+        foreach (['wiwaha-agung' => 'Wiwaha Agung', 'taman-tirta' => 'Taman Tirta', 'lamak-prada' => 'Lamak Prada'] as $slug => $name) {
             InvitationTemplate::updateOrCreate(['slug' => $slug], [
                 'name' => $name,
                 'invitation_type' => 'wedding',

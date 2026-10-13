@@ -200,6 +200,62 @@ class PremiumTemplateTest extends TestCase
         $this->assertSame(1, Invitation::count());
     }
 
+    public function test_the_other_premium_designs_render_with_the_least_and_the_most_an_invitation_can_hold(): void
+    {
+        $this->seed(InvitationTemplateSeeder::class);
+        $owner = User::factory()->create(['role' => 'admin']);
+
+        foreach (['taman-tirta' => 'Taman Tirta', 'lamak-prada' => 'Lamak Prada'] as $slug => $name) {
+            $template = InvitationTemplate::where('slug', $slug)->firstOrFail();
+            $this->assertTrue($template->is_premium);
+            $base = [
+                'user_id' => $owner->id,
+                'template_id' => $template->id,
+                'status' => 'published',
+                'groom_full_name' => 'I Made Wira Adnyana',
+                'groom_nickname' => 'Wira',
+                'bride_full_name' => 'Ni Putu Ayu Lestari',
+                'bride_nickname' => 'Ayu',
+                'event_type' => 'Pawiwahan',
+                'event_date' => now()->addMonth()->toDateString(),
+                'start_time' => '10:00',
+                'venue_name' => 'Bale Banjar Ubud',
+                'venue_address' => 'Jalan Raya Ubud, Gianyar, Bali',
+                'music_type' => 'none',
+                'published_at' => now(),
+            ];
+            Invitation::create($base + ['slug' => $slug.'-minimal']);
+            $full = Invitation::create($base + [
+                'slug' => $slug.'-lengkap',
+                'groom_father_name' => 'I Ketut Darma',
+                'groom_mother_name' => 'Ni Luh Sari',
+                'bride_mother_name' => 'Ni Made Rini',
+                'end_time' => '13:00',
+                'google_maps_url' => 'https://maps.google.com/?q=-8.5069,115.2625',
+                'groom_photo' => 'invitations/qa/groom.jpg',
+                'gallery_photos' => array_map(fn ($number) => "invitations/qa/{$number}.jpg", range(1, 20)),
+            ]);
+            $full->moments()->create(['title' => 'Pertama bertemu', 'body' => 'Di pura desa.', 'occurred_at' => '2021-03-01']);
+
+            $this->get('/preview/templates/'.$slug)->assertOk()->assertSee('Preview '.$name)->assertSee('Kisah kami')->assertSee('Simpan ke kalender');
+            $this->get('/u/'.$slug.'-minimal?to=Bapak+Wayan')
+                ->assertOk()
+                ->assertSee('Bapak Wayan')
+                ->assertDontSee('Kisah kami')
+                ->assertDontSee('Putra dari')
+                ->assertDontSee('Momen kami')
+                ->assertSee('laporkan undangan ini');
+            $this->get('/u/'.$slug.'-lengkap')
+                ->assertOk()
+                ->assertSee('Pertama bertemu')
+                ->assertSee('I Ketut Darma &amp; Ni Luh Sari', false)
+                ->assertSee('Ni Made Rini')
+                ->assertSee('10:00 - 13:00 WITA')
+                ->assertSee('invitations/qa/20.jpg')
+                ->assertSee('Buka Google Maps');
+        }
+    }
+
     public function test_share_page_lets_the_host_send_personal_links_without_the_app(): void
     {
         [$free] = $this->templates();
