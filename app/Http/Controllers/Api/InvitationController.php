@@ -159,20 +159,9 @@ class InvitationController extends Controller
         $this->ensureOwner($request, $invitation);
         // A taken-down invitation is kept as the record of what was reported.
         abort_if($invitation->isTakenDown(), 422, 'Undangan yang diturunkan admin tidak dapat dihapus. Hubungi admin bila ini keliru.');
-        abort_if(
-            $invitation->weddingGifts()->whereIn('transaction_status', ['pending', 'paid', 'refunded'])->exists()
-                || $invitation->payoutRequests()->exists(),
-            422,
-            'Undangan yang memiliki transaksi gift tidak dapat dihapus.'
-        );
+        abort_if($invitation->hasGiftTransactions(), 422, 'Undangan yang memiliki transaksi gift tidak dapat dihapus.');
 
-        $files = array_filter([
-            ...$invitation->uploadedMediaPaths(),
-            ...$invitation->moments()->pluck('photo_path')->all(),
-        ]);
-
-        $invitation->delete();
-        Storage::disk('public')->delete($files);
+        $invitation->deleteWithMedia();
 
         return response()->json(['message' => 'Undangan berhasil dihapus.']);
     }

@@ -113,6 +113,13 @@
                                 <button class="bg-red-500/90 text-white font-semibold rounded-xl px-4 py-3 hover:bg-red-500">Turunkan undangan</button>
                             </form>
                         @endif
+                        <div class="mt-3 flex justify-end">
+                            <form method="POST" action="{{ route('admin.invitations.destroy', $invitation) }}" onsubmit="return confirm('Hapus undangan {{ addslashes($invitation->display_name) }} secara permanen? Foto, musik, komentar, dan laporannya ikut terhapus dan tidak bisa dikembalikan.')">
+                                @csrf
+                                @method('DELETE')
+                                <button class="border border-red-500/50 text-red-200 rounded-xl px-4 py-3 hover:bg-red-500/15">Hapus permanen</button>
+                            </form>
+                        </div>
                     </div>
                 </article>
             @empty

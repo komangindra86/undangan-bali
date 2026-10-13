@@ -70,6 +70,7 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::get('/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
     Route::put('/invitations/{invitation}/take-down', [AdminInvitationController::class, 'takeDown'])->name('invitations.take-down');
     Route::put('/invitations/{invitation}/restore', [AdminInvitationController::class, 'restore'])->name('invitations.restore');
+    Route::delete('/invitations/{invitation}', [AdminInvitationController::class, 'destroy'])->name('invitations.destroy');
     Route::get('/custom', [CustomInvitationController::class, 'index'])->name('custom.index');
     Route::get('/custom/create', [CustomInvitationController::class, 'create'])->name('custom.create');
     Route::post('/custom', [CustomInvitationController::class, 'store'])->name('custom.store');

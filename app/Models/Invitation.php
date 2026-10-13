@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class Invitation extends Model
@@ -406,6 +407,25 @@ class Invitation extends Model
             $this->isMepandes() => 'Doa untuk yang mepandes',
             default => 'Doa dan ucapan untuk mempelai',
         };
+    }
+
+    /** Gift money came in or was requested for it, so its records must stay: such an invitation is never deleted. */
+    public function hasGiftTransactions(): bool
+    {
+        return $this->weddingGifts()->whereIn('transaction_status', ['pending', 'paid', 'refunded'])->exists()
+            || $this->payoutRequests()->exists();
+    }
+
+    /** Deletes the invitation for good, together with every file it uploaded. */
+    public function deleteWithMedia(): void
+    {
+        $files = array_filter([
+            ...$this->uploadedMediaPaths(),
+            ...$this->moments()->pluck('photo_path')->all(),
+        ]);
+
+        $this->delete();
+        Storage::disk('public')->delete($files);
     }
 
     /**

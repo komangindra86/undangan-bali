@@ -287,6 +287,19 @@
                 <button name="intent" value="publish" class="bg-amber-400 text-stone-950 font-semibold rounded-xl px-6 py-3 hover:bg-amber-300">{{ $invitation->exists && $invitation->status === 'published' ? 'Simpan perubahan' : 'Simpan dan terbitkan' }}</button>
             </div>
         </form>
+
+        @if ($invitation->exists)
+            <section class="{{ $card }} mt-8 border-red-500/30">
+                <h2 class="font-serif text-xl">Hapus pesanan ini</h2>
+                <p class="text-stone-400 text-sm mt-1 mb-4">Menghapus undangan beserta foto dan musiknya untuk selamanya. Link pelanggan langsung mati. Tidak bisa dilakukan bila sudah ada transaksi gift.</p>
+                <form method="POST" action="{{ route('admin.invitations.destroy', $invitation) }}" onsubmit="return confirm('Hapus undangan {{ addslashes($invitation->display_name) }} secara permanen? Foto, musik, komentar, dan laporannya ikut terhapus dan tidak bisa dikembalikan.')">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="from" value="custom">
+                    <button class="border border-red-500/50 text-red-200 rounded-xl px-4 py-3 hover:bg-red-500/15">Hapus permanen</button>
+                </form>
+            </section>
+        @endif
     </main>
 
     <script>

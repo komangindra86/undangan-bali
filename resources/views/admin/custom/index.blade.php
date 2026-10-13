@@ -17,6 +17,10 @@
             <p class="bg-emerald-950 border border-emerald-800 text-emerald-200 rounded-2xl p-4 mb-6">{{ session('message') }}</p>
         @endif
 
+        @if ($errors->any())
+            <p class="bg-red-950 border border-red-800 text-red-100 rounded-2xl p-4 mb-6">{{ $errors->first() }}</p>
+        @endif
+
         <section class="bg-stone-900 border border-stone-800 rounded-3xl p-4 md:p-6 mb-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -73,6 +77,12 @@
                             <a href="{{ route('invitations.share', $invitation->slug) }}" target="_blank" rel="noopener" class="border border-stone-700 rounded-xl px-4 py-2 hover:border-amber-400">Halaman bagikan</a>
                         @endif
                         <a href="{{ route('admin.custom.edit', $invitation) }}" class="bg-amber-400 text-stone-950 font-semibold rounded-xl px-4 py-2 hover:bg-amber-300">Ubah</a>
+                        <form method="POST" action="{{ route('admin.invitations.destroy', $invitation) }}" onsubmit="return confirm('Hapus undangan {{ addslashes($invitation->display_name) }} secara permanen? Foto, musik, komentar, dan laporannya ikut terhapus dan tidak bisa dikembalikan.')">
+                            @csrf
+                            @method('DELETE')
+                            <input type="hidden" name="from" value="custom">
+                            <button class="border border-red-500/50 text-red-200 rounded-xl px-4 py-2 hover:bg-red-500/15">Hapus permanen</button>
+                        </form>
                     </div>
                 </article>
             @empty

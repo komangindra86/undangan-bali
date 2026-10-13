@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\WeddingGift;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class InvitationTakedownTest extends TestCase
@@ -256,6 +257,52 @@ class InvitationTakedownTest extends TestCase
         $this->get('/u/tidak-ada/lapor')->assertNotFound();
     }
 
+    public function test_admin_deletes_an_invitation_for_good_with_its_files(): void
+    {
+        Storage::fake('public');
+        $invitation = $this->publishedInvitation();
+        Storage::disk('public')->put('invitations/photos/groom.jpg', 'x');
+        Storage::disk('public')->put('invitations/gallery/one.jpg', 'x');
+        $invitation->update(['groom_photo' => 'invitations/photos/groom.jpg', 'gallery_photos' => ['invitations/gallery/one.jpg']]);
+        $reporter = User::factory()->create(['role' => 'user']);
+        $this->actingAs($reporter, 'sanctum')
+            ->postJson("/api/moments/{$invitation->id}/report", ['reason' => 'fake'])
+            ->assertCreated();
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin, 'web')->get('/admin/invitations')->assertOk()->assertSee('Hapus permanen');
+        $this->actingAs($admin, 'web')->delete("/admin/invitations/{$invitation->id}")->assertRedirect('/admin/invitations');
+
+        $this->assertNull(Invitation::find($invitation->id));
+        $this->assertSame(0, ContentReport::count());
+        Storage::disk('public')->assertMissing('invitations/photos/groom.jpg');
+        Storage::disk('public')->assertMissing('invitations/gallery/one.jpg');
+        $this->app['auth']->forgetGuards();
+        $this->get('/u/wira-ayu')->assertNotFound();
+    }
+
+    public function test_admin_cannot_delete_an_invitation_that_has_gift_transactions(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $invitation->weddingGifts()->create([
+            'guest_name' => 'Tamu Baik',
+            'gift_amount' => 100000,
+            'service_fee' => 0,
+            'total_amount' => 100000,
+            'order_id' => 'WGIFT-KEEP-1',
+            'transaction_status' => 'paid',
+            'paid_at' => now(),
+        ]);
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin, 'web')->delete("/admin/invitations/{$invitation->id}", ['from' => 'custom'])
+            ->assertRedirect('/admin/custom')
+            ->assertSessionHasErrors('invitation');
+
+        $this->assertNotNull(Invitation::find($invitation->id));
+        $this->assertSame(1, WeddingGift::count());
+    }
+
     public function test_non_admin_cannot_manage_invitations(): void
     {
         $invitation = $this->publishedInvitation();
@@ -266,6 +313,8 @@ class InvitationTakedownTest extends TestCase
             ->put("/admin/invitations/{$invitation->id}/take-down", ['takedown_note' => 'Iseng'])
             ->assertForbidden();
         $this->actingAs($user, 'web')->put("/admin/invitations/{$invitation->id}/restore")->assertForbidden();
+        $this->actingAs($user, 'web')->delete("/admin/invitations/{$invitation->id}")->assertForbidden();
+        $this->assertNotNull(Invitation::find($invitation->id));
 
         $this->assertFalse($invitation->fresh()->isTakenDown());
     }

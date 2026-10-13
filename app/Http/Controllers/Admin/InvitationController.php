@@ -86,6 +86,24 @@ class InvitationController extends Controller
         return back()->with('message', 'Undangan dipulihkan dan dapat dibuka kembali.');
     }
 
+    public function destroy(Request $request, Invitation $invitation): RedirectResponse
+    {
+        $this->ensureAdmin($request);
+        abort_if($invitation->isRetentionExempt(), 404);
+
+        $list = $request->input('from') === 'custom' ? 'admin.custom.index' : 'admin.invitations.index';
+        if ($invitation->hasGiftTransactions()) {
+            return redirect()->route($list)->withErrors([
+                'invitation' => 'Undangan '.$invitation->display_name.' punya transaksi gift, jadi tidak dapat dihapus. Turunkan saja agar link-nya mati; catatan gift tetap tersimpan.',
+            ]);
+        }
+
+        $name = $invitation->display_name;
+        $invitation->deleteWithMedia();
+
+        return redirect()->route($list)->with('message', 'Undangan '.$name.' dihapus permanen beserta foto dan musiknya.');
+    }
+
     private function ensureAdmin(Request $request): void
     {
         abort_unless($request->user('web')?->isAdmin(), 403);
