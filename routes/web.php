@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ContentReportController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GiftPayoutController;
 use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
+use App\Http\Controllers\Admin\PremiumTemplateController;
 use App\Http\Controllers\Admin\WeddingGiftController as AdminWeddingGiftController;
 use App\Http\Controllers\GoogleMobileOAuthController;
 use App\Http\Controllers\PublicInvitationController;
@@ -30,6 +31,8 @@ Route::get('/auth/google/mobile/callback', [GoogleMobileOAuthController::class, 
 Route::get('/u/{slug}', [PublicInvitationController::class, 'show'])
     ->name('invitations.public');
 
+Route::get('/u/{slug}/bagikan', [PublicInvitationController::class, 'share'])
+    ->name('invitations.share');
 Route::get('/u/{slug}/lapor', [PublicReportController::class, 'create'])
     ->name('invitations.report');
 Route::post('/u/{slug}/lapor', [PublicReportController::class, 'store'])
@@ -63,4 +66,7 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::get('/invitations', [AdminInvitationController::class, 'index'])->name('invitations.index');
     Route::put('/invitations/{invitation}/take-down', [AdminInvitationController::class, 'takeDown'])->name('invitations.take-down');
     Route::put('/invitations/{invitation}/restore', [AdminInvitationController::class, 'restore'])->name('invitations.restore');
+    Route::get('/templates', [PremiumTemplateController::class, 'index'])->name('templates.index');
+    Route::post('/templates/access', [PremiumTemplateController::class, 'grant'])->name('templates.grant');
+    Route::put('/templates/access/{user}/revoke', [PremiumTemplateController::class, 'revoke'])->name('templates.revoke');
 });

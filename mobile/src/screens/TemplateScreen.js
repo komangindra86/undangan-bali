@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, View } fr
 import { FooterActions, SecondaryButton } from '../components/Buttons';
 import CustomInvitationCard from '../components/CustomInvitationCard';
 import WizardLayout from '../components/WizardLayout';
+import { useAuth } from '../context/AuthContext';
 import { useDraft } from '../context/DraftContext';
 import { api } from '../services/api';
 import { isBirthday, personScreenFor, templateCardColorsFor, templateDesignKey, templatePreviewFor } from '../constants/invitation';
@@ -11,6 +12,7 @@ import { colors, spacing } from '../theme';
 
 export default function TemplateScreen({ navigation }) {
   const { draft, saveSection, syncing, syncMessage } = useDraft();
+  const { token } = useAuth();
   const birthday = isBirthday(draft);
   const cardPreview = templatePreviewFor(draft);
   const invitationType = draft.invitation_type || 'wedding';
@@ -27,7 +29,7 @@ export default function TemplateScreen({ navigation }) {
     setLoading(true);
     setLoadError('');
     setTemplates([]);
-    api.templates(invitationType)
+    api.templates(invitationType, token)
       .then((response) => {
         if (cancelled) return;
         setTemplates(response.data);
@@ -35,7 +37,7 @@ export default function TemplateScreen({ navigation }) {
       .catch((error) => { if (!cancelled) setLoadError(error.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [invitationType, retry]);
+  }, [invitationType, retry, token]);
 
   function reviewTemplate(template) {
     if (loading || loadError || !templateMatchesType(template, invitationType)) return;

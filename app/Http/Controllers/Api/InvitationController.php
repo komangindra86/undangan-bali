@@ -98,7 +98,11 @@ class InvitationController extends Controller
         Validator::make($invitation->toArray(), [
             ...$personRules,
             ...($invitation->isMepandes() ? $this->mepandesPublishRules($invitation) : []),
-            'template_id' => ['required', Rule::exists('invitation_templates', 'id')->where('is_active', true)->where('invitation_type', $invitation->invitation_type)],
+            'template_id' => [
+                'required',
+                Rule::exists('invitation_templates', 'id')->where('is_active', true)->where('invitation_type', $invitation->invitation_type)
+                    ->when(! $request->user()->can_use_premium_templates, fn ($rule) => $rule->where('is_premium', false)),
+            ],
             'event_type' => ['required', Rule::in(Invitation::EVENT_TYPES[$invitation->invitation_type] ?? Invitation::EVENT_TYPES['wedding'])],
             'event_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required'],

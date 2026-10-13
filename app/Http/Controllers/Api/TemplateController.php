@@ -18,13 +18,14 @@ class TemplateController extends Controller
         return response()->json([
             'data' => InvitationTemplate::where('is_active', true)
                 ->where('invitation_type', $request->input('invitation_type', 'wedding'))
+                ->availableTo($request->user('sanctum'))
                 ->orderBy('id')->get(),
         ]);
     }
 
-    public function show(InvitationTemplate $template): JsonResponse
+    public function show(Request $request, InvitationTemplate $template): JsonResponse
     {
-        abort_unless($template->is_active, 404);
+        abort_unless($template->is_active && $template->isAvailableTo($request->user('sanctum')), 404);
 
         return response()->json(['data' => $template]);
     }

@@ -95,7 +95,8 @@ class StoreInvitationRequest extends FormRequest
             'invitation_type' => ['required', Rule::in($this->route('invitation') ? [$this->route('invitation')->invitation_type] : Invitation::TYPES)],
             'template_id' => [
                 'required',
-                Rule::exists('invitation_templates', 'id')->where('is_active', true)->where('invitation_type', $this->input('invitation_type')),
+                Rule::exists('invitation_templates', 'id')->where('is_active', true)->where('invitation_type', $this->input('invitation_type'))
+                    ->when(! $this->user()?->can_use_premium_templates, fn ($rule) => $rule->where('is_premium', false)),
             ],
             'celebrant_full_name' => ['exclude_unless:invitation_type,birthday', ...$name],
             'celebrant_nickname' => ['exclude_unless:invitation_type,birthday', ...$nickname],

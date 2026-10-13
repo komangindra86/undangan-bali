@@ -166,8 +166,9 @@ export const api = {
   googleExchange: (code) => request('/auth/google/exchange', { method: 'POST', body: JSON.stringify({ code }) }),
   logout: (token) => request('/logout', { method: 'POST' }, token),
   me: (token) => request('/me', {}, token),
-  templates: async (type = 'wedding') => {
-    const response = await request(`/templates?invitation_type=${encodeURIComponent(type)}`);
+  // The token lets accounts with premium access see the templates kept for custom orders.
+  templates: async (type = 'wedding', token = null) => {
+    const response = await request(`/templates?invitation_type=${encodeURIComponent(type)}`, {}, token);
     return { ...response, data: templatesForType(response.data, type) };
   },
   musics: () => request('/musics?catalog_version=2'),

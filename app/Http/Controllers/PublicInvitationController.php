@@ -43,6 +43,18 @@ class PublicInvitationController extends Controller
         return view($view, ['invitation' => $invitation]);
     }
 
+    /**
+     * A page for whoever hosts the event to write guest names and send personal links, without the app:
+     * invitations made to order are handed over as a link.
+     */
+    public function share(string $slug): View
+    {
+        $invitation = Invitation::where('slug', $slug)->where('status', 'published')->firstOrFail();
+        abort_if($invitation->isTakenDown() || $invitation->isRetentionExempt(), 404);
+
+        return view('invitations.share', ['invitation' => $invitation]);
+    }
+
     public function gift(string $slug): View
     {
         $invitation = Invitation::with('giftSetting')

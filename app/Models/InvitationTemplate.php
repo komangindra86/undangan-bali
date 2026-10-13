@@ -28,6 +28,20 @@ class InvitationTemplate extends Model
         ];
     }
 
+    /**
+     * Premium templates are kept for custom orders: they stay out of everyone's catalogue except the accounts
+     * an admin allowed. Their preview link works for anyone, so a design can be shown to a customer first.
+     */
+    public function scopeAvailableTo($query, ?User $user)
+    {
+        return $user?->can_use_premium_templates ? $query : $query->where('is_premium', false);
+    }
+
+    public function isAvailableTo(?User $user): bool
+    {
+        return ! $this->is_premium || (bool) $user?->can_use_premium_templates;
+    }
+
     public function invitations()
     {
         return $this->hasMany(Invitation::class, 'template_id');
