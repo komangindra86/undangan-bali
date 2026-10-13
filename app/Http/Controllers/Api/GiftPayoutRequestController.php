@@ -24,6 +24,7 @@ class GiftPayoutRequestController extends Controller
     public function store(StoreRequest $request, Invitation $invitation, GiftPayoutService $payouts): JsonResponse
     {
         $this->ensureOwner($request, $invitation);
+        abort_if($invitation->isTakenDown(), 422, 'Pencairan ditahan karena undangan ini diturunkan oleh admin. Hubungi admin bila ini keliru.');
         $account = GiftPayoutAccount::where('id', $request->integer('payout_account_id'))
             ->where('user_id', $request->user()->id)
             ->firstOrFail();

@@ -151,6 +151,19 @@
                                 </div>
                             </dl>
 
+                            @if ($payout->invitation?->isTakenDown() && ! $isFinal)
+                                <div class="mt-4 rounded-xl border border-red-500/40 bg-red-950/40 p-3 text-sm text-red-100">
+                                    <p class="font-semibold">Undangan ini sudah diturunkan admin. Jangan ditransfer.</p>
+                                    <p class="mt-1">{{ $payout->invitation->takedown_note }}</p>
+                                    <p class="mt-1">Tolak pengajuan ini, atau pulihkan undangannya dulu di menu Undangan bila penurunan itu keliru.</p>
+                                </div>
+                            @elseif ($payout->invitation?->open_reports_count && ! $isFinal)
+                                <div class="mt-4 rounded-xl border border-amber-500/40 bg-amber-950/40 p-3 text-sm text-amber-100">
+                                    <p class="font-semibold">Undangan ini punya {{ $payout->invitation->open_reports_count }} laporan yang belum ditinjau.</p>
+                                    <p class="mt-1">Periksa dulu di menu <a href="{{ route('admin.reports.index') }}" class="underline">Laporan</a> sebelum mentransfer.</p>
+                                </div>
+                            @endif
+
                             @php($refundedAmount = $payout->items->filter(fn ($item) => $item->weddingGift?->transaction_status === 'refunded')->sum('amount'))
                             @if ($refundedAmount > 0 && ! $isFinal)
                                 <div class="mt-4 rounded-xl border border-red-500/40 bg-red-950/40 p-3 text-sm text-red-100">

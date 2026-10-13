@@ -7,6 +7,7 @@ use App\Models\GiftPayoutRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class GiftPayoutController extends Controller
@@ -22,7 +23,12 @@ class GiftPayoutController extends Controller
         }
 
         $payouts = $payoutQuery
-            ->with(['user', 'invitation', 'payoutAccount', 'items.weddingGift'])
+            ->with([
+                'user',
+                'invitation' => fn ($query) => $query->withCount(['reports as open_reports_count' => fn ($reports) => $reports->where('status', 'open')]),
+                'payoutAccount',
+                'items.weddingGift',
+            ])
             ->latest('requested_at')
             ->latest('id')
             ->paginate(30);
@@ -52,6 +58,12 @@ class GiftPayoutController extends Controller
             'admin_note' => ['nullable', 'string', 'max:1000'],
             'transfer_reference' => ['nullable', 'required_if:status,paid', 'string', 'max:255'],
         ]);
+
+        if ($data['status'] !== 'rejected' && $payout->invitation?->isTakenDown()) {
+            throw ValidationException::withMessages([
+                'status' => 'Undangan ini sudah diturunkan. Tolak pengajuan ini, atau pulihkan undangannya dulu bila penurunan itu keliru.',
+            ]);
+        }
 
         $payout->update([
             ...$data,

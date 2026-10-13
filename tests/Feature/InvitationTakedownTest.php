@@ -144,6 +144,61 @@ class InvitationTakedownTest extends TestCase
         $this->get('/u/wira-ayu')->assertOk();
     }
 
+    public function test_gift_payout_is_locked_while_an_invitation_is_taken_down(): void
+    {
+        $invitation = $this->publishedInvitation();
+        $owner = $invitation->user;
+        $admin = User::factory()->create(['role' => 'admin']);
+        foreach (['WGIFT-TD-1', 'WGIFT-TD-2'] as $orderId) {
+            $invitation->weddingGifts()->create([
+                'guest_name' => 'Tamu Baik',
+                'gift_amount' => 100000,
+                'service_fee' => 0,
+                'total_amount' => 100000,
+                'order_id' => $orderId,
+                'transaction_status' => 'paid',
+                'paid_at' => now(),
+            ]);
+        }
+        $accountId = $this->actingAs($owner, 'sanctum')->postJson('/api/payout-account', [
+            'bank_code' => 'BCA',
+            'bank_name' => 'Bank Central Asia',
+            'account_number' => '1234567890',
+            'account_holder_name' => 'I Made Wira',
+        ])->assertOk()->json('data.id');
+        $payoutUrl = "/api/invitations/{$invitation->id}/payout-requests";
+        $pending = $this->actingAs($owner, 'sanctum')
+            ->postJson($payoutUrl, ['payout_account_id' => $accountId, 'amount' => 100000])
+            ->assertCreated()->json('data.id');
+
+        // An open report is flagged on the payout before any decision about the invitation.
+        $reporter = User::factory()->create(['role' => 'user']);
+        $this->actingAs($reporter, 'sanctum')
+            ->postJson("/api/moments/{$invitation->id}/report", ['reason' => 'other'])
+            ->assertCreated();
+        $this->actingAs($admin, 'web')->get('/admin/payouts')->assertOk()->assertSee('1 laporan yang belum ditinjau');
+
+        $invitation->takeDown('Undangan palsu');
+
+        $this->actingAs($owner, 'sanctum')
+            ->postJson($payoutUrl, ['payout_account_id' => $accountId, 'amount' => 100000])
+            ->assertUnprocessable();
+        $this->actingAs($admin, 'web')->get('/admin/payouts')->assertOk()->assertSee('Jangan ditransfer')->assertSee('Undangan palsu');
+        $this->actingAs($admin, 'web')
+            ->put("/admin/payouts/{$pending}", ['status' => 'paid', 'transfer_reference' => 'TRF-1'])
+            ->assertSessionHasErrors('status');
+        $this->assertDatabaseHas('gift_payout_requests', ['id' => $pending, 'status' => 'pending']);
+        $this->actingAs($admin, 'web')
+            ->put("/admin/payouts/{$pending}", ['status' => 'rejected', 'admin_note' => 'Undangan diturunkan'])
+            ->assertRedirect();
+        $this->assertDatabaseHas('gift_payout_requests', ['id' => $pending, 'status' => 'rejected']);
+
+        $this->actingAs($admin, 'web')->put("/admin/invitations/{$invitation->id}/restore")->assertRedirect();
+        $this->actingAs($owner, 'sanctum')
+            ->postJson($payoutUrl, ['payout_account_id' => $accountId, 'amount' => 100000])
+            ->assertCreated();
+    }
+
     public function test_non_admin_cannot_manage_invitations(): void
     {
         $invitation = $this->publishedInvitation();
