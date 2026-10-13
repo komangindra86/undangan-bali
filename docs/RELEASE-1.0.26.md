@@ -46,6 +46,7 @@ Tahap berikutnya yang dicatat, belum dikerjakan: penangguhan akun, verifikasi em
 - SHA-256: `86F73E6A7F7B114C6739D9DCDDC40B78672B6636E7808998333F3BC0DD045EDC`.
 - Sertifikat upload sama dengan rilis sebelumnya (`33:C8:4A:68...`); `jarsigner -verify` lulus.
 - 13 Oktober 2026: diunggah ke jalur **internal testing** lewat `eas submit --profile internal` (status COMPLETED). Production tetap `27 (1.0.25)` sampai pemilik meminta promosi.
+- 13 Oktober 2026: atas permintaan pemilik, kode 28 dipromosikan ke **production** (rollout penuh) lewat Google Play Developer API dengan teks "Apa yang baru" di atas, bahasa `id`. Jalur production kini berisi `28 (1.0.26)` menggantikan `27 (1.0.25)`. Status peninjauan Google hanya terlihat di Play Console.
 
 ## Verifikasi
 
