@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\InvitationController as AdminInvitationController
 use App\Http\Controllers\Admin\WeddingGiftController as AdminWeddingGiftController;
 use App\Http\Controllers\GoogleMobileOAuthController;
 use App\Http\Controllers\PublicInvitationController;
+use App\Http\Controllers\PublicReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -28,6 +29,12 @@ Route::get('/auth/google/mobile/callback', [GoogleMobileOAuthController::class, 
 
 Route::get('/u/{slug}', [PublicInvitationController::class, 'show'])
     ->name('invitations.public');
+
+Route::get('/u/{slug}/lapor', [PublicReportController::class, 'create'])
+    ->name('invitations.report');
+Route::post('/u/{slug}/lapor', [PublicReportController::class, 'store'])
+    ->middleware('throttle:5,10')
+    ->name('invitations.report.store');
 
 Route::get('/gift/{slug}', [PublicInvitationController::class, 'gift'])
     ->name('gifts.public');

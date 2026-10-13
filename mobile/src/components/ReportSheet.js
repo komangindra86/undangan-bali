@@ -4,6 +4,7 @@ import { PrimaryButton, SecondaryButton } from './Buttons';
 import { colors, spacing } from '../theme';
 
 export const REPORT_REASONS = [
+  { value: 'fake', label: 'Undangan palsu atau penipuan' },
   { value: 'spam', label: 'Spam atau promosi' },
   { value: 'harassment', label: 'Pelecehan atau ujaran kebencian' },
   { value: 'inappropriate', label: 'Konten tidak pantas' },

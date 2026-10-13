@@ -199,6 +199,63 @@ class InvitationTakedownTest extends TestCase
             ->assertCreated();
     }
 
+    public function test_guest_can_report_an_invitation_from_its_public_page(): void
+    {
+        $invitation = $this->publishedInvitation();
+
+        $this->get('/u/wira-ayu')->assertOk()->assertSee('/u/wira-ayu/lapor', false)->assertSee('laporkan undangan ini');
+        $this->get('/preview/templates/bali-classic')->assertOk()->assertDontSee('laporkan undangan ini');
+        $this->get('/u/wira-ayu/lapor')->assertOk()->assertSee('Undangan palsu atau penipuan')->assertSee('Kirim laporan');
+
+        $this->post('/u/wira-ayu/lapor', ['reason' => 'fake', 'note' => 'Singkat'])->assertSessionHasErrors('note');
+        $this->post('/u/wira-ayu/lapor', ['reason' => 'spam', 'note' => 'Acara ini tidak pernah ada.'])->assertSessionHasErrors('reason');
+        // Scripts that fill the hidden field get the same answer, but nothing is stored.
+        $this->post('/u/wira-ayu/lapor', ['reason' => 'fake', 'note' => 'Acara ini tidak pernah ada.', 'website' => 'http://spam.test'])
+            ->assertRedirect('/u/wira-ayu/lapor');
+        $this->assertSame(0, ContentReport::count());
+
+        $this->post('/u/wira-ayu/lapor', ['reason' => 'fake', 'note' => 'Acara ini tidak pernah ada.'])
+            ->assertRedirect('/u/wira-ayu/lapor')
+            ->assertSessionHas('reported');
+        $this->post('/u/wira-ayu/lapor', [
+            'reason' => 'privacy',
+            'note' => 'Nama keluarga kami dipakai tanpa izin.',
+            'reporter_contact' => '081234567890',
+        ])->assertRedirect('/u/wira-ayu/lapor');
+
+        $this->assertSame(1, ContentReport::count());
+        $report = ContentReport::firstOrFail();
+        $this->assertNull($report->reporter_user_id);
+        $this->assertSame('privacy', $report->reason);
+        $this->assertSame($invitation->user_id, $report->reported_user_id);
+        $this->assertSame('081234567890', $report->reporter_contact);
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin, 'web')->get('/admin/reports')
+            ->assertOk()
+            ->assertSee('Dilaporkan oleh tamu dari halaman undangan')
+            ->assertSee('081234567890')
+            ->assertSee('Nama keluarga kami dipakai tanpa izin.');
+        $this->actingAs($admin, 'web')
+            ->put("/admin/reports/{$report->id}", ['action' => 'take_down', 'admin_note' => 'Dikonfirmasi palsu'])
+            ->assertRedirect();
+        $this->app['auth']->forgetGuards();
+
+        $this->get('/u/wira-ayu')->assertStatus(410);
+        $this->get('/u/wira-ayu/lapor')->assertNotFound();
+    }
+
+    public function test_guest_reports_are_rate_limited(): void
+    {
+        $this->publishedInvitation();
+
+        foreach (range(1, 5) as $attempt) {
+            $this->post('/u/wira-ayu/lapor', ['reason' => 'fake', 'note' => 'Acara ini tidak pernah ada.'])->assertRedirect();
+        }
+        $this->post('/u/wira-ayu/lapor', ['reason' => 'fake', 'note' => 'Acara ini tidak pernah ada.'])->assertStatus(429);
+        $this->get('/u/tidak-ada/lapor')->assertNotFound();
+    }
+
     public function test_non_admin_cannot_manage_invitations(): void
     {
         $invitation = $this->publishedInvitation();

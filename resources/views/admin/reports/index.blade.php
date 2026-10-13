@@ -9,7 +9,7 @@
 <body class="bg-stone-950 text-stone-100 min-h-screen">
     @include('admin.partials.nav', [
         'title' => 'Laporan Konten',
-        'subtitle' => 'Tinjau laporan Moment dan komentar dari pengguna, lalu sembunyikan konten yang melanggar.',
+        'subtitle' => 'Tinjau laporan undangan, Moment, dan komentar, lalu sembunyikan atau turunkan yang melanggar.',
     ])
 
     <main class="max-w-7xl mx-auto p-4 md:p-6">
@@ -40,6 +40,8 @@
             @forelse ($reports as $report)
                 @php
                     $isComment = $report->comment_id !== null;
+                    // Sent from the invitation page's report form by someone without an account.
+                    $isGuest = $report->reporter_user_id === null && $report->reporter_ip !== null;
                     $publicUrl = $report->invitation?->slug ? route('invitations.public', $report->invitation->slug) : null;
                 @endphp
                 <article class="bg-stone-900 border border-stone-800 rounded-3xl overflow-hidden">
@@ -47,11 +49,16 @@
                         <div>
                             <div class="flex flex-wrap items-center gap-2">
                                 <span class="rounded-full border border-red-500/40 bg-red-500/15 text-red-200 px-3 py-1 text-xs uppercase tracking-wider">{{ $report->reasonLabel() }}</span>
-                                <span class="rounded-full border border-stone-700 px-3 py-1 text-xs text-stone-300">{{ $isComment ? 'Komentar' : 'Moment' }}</span>
+                                <span class="rounded-full border border-stone-700 px-3 py-1 text-xs text-stone-300">{{ $isComment ? 'Komentar' : ($isGuest ? 'Undangan' : 'Moment') }}</span>
                                 <span class="text-stone-500">#{{ $report->id }}</span>
                             </div>
                             <p class="text-stone-400 text-sm mt-2">
-                                Dilaporkan oleh {{ $report->reporter?->name ?? 'Pengguna terhapus' }}
+                                @if ($isGuest)
+                                    Dilaporkan oleh tamu dari halaman undangan (IP {{ $report->reporter_ip }})
+                                    @if ($report->reporter_contact) - kontak: {{ $report->reporter_contact }} @endif
+                                @else
+                                    Dilaporkan oleh {{ $report->reporter?->name ?? 'Pengguna terhapus' }}
+                                @endif
                                 <span class="text-stone-600 mx-2">|</span>
                                 {{ $report->created_at->format('d/m/Y H:i') }}
                             </p>

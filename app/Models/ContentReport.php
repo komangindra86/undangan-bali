@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ContentReport extends Model
 {
     public const REASONS = [
+        'fake' => 'Undangan palsu atau penipuan',
         'spam' => 'Spam atau promosi',
         'harassment' => 'Pelecehan atau ujaran kebencian',
         'inappropriate' => 'Konten tidak pantas',
@@ -14,8 +15,18 @@ class ContentReport extends Model
         'other' => 'Lainnya',
     ];
 
+    /** What a guest can pick on the invitation page's report form, which has no account behind it. */
+    public const GUEST_REASONS = [
+        'fake' => 'Undangan palsu atau penipuan',
+        'privacy' => 'Memakai nama atau foto tanpa izin',
+        'inappropriate' => 'Konten tidak pantas',
+        'other' => 'Lainnya',
+    ];
+
     protected $fillable = [
         'reporter_user_id',
+        'reporter_ip',
+        'reporter_contact',
         'reported_user_id',
         'invitation_id',
         'comment_id',
