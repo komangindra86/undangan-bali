@@ -1,4 +1,4 @@
-{{-- Wiwaha Agung (premium): the couple's photo in a kori arch between two penjor, a songket date band, and their story. --}}
+{{-- Wiwaha Agung (premium): the couple's photo in a kori arch among falling jepun, a songket date band, and their story. --}}
 @php
     $isPreview = $isPreview ?? false;
     $ornaments = 'invitations.templates.upacara-anak.ornaments.';
@@ -136,7 +136,7 @@
         }
         .wa-button.is-quiet { background: transparent; border: 1px solid var(--wa-gold-soft); box-shadow: none; color: var(--wa-gold); }
 
-        /* Hero: dawn sky, two penjor bending over the arch that holds the couple's photo. */
+        /* Hero: dawn sky and the arch that holds the couple's photo. */
         .wa-hero {
             background:
                 radial-gradient(circle at 50% 44%, rgba(255, 233, 178, .9), transparent 46%),
@@ -145,12 +145,9 @@
             position: relative;
             text-align: center;
         }
-        /* One penjor stands at the right edge and bends over the heading; its sampian hangs above the arch. */
-        .wa-hero .orn-penjor { animation: wa-sway 7s ease-in-out infinite; height: 580px; position: absolute; right: 8px; top: 18px; transform-origin: 86% 100%; width: auto; }
         .wa-hero > :not(.orn) { position: relative; }
-        .wa-heading { max-width: 58%; text-align: left; }
-        .wa-heading .wa-script { font-size: 38px; margin-top: 12px; }
-        .wa-arch-wrap { margin: 92px auto 0; width: min(62%, 270px); }
+        .wa-heading .wa-script { font-size: 44px; margin-top: 12px; }
+        .wa-arch-wrap { margin: 36px auto 0; width: min(66%, 290px); }
         .wa-arch-wrap .orn-jepun { position: absolute; z-index: 1; }
         .wa-arch-wrap .orn-jepun.is-a { bottom: 34px; left: -50px; transform: rotate(-18deg); width: 62px; }
         .wa-arch-wrap .orn-jepun.is-b { bottom: -16px; left: -18px; transform: rotate(24deg); width: 42px; }
@@ -280,8 +277,7 @@
         .wa-player button.is-playing { animation: wa-pulse 1.9s ease-out infinite; }
         .wa-gallery-grid img { cursor: zoom-in; }
 
-        .js .wa-hero .orn-penjor, .js .wa-hero .wa-heading > *, .js .wa-hero .wa-arch-wrap, .js .wa-hero h1, .js .wa-hero .wa-date, .js .wa-hero .wa-guest { opacity: 0; }
-        html.js:not(.invitation-pending) .wa-hero .orn-penjor { animation: wa-penjor-in 1.7s cubic-bezier(.2, .75, .25, 1) .1s both, wa-sway 7s ease-in-out 1.8s infinite; }
+        .js .wa-hero .wa-heading > *, .js .wa-hero .wa-arch-wrap, .js .wa-hero h1, .js .wa-hero .wa-date, .js .wa-hero .wa-guest { opacity: 0; }
         html.js:not(.invitation-pending) .wa-hero .wa-heading > * { animation: wa-rise .9s cubic-bezier(.2, .75, .25, 1) .2s both; }
         html.js:not(.invitation-pending) .wa-hero .wa-heading > :nth-child(2) { animation-delay: .45s; }
         html.js:not(.invitation-pending) .wa-hero .wa-arch-wrap { animation: wa-bloom 1.4s cubic-bezier(.2, .75, .25, 1) .6s both; }
@@ -323,8 +319,6 @@
         .wa-lightbox [data-lightbox-next] { right: 12px; top: calc(50% - 23px); }
         .wa-lightbox p { bottom: 18px; color: #f0d79f; font-size: 12px; left: 0; letter-spacing: .2em; margin: 0; position: absolute; right: 0; text-align: center; }
 
-        @keyframes wa-sway { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-1.4deg); } }
-        @keyframes wa-penjor-in { from { opacity: 0; transform: rotate(10deg); } to { opacity: 1; transform: rotate(0); } }
         @keyframes wa-rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
         @keyframes wa-bloom { from { filter: blur(8px); opacity: 0; transform: scale(.84); } to { filter: blur(0); opacity: 1; transform: none; } }
         @keyframes wa-kenburns { from { transform: scale(1); } to { transform: scale(1.09) translateY(-1.5%); } }
@@ -348,7 +342,7 @@
             html { scroll-behavior: auto; }
             .wa-page *, .wa-page *::before, .wa-page *::after, .wa-lightbox img { animation: none !important; transition: none !important; }
             .wa-petals, .wa-sparkles { display: none; }
-            .js .wa-hero .orn-penjor, .js .wa-hero .wa-heading > *, .js .wa-hero .wa-arch-wrap, .js .wa-hero h1, .js .wa-hero .wa-date, .js .wa-hero .wa-guest { opacity: 1; }
+            .js .wa-hero .wa-heading > *, .js .wa-hero .wa-arch-wrap, .js .wa-hero h1, .js .wa-hero .wa-date, .js .wa-hero .wa-guest { opacity: 1; }
             .js [data-reveal], .js [data-reveal="gate"] .wa-gate-half, .js [data-reveal="gate"] .wa-gate-date, .js .wa-countdown div { opacity: 1; transform: none; }
             .js .wa-story ol::before { transform: scaleY(1); }
             .js .wa-story li::before { transform: scale(1); }
@@ -378,7 +372,6 @@
         @endif
 
         <header class="wa-hero">
-            @include($ornaments.'penjor')
             <div class="wa-petals" aria-hidden="true">
                 @foreach ([[8, 34, 11, 0], [24, 22, 14, 3.5], [46, 28, 12, 6], [63, 20, 16, 1.5], [78, 30, 13, 8], [90, 24, 15, 4.5], [36, 18, 17, 10]] as [$left, $size, $duration, $delay])
                     <svg viewBox="-60 -60 120 120" style="left: {{ $left }}%; width: {{ $size }}px; animation-duration: {{ $duration }}s; animation-delay: {{ $delay }}s"><use href="#ub-jepun"/></svg>
