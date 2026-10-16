@@ -25,7 +25,7 @@ class ChildCeremonyInvitationTest extends TestCase
 
     public function test_catalog_adds_abulan_pitung_dina_without_changing_existing_types(): void
     {
-        $this->getJson('/api/templates')->assertOk()->assertJsonCount(5, 'data');
+        $this->getJson('/api/templates')->assertOk()->assertJsonCount(6, 'data');
         $this->getJson('/api/templates?invitation_type=megedong')->assertOk()->assertJsonCount(3, 'data');
         $this->getJson('/api/templates?invitation_type=pitung_dina')->assertOk()
             ->assertJsonCount(3, 'data')

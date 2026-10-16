@@ -54,6 +54,13 @@ class InvitationTemplateSeeder extends Seeder
                 'preview_image' => 'templates/bali-heritage/bali-heritage-frame.jpg',
                 'blade_view' => 'invitations.templates.bali-heritage',
             ],
+            [
+                'name' => 'Jepun Kirana',
+                'slug' => 'jepun-kirana',
+                'thumbnail' => 'templates/bali-preview/gallery-details.jpg',
+                'preview_image' => 'templates/bali-preview/gallery-details.jpg',
+                'blade_view' => 'invitations.templates.pernikahan.jepun-kirana',
+            ],
         ];
 
         foreach ($templates as $template) {
