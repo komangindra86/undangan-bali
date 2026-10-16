@@ -30,6 +30,7 @@ Teks "Apa yang baru" untuk Play Console:
 - SHA-256: `8ED46025481C440DB87D34D47C9E1C1A7554F36EE116A1701667B54C74D1F829`.
 - Sertifikat upload sama dengan rilis sebelumnya (`33:C8:4A:68...`); `jarsigner -verify` lulus.
 - 16 Oktober 2026: diunggah ke jalur **internal testing** lewat `eas submit --profile internal` (status selesai). Production tetap `28 (1.0.26)` sampai pemilik meminta promosi.
+- 16 Oktober 2026: atas permintaan pemilik, kode 29 dipromosikan ke **production** (rollout penuh) lewat Google Play Developer API. Jalur production kini berisi `29 (1.0.27)` menggantikan `28 (1.0.26)`. Teks "Apa yang baru" yang pertama terpasang keliru (masih teks rilis 1.0.26) dan beberapa menit kemudian diganti dengan teks di atas pada rilis yang sama; teks yang terpasang sudah diperiksa ulang lewat API. Status peninjauan Google hanya terlihat di Play Console.
 
 ## Verifikasi
 
