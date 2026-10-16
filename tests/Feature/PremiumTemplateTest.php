@@ -256,6 +256,33 @@ class PremiumTemplateTest extends TestCase
         }
     }
 
+    public function test_free_designs_leave_out_the_couples_story(): void
+    {
+        $this->seed(InvitationTemplateSeeder::class);
+        $owner = User::factory()->create(['role' => 'user']);
+        $invitation = Invitation::create([
+            'user_id' => $owner->id,
+            'template_id' => InvitationTemplate::where('slug', 'jepun-kirana')->value('id'),
+            'slug' => 'wira-ayu-gratis',
+            'status' => 'published',
+            'groom_full_name' => 'I Made Wira Adnyana',
+            'groom_nickname' => 'Wira',
+            'bride_full_name' => 'Ni Putu Ayu Lestari',
+            'bride_nickname' => 'Ayu',
+            'event_type' => 'Pawiwahan',
+            'event_date' => now()->addMonth()->toDateString(),
+            'start_time' => '10:00',
+            'venue_name' => 'Bale Banjar Ubud',
+            'venue_address' => 'Jalan Raya Ubud, Gianyar, Bali',
+            'music_type' => 'none',
+            'published_at' => now(),
+        ]);
+        $invitation->moments()->create(['title' => 'Fitting baju adat', 'body' => 'Persiapan hari H.']);
+
+        $this->get('/preview/templates/jepun-kirana')->assertOk()->assertDontSee('Kisah kami');
+        $this->get('/u/wira-ayu-gratis')->assertOk()->assertSee('Mempelai')->assertDontSee('Kisah kami')->assertDontSee('Fitting baju adat');
+    }
+
     public function test_share_page_lets_the_host_send_personal_links_without_the_app(): void
     {
         [$free] = $this->templates();

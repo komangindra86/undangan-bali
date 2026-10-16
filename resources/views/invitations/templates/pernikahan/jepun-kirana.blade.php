@@ -1,5 +1,6 @@
 {{-- Jepun Kirana: morning light. Jepun branches frame the couple's photo in a tall capsule, a candi bentar stands in
-     the haze behind, the couple sit on two cards, the date is a calendar page and the gallery slides by itself. --}}
+     the haze behind, the couple sit on two cards, the date is a calendar page and the gallery slides by itself.
+     Free designs leave out the couple's story, which only premium designs tell. --}}
 @php
     extract(App\Support\PremiumWedding::data($invitation, $isPreview ?? false));
     $ornaments = 'invitations.templates.upacara-anak.ornaments.';
@@ -95,16 +96,6 @@
         .jk-person .jk-eyebrow { font-size: 9.5px; letter-spacing: .24em; }
         .jk-between { margin: 18px auto -6px; width: 54px; }
         .jk-between .orn-jepun { animation: pm-spin 30s linear infinite; width: 100%; }
-
-        /* Their story, year by year. */
-        .jk-years { margin: 30px auto 0; max-width: 420px; text-align: left; }
-        .jk-years article { border-top: 1px solid #efe2c8; display: grid; gap: 16px; grid-template-columns: 86px 1fr; padding: 20px 0; }
-        .jk-years article:last-child { border-bottom: 1px solid #efe2c8; }
-        .jk-years b { color: var(--jk-gold-soft); font-family: var(--jk-serif); font-size: 34px; font-weight: 600; line-height: 1; }
-        .jk-years time { color: var(--jk-gold); display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
-        .jk-years h3 { font-family: var(--jk-serif); font-size: 23px; font-weight: 600; margin: 4px 0 0; }
-        .jk-years p { color: var(--jk-muted); font-size: 14px; line-height: 1.65; margin: 6px 0 0; }
-        .jk-years img { border-radius: 16px; margin-top: 12px; }
 
         /* Countdown under a soft sunburst. */
         .jk-count { background: radial-gradient(circle at 50% 120%, rgba(255, 221, 150, .55), transparent 60%), linear-gradient(180deg, var(--jk-cream), #f3e3c6); overflow: hidden; }
@@ -255,25 +246,6 @@
                 </article>
             @endforeach
         </section>
-
-        @if ($story)
-            <section class="jk-section" aria-label="Kisah kami">
-                <p class="jk-script" data-reveal>Kisah kami</p>
-                <div class="jk-years">
-                    @foreach ($story as $chapter)
-                        <article data-reveal style="--d: {{ $loop->index * 0.1 }}s">
-                            <b>{{ preg_match('/\d{4}/', (string) $chapter['when'], $year) ? $year[0] : $loop->iteration }}</b>
-                            <div>
-                                @if ($chapter['when'])<time>{{ $chapter['when'] }}</time>@endif
-                                <h3>{{ $chapter['title'] }}</h3>
-                                @if ($chapter['body'])<p>{{ $chapter['body'] }}</p>@endif
-                                @if ($chapter['photo'])<img src="{{ $mediaUrl($chapter['photo']) }}" alt="{{ $chapter['title'] }}" loading="lazy">@endif
-                            </div>
-                        </article>
-                    @endforeach
-                </div>
-            </section>
-        @endif
 
         <section class="jk-section jk-count" data-reveal aria-label="Hitung mundur">
             <div class="jk-rays" aria-hidden="true"></div>
