@@ -29,7 +29,7 @@ class BirthdayInvitationTest extends TestCase
         $ids = InvitationTemplate::pluck('id', 'slug')->all();
         $this->seed(InvitationTemplateSeeder::class);
         $this->assertSame($ids, InvitationTemplate::pluck('id', 'slug')->all());
-        $this->getJson('/api/templates')->assertOk()->assertJsonCount(6, 'data');
+        $this->getJson('/api/templates')->assertOk()->assertJsonCount(8, 'data');
         $this->getJson('/api/templates?invitation_type=birthday')->assertOk()
             ->assertJsonCount(3, 'data')->assertJsonPath('data.0.invitation_type', 'birthday');
         $this->getJson('/api/templates?invitation_type=unknown')->assertUnprocessable();

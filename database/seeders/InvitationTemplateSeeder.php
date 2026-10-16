@@ -61,6 +61,20 @@ class InvitationTemplateSeeder extends Seeder
                 'preview_image' => 'templates/bali-preview/gallery-details.jpg',
                 'blade_view' => 'invitations.templates.pernikahan.jepun-kirana',
             ],
+            [
+                'name' => 'Carik Asri',
+                'slug' => 'carik-asri',
+                'thumbnail' => 'templates/bali-preview/gallery-pavilion.jpg',
+                'preview_image' => 'templates/bali-preview/gallery-pavilion.jpg',
+                'blade_view' => 'invitations.templates.pernikahan.carik-asri',
+            ],
+            [
+                'name' => 'Ukir Kencana',
+                'slug' => 'ukir-kencana',
+                'thumbnail' => 'templates/bali-preview/gallery-evening.jpg',
+                'preview_image' => 'templates/bali-preview/gallery-evening.jpg',
+                'blade_view' => 'invitations.templates.pernikahan.ukir-kencana',
+            ],
         ];
 
         foreach ($templates as $template) {

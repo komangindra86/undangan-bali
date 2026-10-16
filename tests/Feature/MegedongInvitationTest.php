@@ -23,7 +23,7 @@ class MegedongInvitationTest extends TestCase
 
     public function test_catalog_adds_megedong_without_changing_existing_types(): void
     {
-        $this->getJson('/api/templates')->assertOk()->assertJsonCount(6, 'data');
+        $this->getJson('/api/templates')->assertOk()->assertJsonCount(8, 'data');
         $this->getJson('/api/templates?invitation_type=birthday')->assertOk()->assertJsonCount(3, 'data');
         $this->getJson('/api/templates?invitation_type=megedong')->assertOk()
             ->assertJsonCount(3, 'data')

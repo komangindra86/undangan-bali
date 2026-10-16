@@ -281,6 +281,34 @@ class PremiumTemplateTest extends TestCase
 
         $this->get('/preview/templates/jepun-kirana')->assertOk()->assertDontSee('Kisah kami');
         $this->get('/u/wira-ayu-gratis')->assertOk()->assertSee('Mempelai')->assertDontSee('Kisah kami')->assertDontSee('Fitting baju adat');
+
+        // The other free designs, with the least and the most an invitation made in the app can hold.
+        foreach (['carik-asri' => 'Carik Asri', 'ukir-kencana' => 'Ukir Kencana'] as $slug => $name) {
+            $this->get('/preview/templates/'.$slug)->assertOk()->assertSee('Preview '.$name)->assertDontSee('Kisah kami');
+            $invitation->update(['template_id' => InvitationTemplate::where('slug', $slug)->value('id'), 'gallery_photos' => null, 'groom_photo' => null]);
+            $this->get('/u/wira-ayu-gratis?to=Bapak+Wayan')
+                ->assertOk()
+                ->assertSee('Bapak Wayan')
+                ->assertDontSee('Kisah kami')
+                ->assertDontSee('Putra dari')
+                ->assertDontSee('Momen kami');
+            $invitation->update([
+                'groom_father_name' => 'I Ketut Darma',
+                'groom_mother_name' => 'Ni Luh Sari',
+                'end_time' => '13:00',
+                'google_maps_url' => 'https://maps.google.com/?q=-8.5069,115.2625',
+                'groom_photo' => 'invitations/qa/groom.jpg',
+                'gallery_photos' => array_map(fn ($number) => "invitations/qa/{$number}.jpg", range(1, 6)),
+            ]);
+            $this->get('/u/wira-ayu-gratis')
+                ->assertOk()
+                ->assertSee('I Ketut Darma &amp; Ni Luh Sari', false)
+                ->assertSee('10:00 - 13:00 WITA')
+                ->assertSee('invitations/qa/6.jpg')
+                ->assertSee('Buka Google Maps')
+                ->assertDontSee('Fitting baju adat');
+            $invitation->update(['groom_father_name' => null, 'groom_mother_name' => null, 'end_time' => null, 'google_maps_url' => null]);
+        }
     }
 
     public function test_share_page_lets_the_host_send_personal_links_without_the_app(): void

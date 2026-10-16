@@ -23,9 +23,11 @@ class InvitationPublishingTest extends TestCase
 
         $this->getJson('/api/templates')
             ->assertOk()
-            ->assertJsonCount(6, 'data')
+            ->assertJsonCount(8, 'data')
             ->assertJsonFragment(['slug' => 'bali-classic'])
             ->assertJsonFragment(['slug' => 'jepun-kirana', 'is_premium' => false])
+            ->assertJsonFragment(['slug' => 'carik-asri', 'is_premium' => false])
+            ->assertJsonFragment(['slug' => 'ukir-kencana', 'is_premium' => false])
             ->assertJsonFragment(['slug' => 'pura-sunset'])
             ->assertJsonFragment(['slug' => 'ubud-garden'])
             ->assertJsonFragment(['slug' => 'royal-kamasan'])
@@ -108,7 +110,7 @@ class InvitationPublishingTest extends TestCase
             'is_active' => true,
         ]);
         $this->assertSame($legacy->id, $invitation->fresh()->template_id);
-        $this->assertSame(6, InvitationTemplate::where('is_active', true)->where('is_premium', false)->where('invitation_type', 'wedding')->count());
+        $this->assertSame(8, InvitationTemplate::where('is_active', true)->where('is_premium', false)->where('invitation_type', 'wedding')->count());
     }
 
     public function test_local_draft_can_be_synced_after_register_and_published(): void
