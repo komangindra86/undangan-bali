@@ -41,6 +41,7 @@ Hanya setelah 1.0.28 ada di production dan pemilik menentukan tanggalnya:
 - SHA-256: `02C677011ECE7A08C0DEB8FBAF5099EF393CC0FDA28BCC5E9BB1B09AB8465038`.
 - Sertifikat upload sama dengan rilis sebelumnya (`33:C8:4A:68...`); `jarsigner -verify` lulus.
 - 19 Oktober 2026: diunggah ke jalur **internal testing** lewat `eas submit --profile internal` (status selesai). Production tetap `29 (1.0.27)` sampai pemilik meminta promosi.
+- 19 Oktober 2026: atas permintaan pemilik, kode 30 dipromosikan ke **production** (rollout penuh) lewat Google Play Developer API dengan teks "Apa yang baru" di atas, bahasa `id`; teksnya diperiksa sebelum dan sesudah promosi. Jalur production kini berisi `30 (1.0.28)` menggantikan `29 (1.0.27)`. Status peninjauan Google hanya terlihat di Play Console.
 
 ## Verifikasi
 
