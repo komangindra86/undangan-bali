@@ -32,6 +32,8 @@ Hanya setelah 1.0.28 ada di production dan pemilik menentukan tanggalnya:
 2. Jalankan `php8.2 artisan config:cache`.
 3. Periksa `GET /api/gift-fee` dan halaman Syarat Layanan menyebut 10% beserta tanggalnya.
 
+**Diaktifkan 19 Oktober 2026 pukul 10.49 WITA** atas pilihan pemilik ("mulai hari ini"): `WEDDING_GIFT_PAYOUT_FEE_NEW_FROM="2026-10-19 10:49:00"` dan `WEDDING_GIFT_PAYOUT_FEE_NEW_PERCENT=10` ditambahkan ke `.env` production, lalu `config:cache`. Salinan `.env` sebelumnya: `/var/backups/undangan-bali/env-before-fee-20261019T024815Z`. Setelahnya `/api/gift-fee`, Syarat Layanan, dan landing page menyebut 10% sejak 19 Oktober 2026 dan 1% untuk sebelumnya. Tanda kasih yang lunas pada 19 Oktober sebelum pukul 10.49 tetap 1%.
+
 ## Android
 
 - Package: `com.balisantih.undanganbali`.
