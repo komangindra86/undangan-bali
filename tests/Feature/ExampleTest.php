@@ -21,7 +21,7 @@ class ExampleTest extends TestCase
             ->assertSee('Cerita cinta Bali')
             ->assertSee('Coba tanpa login')
             ->assertSee('Wedding Gift')
-            ->assertSee('Biaya platform 1% dipotong saat pasangan mengajukan pencairan.')
+            ->assertSee('Biaya platform 1% dipotong dari nominal yang diajukan saat pemilik undangan mencairkan saldo.')
             ->assertSee('Total bayar tamu')
             ->assertSee('Rp100.000')
             ->assertSee('Rp99.000')
@@ -65,7 +65,7 @@ class ExampleTest extends TestCase
             ->assertSee('Ketentuan Penggunaan Audio dan Musik Latar')
             ->assertSee('tidak boleh mengunduh, menjual, mendaftarkan ke Content ID')
             ->assertSee('Gift dan Pembayaran')
-            ->assertSee('Biaya platform sebesar 1% dipotong')
+            ->assertSee('Biaya platform 1% dipotong dari nominal yang diajukan')
             ->assertDontSee('Nominal gift, biaya layanan, dan total pembayaran');
     }
 

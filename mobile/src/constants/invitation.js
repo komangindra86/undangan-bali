@@ -12,7 +12,6 @@ export const OTONAN_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida Sang Hya
 
 export const MEPANDES_OPENING_QUOTE = 'Atas asung kertha wara nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud melaksanakan upacara Mepandes (potong gigi) putra-putri kami. Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir memberikan doa restu.';
 
-export const GIFT_PAYOUT_FEE_PERCENT = 1;
 
 export const INVITATION_TYPES = ['wedding', 'birthday', 'megedong', 'pitung_dina', 'tigang_sasih', 'otonan', 'mepandes'];
 

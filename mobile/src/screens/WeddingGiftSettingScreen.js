@@ -5,7 +5,8 @@ import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import FormField from '../components/FormField';
 import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
 import { useAuth } from '../context/AuthContext';
-import { GIFT_PAYOUT_FEE_PERCENT, giftLabelFor, invitationName } from '../constants/invitation';
+import { giftLabelFor, invitationName } from '../constants/invitation';
+import { feeDescription, feeLabel, useGiftFee } from '../utils/giftFee';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
 import { cleanText, firstError, validateSafeText } from '../utils/validation';
@@ -23,6 +24,7 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
   const invitation = route.params?.invitation;
   const label = giftLabelFor(invitation);
   const { token, expireSession } = useAuth();
+  const fee = useGiftFee();
   const [setting, setSetting] = useState(initialSetting);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -138,8 +140,8 @@ export default function WeddingGiftSettingScreen({ navigation, route }) {
         />
         <View style={styles.feeCard}>
           <Text style={styles.feeLabel}>Biaya pencairan platform</Text>
-          <Text style={styles.feeValue}>{feeText(setting.fee_value)}</Text>
-          <Text style={styles.small}>Tamu membayar sesuai nominal gift tanpa biaya tambahan. Fee dipotong dari nominal yang Anda ajukan saat melakukan pencairan.</Text>
+          <Text style={styles.feeValue}>{feeLabel(fee)}</Text>
+          <Text style={styles.small}>Tamu membayar sesuai nominal gift tanpa biaya tambahan. {feeDescription(fee)}</Text>
         </View>
         <ToggleRow
           title="Tampilkan nominal secara publik"
@@ -166,12 +168,6 @@ function ToggleRow({ title, value, onValueChange }) {
       <Switch value={value} onValueChange={onValueChange} trackColor={{ true: colors.gold, false: colors.border }} thumbColor={colors.text} />
     </View>
   );
-}
-
-function feeText(value) {
-  const percentage = Number(value || GIFT_PAYOUT_FEE_PERCENT);
-
-  return `${percentage}% saat pencairan`;
 }
 
 const styles = StyleSheet.create({

@@ -208,9 +208,12 @@ XENDIT_WEBHOOK_TOKEN=token-verifikasi-callback
 WEDDING_GIFT_MINIMUM_AMOUNT=10000
 WEDDING_GIFT_PAYOUT_MINIMUM_AMOUNT=50000
 WEDDING_GIFT_PAYOUT_FEE_PERCENT=1
+WEDDING_GIFT_PAYOUT_FEE_NEW_PERCENT=10
+# Kosongkan sampai tarif baru berlaku; isi tanggal dan jam WITA, misalnya 2026-11-01 00:00:00.
+WEDDING_GIFT_PAYOUT_FEE_NEW_FROM=
 ```
 
-Fee adalah konfigurasi sistem dan tidak dapat diubah oleh payload mobile. Tamu membayar tepat sebesar nominal gift (`service_fee` 0, `total_amount` = `gift_amount`). Fee platform `WEDDING_GIFT_PAYOUT_FEE_PERCENT` (default 1%, dibulatkan ke atas) dipotong saat pasangan mengajukan pencairan. Contoh: pencairan Rp150.000 menghasilkan `platform_fee` Rp1.500 dan `net_amount` Rp148.500 yang ditransfer ke rekening pasangan.
+Fee adalah konfigurasi sistem dan tidak dapat diubah oleh payload mobile. Tamu membayar tepat sebesar nominal gift (`service_fee` 0, `total_amount` = `gift_amount`). Fee platform dipotong saat pasangan mengajukan pencairan, dihitung **per gift** menurut tanggal gift itu lunas: gift yang lunas sejak `WEDDING_GIFT_PAYOUT_FEE_NEW_FROM` kena `WEDDING_GIFT_PAYOUT_FEE_NEW_PERCENT`, gift sebelumnya tetap kena `WEDDING_GIFT_PAYOUT_FEE_PERCENT`. Selama `WEDDING_GIFT_PAYOUT_FEE_NEW_FROM` kosong, semua gift kena tarif lama. Hasil penjumlahan dibulatkan ke atas. Contoh dengan tarif 1% saja: pencairan Rp150.000 menghasilkan `platform_fee` Rp1.500 dan `net_amount` Rp148.500. Teks biaya di landing page, Syarat Layanan, Kebijakan Privasi, dan aplikasi (lewat `GET /api/gift-fee`) mengikuti pengaturan ini; setelah mengubahnya jalankan `php artisan config:cache`.
 
 Contoh mengaktifkan Wedding Gift untuk undangan milik user:
 
@@ -303,7 +306,7 @@ Alur pasangan:
 
 1. Buka `Dashboard Gift` pada mobile setelah ada transaksi berstatus `paid`.
 2. Pilih **Kelola Rekening** dan simpan bank, nomor rekening, serta nama pemilik.
-3. Pilih **Ajukan Pencairan**. Minimum default adalah `Rp50.000`; fee platform 1% dipotong dari nominal pencairan.
+3. Pilih **Ajukan Pencairan**. Minimum default adalah `Rp50.000`; fee platform dipotong dari nominal pencairan dan rinciannya tampil sebelum pengajuan dikirim.
 4. Pantau status pada **Riwayat Pencairan**: menunggu, diproses, terkirim, atau ditolak.
 
 Alur admin:

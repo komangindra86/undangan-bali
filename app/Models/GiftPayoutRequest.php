@@ -22,6 +22,7 @@ class GiftPayoutRequest extends Model
         'status',
         'admin_note',
         'transfer_reference',
+        'proof_path',
         'requested_at',
         'processed_at',
         'paid_at',
@@ -57,5 +58,13 @@ class GiftPayoutRequest extends Model
     public function items()
     {
         return $this->hasMany(GiftPayoutItem::class, 'payout_request_id');
+    }
+
+    /** The account number with all but its last four digits hidden, for pages the customer sees. */
+    public function getMaskedAccountNumberAttribute(): string
+    {
+        $digits = preg_replace('/\D/', '', (string) $this->account_number);
+
+        return '••••'.substr($digits, -4);
     }
 }

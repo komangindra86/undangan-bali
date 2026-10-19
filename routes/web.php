@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminPasswordController;
 use App\Http\Controllers\Admin\ContentReportController;
 use App\Http\Controllers\Admin\CustomInvitationController;
+use App\Http\Controllers\Admin\CustomTransferController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GiftPayoutController;
 use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
@@ -76,4 +77,6 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::post('/custom', [CustomInvitationController::class, 'store'])->name('custom.store');
     Route::get('/custom/{invitation}/edit', [CustomInvitationController::class, 'edit'])->name('custom.edit');
     Route::put('/custom/{invitation}', [CustomInvitationController::class, 'update'])->name('custom.update');
+    Route::post('/custom/{invitation}/transfers', [CustomTransferController::class, 'store'])->name('custom.transfers.store');
+    Route::delete('/custom/{invitation}/transfers/{payout}', [CustomTransferController::class, 'destroy'])->name('custom.transfers.destroy');
 });

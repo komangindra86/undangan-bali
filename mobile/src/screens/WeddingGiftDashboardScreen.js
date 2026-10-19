@@ -50,7 +50,7 @@ export default function WeddingGiftDashboardScreen({ navigation, route }) {
           <Stat label="Jumlah pemberi" value={String(summary.giver_count)} />
           <Stat label="Fee pencairan terpakai" value={rupiah(summary.platform_fee_paid)} />
         </View>
-        <Text style={styles.security}>Tamu tidak dikenakan biaya. Fee platform {summary.payout_fee_percent || 1}% baru dipotong saat Anda mengajukan pencairan. Pembayaran hanya dihitung setelah dikonfirmasi penyedia pembayaran melalui backend.</Text>
+        <Text style={styles.security}>Tamu tidak dikenakan biaya. {summary.payout_fee_description || 'Fee platform baru dipotong saat Anda mengajukan pencairan.'} Pembayaran hanya dihitung setelah dikonfirmasi penyedia pembayaran melalui backend.</Text>
         <PrimaryButton title="Muat Ulang Data" onPress={load} loading={loading} style={styles.refresh} />
         <PrimaryButton
           title="Ajukan Pencairan"

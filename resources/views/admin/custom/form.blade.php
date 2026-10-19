@@ -289,6 +289,95 @@
         </form>
 
         @if ($invitation->exists)
+            @php
+                $rupiah = fn ($amount) => 'Rp'.number_format((int) $amount, 0, ',', '.');
+                $order = $invitation->order_details ?? [];
+            @endphp
+            <section class="{{ $card }} mt-8" id="transfer">
+                <h2 class="font-serif text-xl">Tanda kasih dan transfer ke pelanggan</h2>
+                <p class="text-stone-400 text-sm mt-1">{{ \App\Support\GiftFee::description() }} Catat setiap transfer yang sudah Anda lakukan; pelanggan melihatnya di halaman pantau.</p>
+
+                @if (session('transfer_whatsapp'))
+                    <div class="mt-4 rounded-2xl border border-emerald-700/60 bg-emerald-950/60 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <p class="text-emerald-100 text-sm">Kabari pelanggan bahwa dananya sudah ditransfer.</p>
+                        <a href="{{ session('transfer_whatsapp') }}" target="_blank" rel="noopener" class="bg-emerald-500 text-stone-950 font-semibold rounded-xl px-4 py-3 text-center hover:bg-emerald-400">Kabari pelanggan via WhatsApp</a>
+                    </div>
+                @endif
+
+                <dl class="grid sm:grid-cols-3 gap-3 mt-4">
+                    <div class="rounded-2xl bg-stone-950 border border-stone-800 p-4"><dt class="text-stone-500 text-xs">Tanda kasih masuk</dt><dd class="text-amber-200 text-xl mt-1">{{ $rupiah($giftReceived) }}</dd></div>
+                    <div class="rounded-2xl bg-stone-950 border border-stone-800 p-4"><dt class="text-stone-500 text-xs">Sudah ditransfer (setelah biaya)</dt><dd class="text-emerald-200 text-xl mt-1">{{ $rupiah($giftSummary['paid_out']) }}</dd><dd class="text-stone-500 text-xs mt-1">Biaya platform {{ $rupiah($giftSummary['platform_fee_paid']) }}</dd></div>
+                    <div class="rounded-2xl bg-stone-950 border border-stone-800 p-4"><dt class="text-stone-500 text-xs">Belum ditransfer (sebelum biaya)</dt><dd class="text-stone-100 text-xl mt-1">{{ $rupiah($giftSummary['available_balance']) }}</dd></div>
+                </dl>
+
+                @if ($transfers->isNotEmpty())
+                    <div class="mt-5 space-y-3">
+                        @foreach ($transfers as $transfer)
+                            <div class="rounded-2xl bg-stone-950 border border-stone-800 p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="flex items-center gap-3">
+                                    @if ($transfer->proof_path)
+                                        <a href="{{ Storage::url($transfer->proof_path) }}" target="_blank" rel="noopener"><img src="{{ Storage::url($transfer->proof_path) }}" alt="Bukti transfer" class="h-14 w-14 rounded-xl object-cover"></a>
+                                    @endif
+                                    <div>
+                                        <p class="font-semibold">{{ $rupiah($transfer->net_amount) }} <span class="text-stone-500 text-sm font-normal">dari {{ $rupiah($transfer->amount) }}, biaya {{ $rupiah($transfer->platform_fee) }}</span></p>
+                                        <p class="text-stone-400 text-sm">{{ ($transfer->paid_at ?? $transfer->requested_at)?->format('d/m/Y') }} · {{ $transfer->bank_name }} {{ $transfer->account_number }} a/n {{ $transfer->account_holder_name }}{{ $transfer->transfer_reference ? ' · ref '.$transfer->transfer_reference : '' }}</p>
+                                        @if ($transfer->status !== 'paid')<p class="text-amber-300 text-xs">Status: {{ $transfer->status }}</p>@endif
+                                    </div>
+                                </div>
+                                @if ($transfer->payout_account_id === null && $transfer->proof_path)
+                                    <form method="POST" action="{{ route('admin.custom.transfers.destroy', [$invitation, $transfer]) }}" onsubmit="return confirm('Hapus catatan transfer ini? Nominalnya kembali menjadi saldo yang belum ditransfer.')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="border border-stone-600 text-stone-300 rounded-xl px-4 py-2 text-sm hover:border-red-400 hover:text-red-200">Hapus catatan</button>
+                                    </form>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+                @if ($giftSummary['available_balance'] > 0)
+                    <form method="POST" enctype="multipart/form-data" action="{{ route('admin.custom.transfers.store', $invitation) }}" class="mt-6 border-t border-stone-800 pt-5">
+                        @csrf
+                        <h3 class="text-amber-300 font-semibold">Catat transfer baru</h3>
+                        <div class="grid sm:grid-cols-2 gap-4 mt-3">
+                            <div>
+                                <label class="{{ $label }}" for="amount">Nominal tanda kasih yang dicairkan (sebelum biaya)</label>
+                                <input type="number" id="amount" name="amount" required min="1" max="{{ $giftSummary['available_balance'] }}" value="{{ old('amount', $giftSummary['available_balance']) }}" class="{{ $field }}">
+                                <p class="text-stone-500 text-xs mt-2">Biaya platform dihitung otomatis dan dipotong dari nominal ini.</p>
+                            </div>
+                            <div>
+                                <label class="{{ $label }}" for="transferred_on">Tanggal transfer</label>
+                                <input type="date" id="transferred_on" name="transferred_on" required data-pick-date max="{{ now()->format('Y-m-d') }}" value="{{ old('transferred_on', now()->format('Y-m-d')) }}" class="{{ $field }} cursor-pointer" style="color-scheme: dark">
+                            </div>
+                            <div>
+                                <label class="{{ $label }}" for="transfer_bank">Bank</label>
+                                <input id="transfer_bank" name="bank_name" required maxlength="80" value="{{ old('bank_name', $order['bank_name'] ?? '') }}" class="{{ $field }}">
+                            </div>
+                            <div>
+                                <label class="{{ $label }}" for="transfer_account">Nomor rekening</label>
+                                <input id="transfer_account" name="account_number" required maxlength="50" inputmode="numeric" value="{{ old('account_number', $order['account_number'] ?? '') }}" class="{{ $field }}">
+                            </div>
+                            <div>
+                                <label class="{{ $label }}" for="transfer_holder">Atas nama</label>
+                                <input id="transfer_holder" name="account_holder_name" required maxlength="120" value="{{ old('account_holder_name', $order['account_holder'] ?? '') }}" class="{{ $field }}">
+                            </div>
+                            <div>
+                                <label class="{{ $label }}" for="transfer_reference">Nomor referensi (opsional)</label>
+                                <input id="transfer_reference" name="transfer_reference" maxlength="120" value="{{ old('transfer_reference') }}" class="{{ $field }}">
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="{{ $label }}" for="proof">Foto bukti transfer</label>
+                                <input type="file" id="proof" name="proof" required accept="image/*" data-resize class="block w-full text-sm text-stone-300">
+                            </div>
+                        </div>
+                        <button class="mt-5 bg-amber-400 text-stone-950 font-semibold rounded-xl px-6 py-3 hover:bg-amber-300">Catat transfer</button>
+                    </form>
+                @else
+                    <p class="text-stone-500 text-sm mt-5">Tidak ada saldo yang perlu ditransfer saat ini.</p>
+                @endif
+            </section>
+
             <section class="{{ $card }} mt-8 border-red-500/30">
                 <h2 class="font-serif text-xl">Hapus pesanan ini</h2>
                 <p class="text-stone-400 text-sm mt-1 mb-4">Menghapus undangan beserta foto dan musiknya untuk selamanya. Link pelanggan langsung mati. Tidak bisa dilakukan bila sudah ada transaksi gift.</p>

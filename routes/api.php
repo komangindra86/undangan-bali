@@ -27,6 +27,7 @@ Route::post('/auth/google/exchange', [GoogleMobileOAuthController::class, 'excha
 Route::get('/templates', [TemplateController::class, 'index']);
 Route::get('/templates/{template}', [TemplateController::class, 'show']);
 Route::get('/musics', [MusicController::class, 'index']);
+Route::get('/gift-fee', [PublicWeddingGiftController::class, 'fee']);
 Route::get('/moments', [MomentController::class, 'index']);
 Route::get('/moments/{invitation}', [MomentController::class, 'show']);
 Route::get('/moments/{invitation}/comments', [MomentController::class, 'comments']);
@@ -56,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/invitations/{invitation}/gifts', [WeddingGiftDashboardController::class, 'index']);
     Route::get('/invitations/{invitation}/payout-requests', [GiftPayoutRequestController::class, 'index']);
     Route::post('/invitations/{invitation}/payout-requests', [GiftPayoutRequestController::class, 'store']);
+    Route::get('/invitations/{invitation}/payout-quote', [GiftPayoutRequestController::class, 'quote']);
     Route::post('/moments/{invitation}/reaction', [SocialController::class, 'react'])->middleware('throttle:20,1');
     Route::delete('/moments/{invitation}/reaction', [SocialController::class, 'removeReaction']);
     Route::post('/moments/{invitation}/comments', [SocialController::class, 'comment'])->middleware('throttle:6,1');

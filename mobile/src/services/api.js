@@ -208,6 +208,8 @@ export const api = {
   saveGiftSetting: (id, values, token) =>
     request(`/invitations/${id}/gift-setting`, { method: 'POST', body: JSON.stringify(values) }, token),
   weddingGifts: (id, token) => request(`/invitations/${id}/gifts`, {}, token),
+  giftFee: () => request('/gift-fee'),
+  payoutQuote: (id, amount, token) => request(`/invitations/${id}/payout-quote?amount=${encodeURIComponent(amount)}`, {}, token),
   payoutAccount: (token) => request('/payout-account', {}, token),
   savePayoutAccount: (values, token) =>
     request('/payout-account', { method: 'POST', body: JSON.stringify(values) }, token),

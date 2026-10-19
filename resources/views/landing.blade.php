@@ -193,7 +193,7 @@
                         <p>Pasangan mengatur dan memantau gift dari aplikasi. Tamu melakukan pembayaran melalui halaman undangan di browser, bukan melalui checkout di aplikasi.</p>
                         <div class="gift-list">
                             <span>Tamu membayar sesuai nominal gift tanpa biaya layanan tambahan.</span>
-                            <span>Biaya platform 1% dipotong saat pasangan mengajukan pencairan.</span>
+                            <span>{{ \App\Support\GiftFee::description() }}</span>
                             <span>Status pembayaran diverifikasi oleh backend melalui penyedia pembayaran.</span>
                         </div>
                     </div>
@@ -204,8 +204,12 @@
                             <div class="receipt-row"><span>Nominal gift</span><strong>Rp100.000</strong></div>
                             <div class="receipt-row"><span>Biaya untuk tamu</span><strong>Rp0</strong></div>
                             <div class="receipt-row total"><span>Total bayar tamu</span><strong>Rp100.000</strong></div>
-                            <div class="receipt-row"><span>Fee pencairan 1%</span><strong>Rp1.000</strong></div>
-                            <div class="receipt-row"><span>Diterima pasangan</span><strong>Rp99.000</strong></div>
+                            @php
+                                $examplePercent = \App\Support\GiftFee::currentPercent();
+                                $exampleFee = (int) ceil(100000 * $examplePercent / 100);
+                            @endphp
+                            <div class="receipt-row"><span>Fee pencairan {{ \App\Support\GiftFee::format($examplePercent) }}</span><strong>Rp{{ number_format($exampleFee, 0, ',', '.') }}</strong></div>
+                            <div class="receipt-row"><span>Diterima pasangan</span><strong>Rp{{ number_format(100000 - $exampleFee, 0, ',', '.') }}</strong></div>
                             <p class="receipt-note">Fee platform baru dipotong ketika pasangan mengajukan pencairan.</p>
                         </div>
                     </div>

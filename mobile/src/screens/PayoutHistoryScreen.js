@@ -40,7 +40,7 @@ export default function PayoutHistoryScreen({ navigation, route }) {
               <Text style={styles.amount}>{rupiah(request.net_amount)}</Text>
               <Text style={[styles.badge, styles[request.status]]}>{statusText(request.status)}</Text>
             </View>
-            <Text style={styles.breakdown}>Diajukan {rupiah(request.amount)} - fee 1% {rupiah(request.platform_fee)}</Text>
+            <Text style={styles.breakdown}>Diajukan {rupiah(request.amount)} - biaya platform {rupiah(request.platform_fee)}</Text>
             <Text style={styles.destination}>{request.bank_name} - {request.account_number}</Text>
             <Text style={styles.meta}>{new Date(request.requested_at).toLocaleString('id-ID')}</Text>
             {request.transfer_reference ? <Text style={styles.success}>Referensi transfer: {request.transfer_reference}</Text> : null}

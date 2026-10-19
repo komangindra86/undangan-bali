@@ -11,6 +11,7 @@ use App\Services\MidtransService;
 use App\Services\SocialNotificationService;
 use App\Services\TestLabRequestDetector;
 use App\Services\XenditService;
+use App\Support\GiftFee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -19,6 +20,12 @@ use Throwable;
 
 class PublicWeddingGiftController extends Controller
 {
+    /** The platform fee as the app should describe it, including a new rate and the date it starts. */
+    public function fee(): JsonResponse
+    {
+        return response()->json(['data' => GiftFee::toArray()]);
+    }
+
     public function store(
         StoreWeddingGiftRequest $request,
         string $slug,

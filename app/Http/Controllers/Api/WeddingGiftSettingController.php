@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateWeddingGiftSettingRequest;
 use App\Models\Invitation;
 use App\Models\WeddingGiftSetting;
+use App\Support\GiftFee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -31,7 +32,7 @@ class WeddingGiftSettingController extends Controller
         $setting = $invitation->giftSetting()->updateOrCreate([], [
             ...$request->validated(),
             'fee_type' => 'percent',
-            'fee_value' => config('wedding_gift.payout_fee_percent'),
+            'fee_value' => GiftFee::currentPercent(),
         ]);
 
         return response()->json([
@@ -46,7 +47,7 @@ class WeddingGiftSettingController extends Controller
             'invitation_id' => $invitation->id,
             'is_active' => false,
             'fee_type' => 'percent',
-            'fee_value' => config('wedding_gift.payout_fee_percent'),
+            'fee_value' => GiftFee::currentPercent(),
             'minimum_amount' => config('wedding_gift.minimum_amount'),
             'show_amount_public' => false,
             'allow_message' => true,

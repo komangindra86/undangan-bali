@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Invitation;
 use App\Models\InvitationTemplate;
 use App\Models\WeddingGiftSetting;
+use App\Services\GiftPayoutService;
+use App\Support\GiftFee;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -68,6 +70,8 @@ class PublicInvitationController extends Controller
             'invitation' => $invitation,
             'gifts' => $gifts,
             'total' => (int) $gifts->sum('gift_amount'),
+            'summary' => app(GiftPayoutService::class)->summary($invitation),
+            'transfers' => $invitation->payoutRequests()->where('status', 'paid')->latest('paid_at')->get(),
         ]);
     }
 
@@ -173,7 +177,7 @@ class PublicInvitationController extends Controller
             'receiver_name' => $invitation->display_name,
             'receiver_note' => $invitation->gift_label.' bersifat opsional. Tanda kasih diproses melalui QRIS.',
             'fee_type' => 'percent',
-            'fee_value' => config('wedding_gift.payout_fee_percent'),
+            'fee_value' => GiftFee::currentPercent(),
             'minimum_amount' => config('wedding_gift.minimum_amount'),
             'show_amount_public' => false,
             'allow_message' => true,
@@ -226,7 +230,7 @@ class PublicInvitationController extends Controller
                 ? 'Demo tampilan Wedding Gift. Pembayaran asli hanya tersedia pada undangan pelanggan.'
                 : 'Demo pembayaran mode tes. Tidak ada uang asli yang masuk.',
             'fee_type' => 'percent',
-            'fee_value' => config('wedding_gift.payout_fee_percent'),
+            'fee_value' => GiftFee::currentPercent(),
             'minimum_amount' => config('wedding_gift.minimum_amount'),
             'show_amount_public' => false,
             'allow_message' => true,

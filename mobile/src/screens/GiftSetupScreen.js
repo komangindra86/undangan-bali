@@ -3,12 +3,14 @@ import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 import { FooterActions } from '../components/Buttons';
 import FormField from '../components/FormField';
 import WizardLayout from '../components/WizardLayout';
-import { GIFT_PAYOUT_FEE_PERCENT, giftLabelFor, invitationName } from '../constants/invitation';
+import { giftLabelFor, invitationName } from '../constants/invitation';
 import { useDraft } from '../context/DraftContext';
 import { colors, spacing } from '../theme';
+import { feeDescription, feeLabel, useGiftFee } from '../utils/giftFee';
 import { cleanText, firstError, validateSafeText } from '../utils/validation';
 
 export default function GiftSetupScreen({ navigation }) {
+  const fee = useGiftFee();
   const { draft, saveSection, syncing, syncMessage } = useDraft();
   const label = giftLabelFor(draft);
   const suggestedReceiver = invitationName(draft);
@@ -113,8 +115,8 @@ export default function GiftSetupScreen({ navigation }) {
           />
           <View style={styles.fee}>
             <Text style={styles.feeTitle}>Biaya pencairan platform</Text>
-            <Text style={styles.feeAmount}>{GIFT_PAYOUT_FEE_PERCENT}% saat pencairan</Text>
-            <Text style={styles.help}>Tamu membayar sesuai nominal gift tanpa biaya tambahan. Fee {GIFT_PAYOUT_FEE_PERCENT}% dipotong dari nominal yang diajukan pasangan saat melakukan pencairan.</Text>
+            <Text style={styles.feeAmount}>{feeLabel(fee)}</Text>
+            <Text style={styles.help}>Tamu membayar sesuai nominal gift tanpa biaya tambahan. {feeDescription(fee)}</Text>
           </View>
           <ToggleRow
             title="Izinkan tamu menulis ucapan"

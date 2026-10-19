@@ -18,12 +18,16 @@ test('gift setup and settings explain the payout fee consistently', () => {
   assert.doesNotMatch(combined, /Rp2\.000|Rp100\.000 ke atas|2% untuk/);
 });
 
-test('mobile payout percentage has one explicit source of truth', () => {
-  const constants = source('src/constants/invitation.js');
-  const setup = source('src/screens/GiftSetupScreen.js');
-  const settings = source('src/screens/WeddingGiftSettingScreen.js');
+test('the payout fee comes from the server, never a percentage written into the app', () => {
+  const screens = ['GiftSetupScreen', 'WeddingGiftSettingScreen', 'WeddingGiftDashboardScreen', 'PayoutHistoryScreen', 'RequestPayoutScreen']
+    .map((name) => source(`src/screens/${name}.js`))
+    .join('\n');
+  const fee = source('src/utils/giftFee.js');
 
-  assert.match(constants, /GIFT_PAYOUT_FEE_PERCENT = 1/);
-  assert.match(setup, /GIFT_PAYOUT_FEE_PERCENT/);
-  assert.match(settings, /GIFT_PAYOUT_FEE_PERCENT/);
+  assert.doesNotMatch(screens, /(fee|biaya)[^\n]{0,24}\d+%|\}%/i);
+  assert.match(fee, /api\.giftFee\(\)/);
+  assert.match(source('src/screens/GiftSetupScreen.js'), /useGiftFee\(\)/);
+  assert.match(source('src/screens/WeddingGiftSettingScreen.js'), /useGiftFee\(\)/);
+  assert.match(source('src/screens/RequestPayoutScreen.js'), /api\.payoutQuote\(/);
+  assert.doesNotMatch(source('src/constants/invitation.js'), /GIFT_PAYOUT_FEE_PERCENT/);
 });

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\InvitationTemplate;
 use App\Models\Music;
+use App\Services\GiftPayoutService;
+use App\Support\GiftFee;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -63,7 +65,11 @@ class CustomInvitationController extends Controller
     {
         $this->ensureCustomOrder($request, $invitation);
 
-        return $this->form($invitation->load(['giftSetting', 'moments' => fn ($query) => $query->oldest('occurred_at')->oldest('id')]));
+        return $this->form($invitation->load(['giftSetting', 'moments' => fn ($query) => $query->oldest('occurred_at')->oldest('id')]), [
+            'giftSummary' => app(GiftPayoutService::class)->summary($invitation),
+            'giftReceived' => (int) $invitation->weddingGifts()->where('transaction_status', 'paid')->sum('gift_amount'),
+            'transfers' => $invitation->payoutRequests()->latest('paid_at')->latest('id')->get(),
+        ]);
     }
 
     public function update(Request $request, Invitation $invitation): RedirectResponse
@@ -74,9 +80,9 @@ class CustomInvitationController extends Controller
         return redirect()->route('admin.custom.edit', $invitation)->with('message', $this->savedMessage($invitation));
     }
 
-    private function form(Invitation $invitation): View
+    private function form(Invitation $invitation, array $transferData = []): View
     {
-        return view('admin.custom.form', [
+        return view('admin.custom.form', $transferData + [
             'invitation' => $invitation,
             'templates' => InvitationTemplate::where('is_active', true)->where('invitation_type', 'wedding')
                 ->orderByDesc('is_premium')->orderBy('id')->get(),
@@ -230,7 +236,7 @@ class CustomInvitationController extends Controller
                 'receiver_name' => $data['gift_receiver_name'] ?? $invitation->display_name,
                 'minimum_amount' => $data['gift_minimum_amount'] ?? config('wedding_gift.minimum_amount'),
                 'fee_type' => 'percent',
-                'fee_value' => config('wedding_gift.payout_fee_percent'),
+                'fee_value' => GiftFee::currentPercent(),
             ]);
         });
     }

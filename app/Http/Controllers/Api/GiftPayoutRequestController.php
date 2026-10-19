@@ -37,6 +37,15 @@ class GiftPayoutRequestController extends Controller
         ], 201);
     }
 
+    /** The fee and the amount left for a payout the owner is about to request; each gift keeps its own rate. */
+    public function quote(Request $request, Invitation $invitation, GiftPayoutService $payouts): JsonResponse
+    {
+        $this->ensureOwner($request, $invitation);
+        $amount = (int) $request->validate(['amount' => ['required', 'integer', 'min:1']])['amount'];
+
+        return response()->json(['data' => $payouts->quote($invitation, $amount)]);
+    }
+
     private function ensureOwner(Request $request, Invitation $invitation): void
     {
         abort_unless($invitation->user_id === $request->user()->id, 404);

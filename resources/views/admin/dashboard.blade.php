@@ -63,7 +63,7 @@
                 <div>
                     <p class="text-amber-300 tracking-[0.2em] uppercase text-xs">Laporan Penghasilan Platform</p>
                     <h2 class="font-serif text-2xl mt-2">Fee Wedding Gift</h2>
-                    <p class="text-stone-400 text-sm mt-1">Pendapatan platform berasal dari potongan 1% saat pasangan mencairkan saldo.</p>
+                    <p class="text-stone-400 text-sm mt-1">Pendapatan platform berasal dari potongan saat pasangan mencairkan saldo. {{ \App\Support\GiftFee::description() }}</p>
                 </div>
                 <p class="text-stone-500 text-sm">Tamu tidak dikenakan biaya layanan</p>
             </div>

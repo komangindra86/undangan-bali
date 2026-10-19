@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvitationRequest;
 use App\Models\Invitation;
+use App\Support\GiftFee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -290,7 +291,7 @@ class InvitationController extends Controller
         $invitation->giftSetting()->updateOrCreate([], [
             ...$giftData,
             'fee_type' => 'percent',
-            'fee_value' => config('wedding_gift.payout_fee_percent'),
+            'fee_value' => GiftFee::currentPercent(),
         ]);
     }
 

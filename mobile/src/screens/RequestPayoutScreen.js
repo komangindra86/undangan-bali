@@ -16,9 +16,21 @@ export default function RequestPayoutScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const numericAmount = Number(amount || 0);
-  const feePercent = Number(dashboard?.summary?.payout_fee_percent || 1);
-  const platformFee = numericAmount > 0 ? Math.ceil(numericAmount * feePercent / 100) : 0;
-  const netAmount = Math.max(numericAmount - platformFee, 0);
+  const [quote, setQuote] = useState(null);
+  const feePercent = Number(dashboard?.summary?.payout_fee_percent || 0);
+  const estimatedFee = numericAmount > 0 ? Math.ceil(numericAmount * feePercent / 100) : 0;
+  const quoted = quote && quote.amount === numericAmount;
+  const platformFee = quoted ? quote.platform_fee : estimatedFee;
+  const netAmount = quoted ? quote.net_amount : Math.max(numericAmount - platformFee, 0);
+
+  useEffect(() => {
+    const available = dashboard?.summary?.available_balance || 0;
+    if (!numericAmount || numericAmount > available) return undefined;
+    const timer = setTimeout(() => {
+      api.payoutQuote(invitation.id, numericAmount, token).then((response) => setQuote(response.data)).catch(() => {});
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [numericAmount, dashboard, invitation.id, token]);
 
   useEffect(() => {
     api.weddingGifts(invitation.id, token)
@@ -92,10 +104,10 @@ export default function RequestPayoutScreen({ navigation, route }) {
         <FormField label="Nominal yang dicairkan *" placeholder="50000" keyboardType="numeric" value={amount} onChangeText={(value) => setAmount(value.replace(/\D/g, ''))} />
         <View style={styles.breakdown}>
           <BreakdownRow label="Nominal pencairan" value={rupiah(numericAmount)} />
-          <BreakdownRow label={`Fee platform ${feePercent}%`} value={`- ${rupiah(platformFee)}`} />
+          <BreakdownRow label="Biaya platform" value={`- ${rupiah(platformFee)}`} />
           <BreakdownRow label="Diterima ke rekening" value={rupiah(netAmount)} strong />
         </View>
-        <Text style={styles.disclaimer}>Fee hanya dipotong saat pencairan. Admin akan memeriksa pengajuan dan mentransfer jumlah bersih ke rekening tersimpan. Nominal yang diajukan tidak dapat diajukan ulang selama diproses.</Text>
+        <Text style={styles.disclaimer}>{dashboard.summary.payout_fee_description || 'Fee hanya dipotong saat pencairan.'} Admin akan memeriksa pengajuan dan mentransfer jumlah bersih ke rekening tersimpan. Nominal yang diajukan tidak dapat diajukan ulang selama diproses.</Text>
         <PrimaryButton title="Kirim Pengajuan" onPress={submit} loading={sending} disabled={!dashboard.payout_account || !dashboard.summary.available_balance} style={styles.button} />
         <Text onPress={() => navigation.goBack()} style={styles.back}>Kembali</Text>
       </KeyboardAwareScrollView>
