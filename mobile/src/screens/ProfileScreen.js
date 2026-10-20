@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PrimaryButton, SecondaryButton } from '../components/Buttons';
+import { PrimaryButton } from '../components/Buttons';
 import CustomInvitationCard from '../components/CustomInvitationCard';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -15,8 +15,12 @@ export default function ProfileScreen({ navigation }) {
   }
 
   async function openPrivacyPolicy(section = '') {
+    await openWebPage(`/privacy-policy${section}`);
+  }
+
+  async function openWebPage(path) {
     try {
-      await Linking.openURL(`${api.siteUrl}/privacy-policy${section}`);
+      await Linking.openURL(`${api.siteUrl}${path}`);
     } catch {
       Alert.alert('Halaman belum dapat dibuka', 'Silakan coba lagi atau hubungi admin.balisantih@gmail.com.');
     }
@@ -52,8 +56,7 @@ export default function ProfileScreen({ navigation }) {
             <Text style={styles.guestBody}>
               Masuk untuk melihat undangan yang sudah dibuat, permintaan tamu, notifikasi, dan gift. Membuat undangan baru tetap bisa tanpa login.
             </Text>
-            <PrimaryButton title="Masuk" onPress={() => openStack('Login', { returnTab: 'ProfileTab' })} style={styles.primary} />
-            <SecondaryButton title="Daftar Akun" onPress={() => openStack('Register', { returnTab: 'ProfileTab' })} style={styles.secondary} />
+            <PrimaryButton title="Masuk dengan Google" onPress={() => openStack('Login', { returnTab: 'ProfileTab' })} style={styles.primary} />
             <Pressable accessibilityRole="button" onPress={() => openStack('InvitationType')} style={styles.tryButton}>
               <Text style={styles.tryText}>Buat undangan tanpa login</Text>
               <Ionicons color={colors.goldLight} name="chevron-forward" size={17} />
@@ -79,6 +82,7 @@ export default function ProfileScreen({ navigation }) {
             <ProfileMenu icon="add-circle-outline" label="Buat Undangan Baru" onPress={() => openStack('InvitationType')} />
             <ProfileMenu icon="ban-outline" label="Pengguna Diblokir" onPress={() => openStack('BlockedUsers')} />
             <ProfileMenu danger icon="log-out-outline" label="Keluar" onPress={confirmLogout} />
+            <ProfileMenu danger icon="trash-outline" label="Hapus Akun" onPress={() => openStack('DeleteAccount')} />
           </>
         ) : null}
 
@@ -86,7 +90,7 @@ export default function ProfileScreen({ navigation }) {
           <>
             <Text style={styles.sectionTitle}>Privasi dan bantuan</Text>
             <ProfileMenu icon="shield-checkmark-outline" label="Kebijakan Privasi" onPress={() => openPrivacyPolicy()} />
-            <ProfileMenu icon="trash-outline" label="Minta Penghapusan Akun" onPress={() => openPrivacyPolicy('#penghapusan-akun')} />
+            {!isAuthenticated ? <ProfileMenu icon="trash-outline" label="Minta Penghapusan Akun" onPress={() => openWebPage('/hapus-akun')} /> : null}
             <CustomInvitationCard compact />
           </>
         ) : null}

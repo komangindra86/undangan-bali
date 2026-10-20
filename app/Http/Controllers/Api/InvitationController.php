@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreInvitationRequest;
 use App\Models\Invitation;
+use App\Services\GiftPayoutService;
 use App\Support\GiftFee;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class InvitationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $invitations = $request->user()->invitations()
+            ->whereNull('owner_deleted_at')
             ->with(['template', 'music', 'giftSetting'])
             ->latest()
             ->paginate(15);
@@ -159,17 +161,28 @@ class InvitationController extends Controller
     {
         $this->ensureOwner($request, $invitation);
         // A taken-down invitation is kept as the record of what was reported.
-        abort_if($invitation->isTakenDown(), 422, 'Undangan yang diturunkan admin tidak dapat dihapus. Hubungi admin bila ini keliru.');
-        abort_if($invitation->hasGiftTransactions(), 422, 'Undangan yang memiliki transaksi gift tidak dapat dihapus.');
+        abort_if($invitation->isTakenDown() && ! $invitation->owner_deleted_at, 422, 'Undangan yang diturunkan admin tidak dapat dihapus. Hubungi admin bila ini keliru.');
 
-        $invitation->deleteWithMedia();
+        $balance = app(GiftPayoutService::class)->summary($invitation);
+        abort_if(
+            $balance['available_balance'] > 0 || $balance['payout_pending_gross'] > 0,
+            422,
+            'Cairkan dulu saldo tanda kasih undangan ini dan tunggu pencairannya selesai, baru undangan dapat dihapus.'
+        );
 
-        return response()->json(['message' => 'Undangan berhasil dihapus.']);
+        $result = $invitation->removeByOwner();
+
+        return response()->json([
+            'message' => $result === 'deleted'
+                ? 'Undangan berhasil dihapus.'
+                : 'Undangan dihapus. Catatan tanda kasih dan pencairannya tetap disimpan untuk pembukuan.',
+            'result' => $result,
+        ]);
     }
 
     private function ensureOwner(Request $request, Invitation $invitation): void
     {
-        abort_unless($invitation->user_id === $request->user()->id, 404);
+        abort_unless($invitation->user_id === $request->user()->id && ! $invitation->owner_deleted_at, 404);
     }
 
     private function draftAttributes(StoreInvitationRequest $request, ?Invitation $invitation = null): array

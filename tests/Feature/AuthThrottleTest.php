@@ -10,19 +10,19 @@ class AuthThrottleTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_repeated_wrong_passwords_are_throttled_per_email(): void
+    public function test_email_sign_up_and_sign_in_are_gone(): void
     {
         User::factory()->create(['email' => 'pemilik@example.com']);
 
-        for ($attempt = 0; $attempt < 5; $attempt++) {
-            $this->postJson('/api/login', ['email' => 'pemilik@example.com', 'password' => 'salah-'.$attempt])
-                ->assertUnprocessable();
-        }
-
+        $this->postJson('/api/register', [
+            'name' => 'Pengguna Baru',
+            'email' => 'baru@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertStatus(410)->assertJsonPath('message', fn ($message) => str_contains($message, 'Google'));
         $this->postJson('/api/login', ['email' => 'pemilik@example.com', 'password' => 'password'])
-            ->assertTooManyRequests();
+            ->assertStatus(410)->assertJsonMissingPath('token');
 
-        $this->postJson('/api/login', ['email' => 'lain@example.com', 'password' => 'salah'])
-            ->assertUnprocessable();
+        $this->assertSame(0, User::where('email', 'baru@example.com')->count());
     }
 }

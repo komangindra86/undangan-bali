@@ -17,6 +17,7 @@ export default function MyInvitationsScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [resumingId, setResumingId] = useState(null);
   const [feedConsentId, setFeedConsentId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const [feedBusyId, setFeedBusyId] = useState(null);
 
   function openStack(screen, params) {
@@ -58,6 +59,36 @@ export default function MyInvitationsScreen({ navigation }) {
   useFocusEffect(useCallback(() => {
     loadInvitations();
   }, [loadInvitations]));
+
+  function confirmDelete(item) {
+    const live = item.status === 'published';
+    Alert.alert(
+      'Hapus undangan ini?',
+      `${live ? 'Undangan ini sedang live; link-nya akan langsung mati. ' : ''}Foto, musik, dan Moment ikut terhapus permanen. Bila sudah ada tanda kasih, catatannya tetap disimpan untuk pembukuan.`,
+      [
+        { text: 'Batal', style: 'cancel' },
+        { text: 'Hapus', style: 'destructive', onPress: () => deleteInvitation(item) },
+      ],
+    );
+  }
+
+  async function deleteInvitation(item) {
+    setDeletingId(item.id);
+    try {
+      const response = await api.deleteInvitation(item.id, token);
+      setItems((current) => current.filter((candidate) => candidate.id !== item.id));
+      Alert.alert('Undangan dihapus', response.message);
+    } catch (error) {
+      if (error.status === 401) {
+        await expireSession();
+        openStack('Login', { returnTab: 'InvitationsTab', sessionExpired: true });
+        return;
+      }
+      Alert.alert('Undangan belum dihapus', error.message);
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   async function toggleFeed(item, acknowledged = false) {
     if (feedBusyId != null) return;
@@ -116,7 +147,6 @@ export default function MyInvitationsScreen({ navigation }) {
             <Text style={styles.authTitle}>{hasAccountOnDevice ? 'Masuk untuk melanjutkan' : 'Simpan undangan di akun Anda'}</Text>
             <Text style={styles.authBody}>Lihat undangan yang pernah dibuat, kelola Moment, permintaan tamu, dan gift dari sini.</Text>
             <PrimaryButton title="Masuk & Lihat Undangan" onPress={() => openStack('Login', { returnTab: 'InvitationsTab' })} style={styles.authButton} />
-            <SecondaryButton title="Daftar Akun" onPress={() => openStack('Register', { returnTab: 'InvitationsTab' })} style={styles.secondaryButton} />
             <Pressable accessibilityRole="button" onPress={() => openStack('InvitationType')} style={styles.guestCreate}>
               <Text style={styles.guestCreateText}>Atau buat undangan tanpa login</Text>
               <Ionicons color={colors.goldLight} name="chevron-forward" size={17} />
@@ -170,6 +200,8 @@ export default function MyInvitationsScreen({ navigation }) {
             needsConsent={feedConsentId === item.id}
             onConsent={() => toggleFeed(item, true)}
             onCancelConsent={() => setFeedConsentId(null)}
+            onDelete={() => confirmDelete(item)}
+            deleting={deletingId === item.id}
           />
         ))}
       </ScrollView>
@@ -177,7 +209,7 @@ export default function MyInvitationsScreen({ navigation }) {
   );
 }
 
-function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleFeed, resuming, feedBusy, needsConsent, onConsent, onCancelConsent }) {
+function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleFeed, resuming, feedBusy, needsConsent, onConsent, onCancelConsent, onDelete, deleting }) {
   const published = item.status === 'published';
   const archived = item.status === 'archived';
   const resumable = !published && !archived;
@@ -235,6 +267,10 @@ function InvitationCard({ item, onNavigate, onOpen, onResume, onShare, onToggleF
           <PrimaryButton title="Lanjutkan Draft" onPress={onResume} loading={resuming} style={styles.openButton} />
         </>
       )}
+      <Pressable accessibilityRole="button" disabled={deleting} onPress={onDelete} style={styles.deleteAction}>
+        <Ionicons color={colors.danger} name="trash-outline" size={16} />
+        <Text style={styles.deleteText}>{deleting ? 'Menghapus...' : 'Hapus Undangan'}</Text>
+      </Pressable>
     </View>
   );
 }
@@ -249,6 +285,8 @@ function SmallAction({ icon, label, onPress }) {
 }
 
 const styles = StyleSheet.create({
+  deleteAction: { alignItems: 'center', alignSelf: 'center', flexDirection: 'row', gap: 6, marginTop: spacing.md, paddingVertical: spacing.xs },
+  deleteText: { color: colors.danger, fontSize: 13, fontWeight: '600' },
   content: { padding: spacing.lg, paddingBottom: spacing.xl },
   headingRow: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   headingCopy: { flex: 1 },

@@ -161,8 +161,9 @@ async function socialMomentFormData(values) {
 export const api = {
   baseUrl: API_URL,
   siteUrl: API_URL.replace(/\/api$/, ''),
-  register: (values) => request('/register', { method: 'POST', body: JSON.stringify(values) }),
-  login: (values) => request('/login', { method: 'POST', body: JSON.stringify(values) }),
+  accountDeletionSummary: (token) => request('/account/deletion', {}, token),
+  deleteAccount: (values, token) => request('/account', { method: 'DELETE', body: JSON.stringify(values) }, token),
+  deleteInvitation: (id, token) => request(`/invitations/${id}`, { method: 'DELETE' }, token),
   googleExchange: (code) => request('/auth/google/exchange', { method: 'POST', body: JSON.stringify({ code }) }),
   logout: (token) => request('/logout', { method: 'POST' }, token),
   me: (token) => request('/me', {}, token),

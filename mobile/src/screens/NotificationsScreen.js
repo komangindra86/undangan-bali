@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PrimaryButton, SecondaryButton } from '../components/Buttons';
+import { PrimaryButton } from '../components/Buttons';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { colors, commonStyles, spacing } from '../theme';
@@ -77,7 +77,6 @@ export default function NotificationsScreen({ navigation, route }) {
             <Text style={styles.authTitle}>Masuk untuk melihat aktivitas</Text>
             <Text style={styles.authBody}>Permintaan undangan, komentar, reaksi, gift, dan pengingat upacara akan tampil di sini.</Text>
             <PrimaryButton title="Masuk" onPress={() => openStack('Login', { returnTab: 'NotificationsTab' })} style={styles.authButton} />
-            <SecondaryButton title="Daftar Akun" onPress={() => openStack('Register', { returnTab: 'NotificationsTab' })} style={styles.secondaryButton} />
           </View>
         </ScrollView>
       </SafeAreaView>

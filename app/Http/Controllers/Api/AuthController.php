@@ -13,61 +13,15 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request): JsonResponse
+    /** Older app versions still show the email forms; tell them where to go instead. */
+    public function register(): JsonResponse
     {
-        $request->merge([
-            'name' => trim(preg_replace('/\s+/', ' ', (string) $request->input('name'))),
-            'email' => strtolower(trim((string) $request->input('email'))),
-        ]);
-
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:80', 'regex:/^[\pL\s.\'-]+$/u'],
-            'email' => ['required', 'email:rfc', 'regex:/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ], [
-            'name.regex' => 'Nama hanya boleh berisi huruf, spasi, titik, petik, atau tanda hubung.',
-            'email.regex' => 'Email harus valid, contoh nama@gmail.com.',
-        ], [
-            'name' => 'nama',
-            'email' => 'email',
-            'password' => 'password',
-        ]);
-
-        $user = User::create($data + ['role' => 'user']);
-
-        return response()->json([
-            'message' => 'Registrasi berhasil.',
-            'user' => $user,
-            'token' => $user->createToken('expo-mobile')->plainTextToken,
-        ], 201);
+        return response()->json(['message' => 'Pendaftaran dengan email sudah tidak tersedia. Silakan daftar dengan tombol Masuk dengan Google.'], 410);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(): JsonResponse
     {
-        $request->merge([
-            'email' => strtolower(trim((string) $request->input('email'))),
-        ]);
-
-        $data = $request->validate([
-            'email' => ['required', 'email:rfc', 'regex:/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i'],
-            'password' => ['required', 'string'],
-        ], [
-            'email.regex' => 'Email harus valid, contoh nama@gmail.com.',
-        ]);
-
-        $user = User::where('email', $data['email'])->first();
-
-        if (! $user || ! Hash::check($data['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Email atau password tidak sesuai.'],
-            ]);
-        }
-
-        return response()->json([
-            'message' => 'Login berhasil.',
-            'user' => $user,
-            'token' => $user->createToken('expo-mobile')->plainTextToken,
-        ]);
+        return response()->json(['message' => 'Masuk dengan email sudah tidak tersedia. Silakan gunakan tombol Masuk dengan Google dengan email yang sama.'], 410);
     }
 
     public function google(Request $request, GoogleAuthService $google): JsonResponse
@@ -77,7 +31,7 @@ class AuthController extends Controller
         ]);
 
         $googleUser = $google->verifiedUser($data['id_token']);
-        $user = User::where('email', $googleUser['email'])->first();
+        $user = User::where('email', $googleUser['email'])->whereNull('account_deleted_at')->first();
 
         if ($user?->isAdmin()) {
             throw ValidationException::withMessages([

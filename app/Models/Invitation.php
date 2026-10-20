@@ -144,6 +144,7 @@ class Invitation extends Model
             'media_deleted_at' => 'datetime',
             'taken_down_at' => 'datetime',
             'feed_blocked_at' => 'datetime',
+            'owner_deleted_at' => 'datetime',
             'order_details' => 'array',
             'music_rights_accepted_at' => 'datetime',
             'latitude' => 'decimal:7',
@@ -414,6 +415,42 @@ class Invitation extends Model
     {
         return $this->weddingGifts()->whereIn('transaction_status', ['pending', 'paid', 'refunded'])->exists()
             || $this->payoutRequests()->exists();
+    }
+
+    /**
+     * The owner deletes the invitation. Without gift records it goes for good; with them its photos, music and social
+     * activity go, its link dies, and the invitation row stays hidden so the gift and payout records keep their
+     * invitation. Returns "deleted" or "hidden".
+     */
+    public function removeByOwner(): string
+    {
+        if (! $this->hasGiftTransactions()) {
+            $this->deleteWithMedia();
+
+            return 'deleted';
+        }
+
+        $files = array_filter([...$this->uploadedMediaPaths(), ...$this->moments()->pluck('photo_path')->all()]);
+        $this->moments()->delete();
+        $this->comments()->delete();
+        $this->reactions()->delete();
+        $this->invitationRequests()->delete();
+        $this->forceFill([
+            ...array_fill_keys(self::PHOTO_COLUMNS, null),
+            'gallery_photos' => null,
+            'participants' => $this->participantsWithoutPhotos(),
+            'music_file' => null,
+            'music_type' => $this->music_type === 'upload' ? 'none' : $this->music_type,
+            'media_deleted_at' => now(),
+            'is_hidden_from_feed' => true,
+            'taken_down_at' => $this->taken_down_at ?? now(),
+            'takedown_note' => $this->takedown_note ?? 'Dihapus oleh pemilik undangan.',
+            'owner_deleted_at' => now(),
+        ])->save();
+        $this->giftSetting?->update(['is_active' => false]);
+        Storage::disk('public')->delete($files);
+
+        return 'hidden';
     }
 
     /** Deletes the invitation for good, together with every file it uploaded. */

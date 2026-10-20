@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\GiftPayoutAccountController;
 use App\Http\Controllers\Api\GiftPayoutRequestController;
@@ -41,6 +42,8 @@ Route::post('/ipaymu/notify', [IpaymuNotificationController::class, 'handle'])->
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::get('/account/deletion', [AccountController::class, 'deletionSummary']);
+    Route::delete('/account', [AccountController::class, 'destroy']);
     Route::get('/payout-account', [GiftPayoutAccountController::class, 'show']);
     Route::post('/payout-account', [GiftPayoutAccountController::class, 'store']);
 

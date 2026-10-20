@@ -244,7 +244,7 @@ class GiftPayoutTest extends TestCase
     {
         $this->seed();
         $template = InvitationTemplate::firstOrFail();
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Pasangan Gift',
             'email' => 'payout@example.com',
             'password' => 'password123',

@@ -127,7 +127,7 @@ class WeddingGiftTest extends TestCase
     {
         $this->seed();
         $template = InvitationTemplate::firstOrFail();
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Draft Gift',
             'email' => 'draft-gift@example.com',
             'password' => 'password123',
@@ -431,7 +431,7 @@ class WeddingGiftTest extends TestCase
     {
         $this->seed();
         $template = InvitationTemplate::firstOrFail();
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Pemilik',
             'email' => 'pemilik@example.com',
             'password' => 'password123',

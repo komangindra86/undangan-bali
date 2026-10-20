@@ -22,7 +22,7 @@ import InvitationRequestsScreen from '../screens/InvitationRequestsScreen';
 import PreviewScreen from '../screens/PreviewScreen';
 import PayoutAccountScreen from '../screens/PayoutAccountScreen';
 import PayoutHistoryScreen from '../screens/PayoutHistoryScreen';
-import RegisterScreen from '../screens/RegisterScreen';
+import DeleteAccountScreen from '../screens/DeleteAccountScreen';
 import RequestInvitationScreen from '../screens/RequestInvitationScreen';
 import RequestPayoutScreen from '../screens/RequestPayoutScreen';
 import ShareScreen from '../screens/ShareScreen';
@@ -62,7 +62,7 @@ export default function AppNavigator() {
       <Stack.Screen name="Preview" component={PreviewScreen} />
       <Stack.Screen name="AuthGate" component={AuthGateScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
       <Stack.Screen name="Share" component={ShareScreen} />
       <Stack.Screen name="WeddingGiftSetting" component={WeddingGiftSettingScreen} />
       <Stack.Screen name="WeddingGiftDashboard" component={WeddingGiftDashboardScreen} />

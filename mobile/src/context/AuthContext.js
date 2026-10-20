@@ -52,18 +52,6 @@ export function AuthProvider({ children }) {
     ]);
   }
 
-  async function login(values) {
-    const response = await api.login(values);
-    await persistSession(response);
-    return response;
-  }
-
-  async function register(values) {
-    const response = await api.register(values);
-    await persistSession(response);
-    return response;
-  }
-
   async function googleLogin(exchangeCode) {
     const response = await api.googleExchange(exchangeCode);
     await persistSession(response);
@@ -90,6 +78,14 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // After the account is deleted on the server: its tokens are gone, so only the device is cleared.
+  async function forgetSession() {
+    setToken(null);
+    setUser(null);
+    setHasAccountOnDevice(false);
+    await AsyncStorage.multiRemove([SESSION_KEYS.token, SESSION_KEYS.user, SESSION_KEYS.pushToken, SESSION_KEYS.hasAccountOnDevice]);
+  }
+
   async function expireSession() {
     setToken(null);
     setUser(null);
@@ -105,10 +101,9 @@ export function AuthProvider({ children }) {
       loading,
       hasAccountOnDevice,
       isAuthenticated: Boolean(token),
-      login,
-      register,
       googleLogin,
       logout,
+      forgetSession,
       expireSession,
     }),
     [token, user, loading, hasAccountOnDevice],

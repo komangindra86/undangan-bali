@@ -215,7 +215,7 @@ class IpaymuGiftTest extends TestCase
     {
         $this->seed();
         $template = InvitationTemplate::firstOrFail();
-        $token = $this->postJson('/api/register', [
+        $token = $this->signUp([
             'name' => 'Pemilik',
             'email' => 'pemilik@example.com',
             'password' => 'password123',

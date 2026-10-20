@@ -118,7 +118,7 @@ class InvitationPublishingTest extends TestCase
         $this->seed();
         $template = InvitationTemplate::where('slug', 'bali-classic')->firstOrFail();
 
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Komang',
             'email' => 'komang@example.com',
             'password' => 'password123',
@@ -182,7 +182,7 @@ class InvitationPublishingTest extends TestCase
         $this->seed();
         $template = InvitationTemplate::firstOrFail();
 
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Ayu',
             'email' => 'ayu@example.com',
             'password' => 'password123',
@@ -204,15 +204,7 @@ class InvitationPublishingTest extends TestCase
         $this->seed();
         $template = InvitationTemplate::firstOrFail();
 
-        $this->postJson('/api/register', [
-            'name' => 'Tester Validasi',
-            'email' => 'tester@gmail',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-        ])->assertUnprocessable()
-            ->assertJsonValidationErrors('email');
-
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Tester Validasi',
             'email' => 'tester-validasi@example.com',
             'password' => 'password123',
@@ -245,7 +237,7 @@ class InvitationPublishingTest extends TestCase
         $this->seed();
         $template = InvitationTemplate::where('slug', 'bali-classic')->firstOrFail();
 
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Komang',
             'email' => 'photos@example.com',
             'password' => 'password123',
@@ -295,7 +287,7 @@ class InvitationPublishingTest extends TestCase
         $this->seed();
         $template = InvitationTemplate::where('slug', 'bali-classic')->firstOrFail();
 
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Komang',
             'email' => 'resume-draft@example.com',
             'password' => 'password123',
@@ -385,7 +377,7 @@ class InvitationPublishingTest extends TestCase
         $this->seed();
         $template = InvitationTemplate::where('slug', 'bali-classic')->firstOrFail();
 
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Boolean Mobile',
             'email' => 'boolean-mobile@example.com',
             'password' => 'password123',
@@ -427,7 +419,7 @@ class InvitationPublishingTest extends TestCase
     {
         $this->seed();
         $template = InvitationTemplate::firstOrFail();
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Wira',
             'email' => 'wira@example.com',
             'password' => 'password123',
@@ -465,7 +457,7 @@ class InvitationPublishingTest extends TestCase
         $this->seed();
         $template = InvitationTemplate::where('slug', 'pura-sunset')->firstOrFail();
         $music = Music::where('catalog_key', 'pixabay/162472')->firstOrFail();
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Audio',
             'email' => 'audio@example.com',
             'password' => 'password123',
@@ -505,7 +497,7 @@ class InvitationPublishingTest extends TestCase
         Storage::fake('public');
         $this->seed();
         $template = InvitationTemplate::firstOrFail();
-        $register = $this->postJson('/api/register', [
+        $register = $this->signUp([
             'name' => 'Audio Sendiri',
             'email' => 'own-audio@example.com',
             'password' => 'password123',

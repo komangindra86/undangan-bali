@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountDeletionRequestController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminPasswordController;
 use App\Http\Controllers\Admin\ContentReportController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Admin\CustomTransferController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GiftPayoutController;
 use App\Http\Controllers\Admin\InvitationController as AdminInvitationController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\WeddingGiftController as AdminWeddingGiftController;
 use App\Http\Controllers\GoogleMobileOAuthController;
 use App\Http\Controllers\PublicInvitationController;
@@ -21,6 +23,8 @@ Route::get('/', function () {
 Route::view('/privacy-policy', 'privacy-policy')->name('privacy-policy');
 Route::view('/terms-of-service', 'terms-of-service')->name('terms-of-service');
 Route::view('/audio-copyright-terms', 'audio-copyright-terms')->name('audio-copyright-terms');
+Route::get('/hapus-akun', [AccountDeletionRequestController::class, 'create'])->name('account-deletion');
+Route::post('/hapus-akun', [AccountDeletionRequestController::class, 'store'])->middleware('throttle:3,10')->name('account-deletion.store');
 
 Route::get('/auth/google/mobile', [GoogleMobileOAuthController::class, 'redirect'])
     ->middleware('throttle:10,1')
@@ -72,6 +76,10 @@ Route::middleware('auth:web')->prefix('admin')->name('admin.')->group(function (
     Route::put('/invitations/{invitation}/take-down', [AdminInvitationController::class, 'takeDown'])->name('invitations.take-down');
     Route::put('/invitations/{invitation}/restore', [AdminInvitationController::class, 'restore'])->name('invitations.restore');
     Route::delete('/invitations/{invitation}', [AdminInvitationController::class, 'destroy'])->name('invitations.destroy');
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::put('/users/{user}/email', [AdminUserController::class, 'updateEmail'])->name('users.email');
+    Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+    Route::put('/account-deletion-requests/{deletionRequest}', [AdminUserController::class, 'closeRequest'])->name('users.requests.close');
     Route::get('/custom', [CustomInvitationController::class, 'index'])->name('custom.index');
     Route::get('/custom/create', [CustomInvitationController::class, 'create'])->name('custom.create');
     Route::post('/custom', [CustomInvitationController::class, 'store'])->name('custom.store');

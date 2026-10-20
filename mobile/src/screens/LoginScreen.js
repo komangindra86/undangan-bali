@@ -1,21 +1,15 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Alert, StyleSheet, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PrimaryButton, SecondaryButton } from '../components/Buttons';
-import FormField from '../components/FormField';
 import GoogleAuthButton from '../components/GoogleAuthButton';
 import KeyboardAwareScrollView from '../components/KeyboardAwareScrollView';
 import { useAuth } from '../context/AuthContext';
 import { useDraft } from '../context/DraftContext';
 import { colors, commonStyles, spacing } from '../theme';
-import { cleanText, validateEmail } from '../utils/validation';
 
 export default function LoginScreen({ navigation, route }) {
-  const { login, googleLogin } = useAuth();
+  const { googleLogin } = useAuth();
   const { publishDraft } = useDraft();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const publishAfterAuth = route.params?.publishAfterAuth;
   const returnTo = route.params?.returnTo;
   const returnTab = route.params?.returnTab;
@@ -40,24 +34,6 @@ export default function LoginScreen({ navigation, route }) {
     [navigation, publishAfterAuth, publishDraft, returnTab, returnTo, route.params?.returnParams],
   );
 
-  async function submit() {
-    const normalizedEmail = cleanText(email).toLowerCase();
-    const emailError = validateEmail(normalizedEmail);
-    if (emailError || !password) {
-      Alert.alert('Lengkapi login', emailError || 'Password wajib diisi.');
-      return;
-    }
-    setLoading(true);
-    try {
-      const session = await login({ email: normalizedEmail, password });
-      await continueAfterAuth(session);
-    } catch (error) {
-      Alert.alert('Login gagal', error.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   const submitGoogle = useCallback(
     async (exchangeCode) => {
       try {
@@ -74,21 +50,14 @@ export default function LoginScreen({ navigation, route }) {
     <SafeAreaView style={[commonStyles.screen, styles.safe]}>
       <KeyboardAwareScrollView contentContainerStyle={styles.content}>
         <Text style={commonStyles.eyebrow}>Masuk</Text>
-        <Text style={commonStyles.title}>Selamat datang kembali</Text>
+        <Text style={commonStyles.title}>Selamat datang</Text>
         <Text style={[commonStyles.body, styles.body]}>
           {sessionExpired
-            ? 'Sesi Anda sudah berakhir. Masuk kembali untuk melihat undangan yang tersimpan.'
-            : 'Masuk untuk melihat, menyimpan, dan membagikan undangan Anda.'}
+            ? 'Sesi Anda sudah berakhir. Masuk kembali dengan Google untuk melihat undangan yang tersimpan.'
+            : 'Masuk atau daftar dengan akun Google untuk menyimpan, membagikan, dan mengelola undangan Anda.'}
         </Text>
-        <FormField label="Email" keyboardType="email-address" value={email} onChangeText={setEmail} placeholder="email@contoh.com" />
-        <FormField label="Password" secureTextEntry value={password} onChangeText={setPassword} placeholder="Minimal 8 karakter" />
-        <PrimaryButton title={publishAfterAuth ? 'Masuk & Publish' : 'Masuk'} onPress={submit} loading={loading} style={styles.submit} />
-        <Text style={styles.divider}>atau</Text>
-        <GoogleAuthButton title="Masuk dengan Google" onCode={submitGoogle} disabled={loading} style={styles.google} />
-        <SecondaryButton
-          title="Belum punya akun? Daftar"
-          onPress={() => navigation.replace('Register', { publishAfterAuth, returnTab, returnTo, returnParams: route.params?.returnParams })}
-        />
+        <GoogleAuthButton title={publishAfterAuth ? 'Masuk dengan Google & Publish' : 'Masuk dengan Google'} onCode={submitGoogle} style={styles.google} />
+        <Text style={styles.note}>Akun baru dibuat otomatis saat pertama kali masuk. Akun lama yang terdaftar dengan email Gmail yang sama tetap bisa dipakai.</Text>
       </KeyboardAwareScrollView>
     </SafeAreaView>
   );
@@ -107,16 +76,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     marginBottom: spacing.xl,
   },
-  submit: {
-    marginTop: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  divider: {
-    color: colors.muted,
-    textAlign: 'center',
-    marginVertical: spacing.sm,
-  },
   google: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  note: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 20,
+    textAlign: 'center',
   },
 });

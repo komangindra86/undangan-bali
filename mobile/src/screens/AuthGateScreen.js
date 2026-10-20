@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PrimaryButton, SecondaryButton } from '../components/Buttons';
+import { PrimaryButton } from '../components/Buttons';
 import { colors, commonStyles, spacing } from '../theme';
 
 export default function AuthGateScreen({ navigation }) {
@@ -12,10 +12,9 @@ export default function AuthGateScreen({ navigation }) {
       <Text style={commonStyles.eyebrow}>Data sudah diperiksa</Text>
       <Text style={styles.title}>Masuk untuk membuat hasil undangan final</Text>
       <Text style={styles.body}>
-        Data Anda sudah aman tersimpan di perangkat. Login atau daftar sekarang untuk membuat desain undangan lengkap dan link publik.
+        Data Anda sudah aman tersimpan di perangkat. Masuk dengan akun Google untuk membuat desain undangan lengkap dan link publik.
       </Text>
-      <PrimaryButton title="Masuk" onPress={() => navigation.navigate('Login', { publishAfterAuth: true })} style={styles.button} />
-      <SecondaryButton title="Daftar Akun Baru" onPress={() => navigation.navigate('Register', { publishAfterAuth: true })} style={styles.secondary} />
+      <PrimaryButton title="Masuk dengan Google" onPress={() => navigation.navigate('Login', { publishAfterAuth: true })} style={styles.button} />
       <Text onPress={() => navigation.goBack()} style={styles.back}>Kembali ke ringkasan data</Text>
     </SafeAreaView>
   );
