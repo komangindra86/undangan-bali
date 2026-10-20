@@ -41,6 +41,7 @@ Teks "Apa yang baru" untuk Play Console:
 - SHA-256: `5C78E7EBC0AA6B7AB69E3D2733319140B132BAEBD38B325E6C9E6C0666C7BF5B`.
 - Sertifikat upload sama dengan rilis sebelumnya (`33:C8:4A:68...`); `jarsigner -verify` lulus.
 - 20 Oktober 2026: diunggah ke jalur **internal testing** lewat `eas submit --profile internal` (status selesai). Production tetap `30 (1.0.28)` sampai pemilik meminta promosi.
+- 20 Oktober 2026: atas permintaan pemilik, kode 31 dipromosikan ke **production** (rollout penuh) lewat Google Play Developer API dengan teks "Apa yang baru" di atas, bahasa `id`; teksnya diperiksa sebelum dan sesudah promosi. Jalur production kini berisi `31 (1.0.29)` menggantikan `30 (1.0.28)`. Status peninjauan Google hanya terlihat di Play Console.
 
 ## Verifikasi
 
